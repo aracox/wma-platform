@@ -14,7 +14,7 @@ export default function Footer() {
           <span className="text-white/20">·</span>
           <span className="text-chula-400/80">{t("research_by")}</span>
         </div>
-        <span>© {new Date().getFullYear()} WMA & Chulalongkorn University</span>
+        <span suppressHydrationWarning>© {new Date().getFullYear()} WMA & Chulalongkorn University</span>
       </div>
     </footer>
   );
