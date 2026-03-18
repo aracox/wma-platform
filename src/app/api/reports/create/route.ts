@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import initialData from "@/data/reports.json";
 
-const DATA_PATH = path.join(process.cwd(), "src/data/reports.json");
+// For reports/create, we'll import and update the imported array directly to simulate a backend store
+// (Note: in Vercel this clears on cold start, but is fine for demos)
+let reportsCache: any[] = [...initialData];
 
 function readReports() {
-  const raw = fs.readFileSync(DATA_PATH, "utf-8");
-  return JSON.parse(raw);
+  return reportsCache;
 }
 
 function writeReports(reports: any[]) {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(reports, null, 2), "utf-8");
+  reportsCache = reports;
 }
 
 // POST /api/reports/create — add a new report

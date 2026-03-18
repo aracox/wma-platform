@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import initialData from "@/data/sensors.json";
 
-const DATA_PATH = path.join(process.cwd(), "src/data/sensors.json");
+let sensorsCache: any[] = [...initialData];
 
 function readSensors() {
-  const raw = fs.readFileSync(DATA_PATH, "utf-8");
-  return JSON.parse(raw);
+  return sensorsCache;
 }
 
 function writeSensors(data: any[]) {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2), "utf-8");
+  sensorsCache = data;
 }
 
 // GET /api/sensors
