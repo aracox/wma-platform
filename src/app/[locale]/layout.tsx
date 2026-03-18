@@ -10,7 +10,7 @@ import "../globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "WMA Platform | ระบบบริหารจัดการน้ำเสียชุมชน",
+  title: "WMA Platform | แพลตฟอร์มการสื่อสารดิจิทัลเพื่อสนับสนุนการจัดการน้ำเสียชุมชน",
   description: "Digital Communication Platform for Smart Community Wastewater Management",
 };
 
