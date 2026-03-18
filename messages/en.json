@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "home": "Home",
+    "map": "Map",
+    "feed": "News & Feed",
+    "report": "Report Issue",
+    "admin": "Admin",
+    "login": "Sign In",
+    "logout": "Sign Out"
+  },
+  "home": {
+    "hero": {
+      "title": "Community Wastewater Management Platform",
+      "subtitle": "Smart decision support system for community wastewater management",
+      "cta_map": "View Map",
+      "cta_report": "Report Issue"
+    },
+    "kpi": {
+      "systems": "Treatment Systems",
+      "systems_unit": "facilities",
+      "volume": "Wastewater Inflow",
+      "volume_unit": "M m³/year",
+      "population": "Population Served",
+      "population_unit": "million people",
+      "co2": "GHG Reduction",
+      "co2_unit": "K tonnes CO₂/yr"
+    },
+    "status": {
+      "title": "Treatment System Status",
+      "operational": "Operational",
+      "non_operational": "Non-Operational",
+      "construction": "Under Construction",
+      "cancelled": "Cancelled"
+    },
+    "latest_reports": "Latest Community Reports",
+    "research_highlight": "Research Highlights"
+  },
+  "map": {
+    "title": "Wastewater Treatment Map",
+    "layers": "Layers",
+    "filter": "Filter",
+    "facilities": "Treatment Facilities",
+    "water_quality": "Water Quality",
+    "reports": "Community Reports",
+    "province": "Province",
+    "all_provinces": "All Provinces"
+  },
+  "report": {
+    "title": "Report a Wastewater Issue",
+    "subtitle": "Help protect the environment by reporting wastewater problems in your community",
+    "category": "Issue Category",
+    "odor": "Odor / Smell",
+    "discharge": "Illegal Discharge",
+    "overflow": "System Overflow",
+    "other": "Other",
+    "description": "Description",
+    "location": "Location",
+    "photo": "Photo",
+    "submit": "Submit Report",
+    "success": "Report submitted successfully"
+  },
+  "quality": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "fair": "Fair",
+    "poor": "Poor",
+    "critical": "Critical"
+  },
+  "common": {
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "loading": "Loading...",
+    "no_data": "No data available",
+    "view_all": "View All",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "by_wma": "Wastewater Management Authority",
+    "research_by": "Research by Chulalongkorn University"
+  }
+}
