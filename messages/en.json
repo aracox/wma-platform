@@ -2,11 +2,27 @@
   "nav": {
     "home": "Home",
     "map": "Map",
+    "lao_map": "LAO Map",
     "feed": "News & Feed",
     "report": "Report Issue",
+    "lao": "LAO Directory",
     "admin": "Admin",
     "login": "Sign In",
     "logout": "Sign Out"
+  },
+  "lao": {
+    "title": "Local Administrative Organizations",
+    "search": "Search LAO",
+    "search_placeholder": "Search by name, province, or code...",
+    "details": {
+      "location_map": "Location and Map",
+      "wastewater_system": "Wastewater Treatment Systems",
+      "activities": "WWM Activities",
+      "participation": "Community Participation",
+      "capacity": "Capacity (m³/day)",
+      "population": "Served Population",
+      "status": "System Status"
+    }
   },
   "home": {
     "hero": {

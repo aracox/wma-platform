@@ -11,8 +11,6 @@ import { FeedItem } from "@/types";
 const MOCK_KPI = [
   { id: "systems", value: 216, trend: 4.2, color: "#1976D2", icon: "building" },
   { id: "volume", value: "572.9", trend: 1.8, color: "#4DB8E8", icon: "droplets" },
-  { id: "population", value: "10.7", trend: -2.1, color: "#43A047", icon: "users" },
-  { id: "co2", value: "10.3", trend: 6.5, color: "#1565C0", icon: "wind" },
 ];
 
 const MOCK_STATUS = [
@@ -84,7 +82,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <span className="text-xs text-chula-300">Chula</span>
             </div>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
             {t("hero.title")}
           </h1>
           <p className="text-primary-200 text-lg mb-8 max-w-2xl mx-auto">{t("hero.subtitle")}</p>
@@ -108,8 +106,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
 
       {/* KPI Cards */}
-      <section className="max-w-7xl mx-auto px-4 py-10 w-full">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="max-w-4xl mx-auto px-4 py-10 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {MOCK_KPI.map((kpi) => (
             <KPICard
               key={kpi.id}

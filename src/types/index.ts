@@ -4,7 +4,7 @@ export type SystemStatus = "operational" | "non_operational" | "construction" | 
 
 export type WaterQualityLevel = "excellent" | "good" | "fair" | "poor" | "critical";
 
-export type UserRole = "public" | "coordinator" | "official" | "admin";
+export type UserRole = "official" | "admin";
 
 export interface TreatmentFacility {
   id: string;
@@ -37,21 +37,23 @@ export interface WaterQualitySensor {
 
 export interface CommunityReport {
   id: string;
-  type?: "facility" | "water_quality" | "community";
-  category: "odor" | "discharge" | "overflow" | "other";
-  description: string;
+  // New specific LAO 4-column report fields
+  systemInfo: string;
+  identifiedIssues: string;
+  laoActivities: string;
+  communityParticipation: string;
+  // LAO context
+  laoId: string;
+  laoName: string;
+  
+  province: string;
   lat: number;
   lng: number;
-  photoUrl?: string;
+  
   status: "pending" | "reviewing" | "resolved";
   createdAt: string;
   updatedAt?: string;
-  province: string;
-  facilityId?: string;
-  sensorId?: string;
   reportedBy?: string;
-  facilityName?: string;
-  sensorName?: string;
 }
 
 export interface FeedItem {
@@ -74,4 +76,48 @@ export interface KPIStat {
   trend?: number; // percentage change
   icon: string;
   color: string;
+}
+
+export interface LocalOrg {
+  id: string;
+  name: string;
+  nameEn: string;
+  province: string;
+  provinceEn: string;
+  district: string;
+  subdistrict: string;
+  type: "ทน." | "ทม." | "ทต." | "อบต." | "เมืองพัทยา" | "กทม.";
+  lat: number;
+  lng: number;
+  wastewaterSystemIds: string[]; // refer to TreatmentFacility.id
+  contact: {
+    tel: string;
+    website: string;
+    address: string;
+  };
+}
+
+export interface LocalActivity {
+  id: string;
+  laoId: string;
+  title: string;
+  titleEn: string;
+  description: string;
+  descriptionEn: string;
+  date: string;
+  status: "planned" | "in_progress" | "completed";
+  budget?: number;
+}
+
+export interface CommunityEvent {
+  id: string;
+  laoId: string;
+  title: string;
+  titleEn: string;
+  date: string;
+  location: string;
+  participants: number;
+  description: string;
+  descriptionEn: string;
+  photoUrl?: string;
 }

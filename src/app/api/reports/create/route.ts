@@ -1,25 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import initialData from "@/data/reports.json";
+import fs from "fs";
+import path from "path";
 
-// For reports/create, we'll import and update the imported array directly to simulate a backend store
-// (Note: in Vercel this clears on cold start, but is fine for demos)
-let reportsCache: any[] = [...initialData];
+const dataFile = path.join(process.cwd(), "src/data/reports.json");
 
 function readReports() {
-  return reportsCache;
+  try {
+    const file = fs.readFileSync(dataFile, "utf-8");
+    return JSON.parse(file);
+  } catch (err) {
+    return [];
+  }
 }
 
 function writeReports(reports: any[]) {
-  reportsCache = reports;
+  fs.writeFileSync(dataFile, JSON.stringify(reports, null, 2), "utf-8");
 }
 
 // POST /api/reports/create — add a new report
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { type, category, description, lat, lng, province, facilityId, sensorId, reportedBy, facilityName, sensorName } = body;
+    const { 
+      systemInfo, identifiedIssues, laoActivities, communityParticipation, 
+      laoId, laoName, lat, lng, province, reportedBy 
+    } = body;
 
-    if (!description || lat === undefined || lng === undefined) {
+    // Validate the 4 fields and coordinates
+    if (!systemInfo || !identifiedIssues || !laoActivities || !communityParticipation || lat === undefined || lng === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -27,19 +35,18 @@ export async function POST(request: NextRequest) {
     const seq = reports.length + 1;
     const newReport = {
       id: `r${String(seq).padStart(3, "0")}_${Date.now()}`,
-      type: type || "community",
-      category: category || "other",
-      description,
+      systemInfo,
+      identifiedIssues,
+      laoActivities,
+      communityParticipation,
+      laoId,
+      laoName,
       lat,
       lng,
       province: province || "ไม่ระบุ",
       status: "pending",
       createdAt: new Date().toISOString(),
-      ...(facilityId && { facilityId }),
-      ...(sensorId && { sensorId }),
       ...(reportedBy && { reportedBy }),
-      ...(facilityName && { facilityName }),
-      ...(sensorName && { sensorName }),
     };
 
     reports.push(newReport);

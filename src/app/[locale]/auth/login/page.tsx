@@ -132,12 +132,12 @@ export default function LoginPage() {
             </div>
             <div className="space-y-1 font-mono">
               <div className="text-primary-500 font-semibold text-[10px] uppercase tracking-wide">Admin</div>
-              <div>test / <span className="text-primary-600">test</span></div>
-              <div className="text-primary-500 font-semibold text-[10px] uppercase tracking-wide mt-1.5">เจ้าหน้าที่ประจำจังหวัด</div>
-              <div>off_bkk / <span className="text-primary-600">bkk1234</span> <span className="text-text-secondary">(กรุงเทพฯ)</span></div>
-              <div>off_cm / <span className="text-primary-600">cm1234</span> <span className="text-text-secondary">(เชียงใหม่)</span></div>
-              <div>off_kk / <span className="text-primary-600">kk1234</span> <span className="text-text-secondary">(ขอนแก่น)</span></div>
-              <div>off_pkt / <span className="text-primary-600">pkt1234</span> <span className="text-text-secondary">(ภูเก็ต)</span></div>
+              <div>admin / <span className="text-primary-600">admin1234</span></div>
+              <div className="text-primary-500 font-semibold text-[10px] uppercase tracking-wide mt-1.5">เจ้าหน้าที่ อปท.</div>
+              <div>off_bkk / <span className="text-primary-600">bkk1234</span> <span className="text-text-secondary">(อปท. กรุงเทพฯ)</span></div>
+              <div>off_cm / <span className="text-primary-600">cm1234</span> <span className="text-text-secondary">(อปท. เชียงใหม่)</span></div>
+              <div>off_kk / <span className="text-primary-600">kk1234</span> <span className="text-text-secondary">(อปท. ขอนแก่น)</span></div>
+              <div>off_pkt / <span className="text-primary-600">pkt1234</span> <span className="text-text-secondary">(อปท. ภูเก็ต)</span></div>
             </div>
           </div>
         </form>

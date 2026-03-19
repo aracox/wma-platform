@@ -4,93 +4,82 @@ export interface User {
   password: string;
   name: string;
   nameEn: string;
-  role: "public" | "coordinator" | "official" | "admin";
+  role: "official" | "admin";
   email: string;
+  // For officers: the LAO org they belong to
+  laoId?: string;
+  laoName?: string;
   province?: string;
   provinceEn?: string;
-  provinceLat?: number;
-  provinceLng?: number;
 }
 
 export const USERS: User[] = [
+  // ─── Admin ────────────────────────────────────────────────
   {
     id: "u01",
-    username: "test",
-    password: "test",
+    username: "admin",
+    password: "admin1234",
     name: "ผู้ดูแลระบบ",
     nameEn: "System Admin",
     role: "admin",
     email: "admin@wma.or.th",
   },
+
+  // ─── LAO Officers (tied to real อปท. IDs from the CSV) ───
   {
     id: "u02",
-    username: "officer1",
-    password: "officer1",
-    name: "สมชาย วิศวกรสิ่งแวดล้อม",
-    nameEn: "Somchai Environmental Engineer",
-    role: "official",
-    email: "somchai@wma.or.th",
-  },
-  {
-    id: "u03",
-    username: "coord1",
-    password: "coord1",
-    name: "สมหญิง ประสานงานชุมชน",
-    nameEn: "Somying Community Coordinator",
-    role: "coordinator",
-    email: "somying@community.org",
-  },
-  // Province officers
-  {
-    id: "u04",
     username: "off_bkk",
     password: "bkk1234",
     name: "ณัฐพล สุขสวัสดิ์",
     nameEn: "Nattapon Suksawat",
     role: "official",
-    email: "nattapon@wma.or.th",
+    email: "nattapon@bkk.muni.th",
+    // เทศบาลนครกรุงเทพ (ID from re01 CSV)
+    laoId: "10800001",
+    laoName: "กรุงเทพมหานคร",
     province: "กรุงเทพมหานคร",
     provinceEn: "Bangkok",
-    provinceLat: 13.7563,
-    provinceLng: 100.5018,
   },
   {
-    id: "u05",
+    id: "u03",
     username: "off_cm",
     password: "cm1234",
     name: "วิภา มณีรัตน์",
     nameEn: "Wipa Maneerat",
     role: "official",
-    email: "wipa@wma.or.th",
+    email: "wipa@cm.muni.th",
+    // เทศบาลนครเชียงใหม่
+    laoId: "50100001",
+    laoName: "เทศบาลนครเชียงใหม่",
     province: "เชียงใหม่",
     provinceEn: "Chiang Mai",
-    provinceLat: 18.7883,
-    provinceLng: 98.9853,
   },
   {
-    id: "u06",
+    id: "u04",
     username: "off_kk",
     password: "kk1234",
     name: "ประสิทธิ์ แก้วใส",
     nameEn: "Prasit Kaewsai",
     role: "official",
-    email: "prasit@wma.or.th",
+    email: "prasit@kk.muni.th",
+    // เทศบาลนครขอนแก่น
+    laoId: "40100001",
+    laoName: "เทศบาลนครขอนแก่น",
     province: "ขอนแก่น",
     provinceEn: "Khon Kaen",
-    provinceLat: 16.4322,
-    provinceLng: 102.8236,
   },
   {
-    id: "u07",
+    id: "u05",
     username: "off_pkt",
     password: "pkt1234",
     name: "ทิพย์วรรณ สุขสบาย",
     nameEn: "Thipwan Suksabai",
     role: "official",
-    email: "thipwan@wma.or.th",
+    email: "thipwan@pkt.muni.th",
+    // เทศบาลเมืองภูเก็ต
+    laoId: "83000001",
+    laoName: "เทศบาลเมืองภูเก็ต",
     province: "ภูเก็ต",
     provinceEn: "Phuket",
-    provinceLat: 7.8804,
-    provinceLng: 98.3923,
   },
 ];

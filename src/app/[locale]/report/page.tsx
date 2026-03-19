@@ -1,15 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Building2, Droplets, AlertCircle, Send, CheckCircle, Lock, Shield, ChevronDown, X } from "lucide-react";
+import { Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, Building2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store";
-import { CommunityReport, SystemStatus } from "@/types";
-
-type ReportType = "facility" | "water_quality" | "community";
-
-const COMMUNITY_CATEGORIES = ["odor", "discharge", "overflow", "other"] as const;
+import { CommunityReport } from "@/types";
+import { getLaos } from "@/data/lao";
 
 const STATUS_LABELS: Record<string, { th: string; color: string }> = {
   pending:   { th: "รอดำเนินการ",    color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
@@ -17,109 +14,82 @@ const STATUS_LABELS: Record<string, { th: string; color: string }> = {
   resolved:  { th: "แก้ไขแล้ว",      color: "bg-green-100 text-green-700 border-green-200" },
 };
 
-const TYPE_LABELS: Record<ReportType, { th: string; icon: any; color: string; bg: string }> = {
-  facility:      { th: "ระบบบำบัดน้ำเสีย", icon: Building2,   color: "text-primary-700",  bg: "bg-primary-50 border-primary-400" },
-  water_quality: { th: "คุณภาพน้ำ",         icon: Droplets,    color: "text-cyan-700",     bg: "bg-cyan-50 border-cyan-400" },
-  community:     { th: "รายงานชุมชน",        icon: AlertCircle, color: "text-orange-700",   bg: "bg-orange-50 border-orange-400" },
-};
-
-const CAT_LABELS: Record<string, string> = {
-  odor: "กลิ่นเหม็น", discharge: "ปล่อยน้ำเสีย", overflow: "น้ำล้น", other: "อื่นๆ",
-};
-
 export default function ReportPage() {
   const locale = useLocale();
   const router = useRouter();
 
   const currentUser = useAppStore((s) => s.currentUser);
-  const facilities = useAppStore((s) => s.facilities);
-  const sensors = useAppStore((s) => s.sensors);
   const reports = useAppStore((s) => s.reports);
-  const facilitiesLoaded = useAppStore((s) => s.facilitiesLoaded);
-  const sensorsLoaded = useAppStore((s) => s.sensorsLoaded);
   const reportsLoaded = useAppStore((s) => s.reportsLoaded);
-  const fetchFacilities = useAppStore((s) => s.fetchFacilities);
-  const fetchSensors = useAppStore((s) => s.fetchSensors);
   const fetchReports = useAppStore((s) => s.fetchReports);
   const updateReportStatus = useAppStore((s) => s.updateReportStatus);
+  const updateReportFields = useAppStore((s) => s.updateReportFields);
 
-  useEffect(() => { if (!facilitiesLoaded) fetchFacilities(); }, [facilitiesLoaded, fetchFacilities]);
-  useEffect(() => { if (!sensorsLoaded) fetchSensors(); }, [sensorsLoaded, fetchSensors]);
   useEffect(() => { if (!reportsLoaded) fetchReports(); }, [reportsLoaded, fetchReports]);
 
-  // Form state
-  const [activeTab, setActiveTab] = useState<ReportType>("facility");
-  const [selectedFacilityId, setSelectedFacilityId] = useState("");
-  const [selectedSensorId, setSelectedSensorId] = useState("");
-  const [communityCategory, setCommunityCategory] = useState<"odor" | "discharge" | "overflow" | "other">("odor");
-  const [description, setDescription] = useState("");
+  const isAdmin = currentUser?.role === "admin";
+  const isOfficer = currentUser?.role === "official";
+
+  // Data for Admin LAO dropdown
+  const allLaos = useMemo(() => getLaos(), []);
+  const [adminSelectedLaoId, setAdminSelectedLaoId] = useState("");
+
+  // Create Form state
+  const [systemInfo, setSystemInfo] = useState("");
+  const [identifiedIssues, setIdentifiedIssues] = useState("");
+  const [laoActivities, setLaoActivities] = useState("");
+  const [communityParticipation, setCommunityParticipation] = useState("");
+  
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  // Report list state
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Partial<CommunityReport>>({});
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Status List state
   const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
   const [statusSaved, setStatusSaved] = useState<string | null>(null);
   const [pendingStatuses, setPendingStatuses] = useState<Record<string, CommunityReport["status"]>>({});
 
-  const isAdmin = currentUser?.role === "admin";
-  const hasProvince = !!currentUser?.province;
+  // Filtered reports
+  const myReports = isAdmin 
+    ? reports 
+    : reports.filter((r) => r.laoId === currentUser?.laoId);
 
-  // Province filter for officers
-  const provinceFilter = isAdmin ? null : currentUser?.province;
-
-  // Filtered data for form dropdowns
-  const myFacilities = provinceFilter
-    ? facilities.filter((f) => f.province === provinceFilter)
-    : facilities;
-  const mySensors = provinceFilter
-    ? sensors.filter((s) => s.province === provinceFilter)
-    : sensors;
-
-  // Filtered reports for the list below
-  const myReports = provinceFilter
-    ? reports.filter((r) => r.province === provinceFilter)
-    : reports;
-
-  const selectedFacility = facilities.find((f) => f.id === selectedFacilityId);
-  const selectedSensor = sensors.find((s) => s.id === selectedSensorId);
-
-  const canSubmit = description.trim().length > 0 && (
-    activeTab === "community" ||
-    (activeTab === "facility" && selectedFacilityId) ||
-    (activeTab === "water_quality" && selectedSensorId)
+  // Form derived state
+  const targetLaoId = isAdmin ? adminSelectedLaoId : currentUser?.laoId;
+  const selectedLao = isAdmin ? allLaos.find((l) => l.id === adminSelectedLaoId) : null;
+  const targetLaoName = isAdmin ? (selectedLao?.name || "") : currentUser?.laoName;
+  const targetProvince = isAdmin ? (selectedLao?.province || "ไม่ระบุ") : (currentUser?.province || "ไม่ระบุ");
+  
+  const canSubmit = !!(
+    targetLaoId &&
+    systemInfo.trim() && 
+    identifiedIssues.trim() && 
+    laoActivities.trim() && 
+    communityParticipation.trim()
   );
 
   const handleSubmit = async () => {
     if (!canSubmit || !currentUser) return;
     setSubmitting(true);
 
-    let lat = currentUser.provinceLat ?? 13.7563;
-    let lng = currentUser.provinceLng ?? 100.5018;
-
-    if (activeTab === "facility" && selectedFacility) {
-      lat = selectedFacility.lat;
-      lng = selectedFacility.lng;
-    } else if (activeTab === "water_quality" && selectedSensor) {
-      lat = selectedSensor.lat;
-      lng = selectedSensor.lng;
-    }
+    const lat = isAdmin ? (selectedLao?.lat || 13.75) : 13.75;
+    const lng = isAdmin ? (selectedLao?.lng || 100.5) : 100.5;
 
     const body = {
-      type: activeTab,
-      category: activeTab === "community" ? communityCategory : "other",
-      description,
+      systemInfo,
+      identifiedIssues,
+      laoActivities,
+      communityParticipation,
+      laoId: targetLaoId,
+      laoName: targetLaoName || "ไม่ระบุ อปท.",
       lat,
       lng,
-      province: currentUser.province || "ไม่ระบุ",
+      province: targetProvince,
       reportedBy: currentUser.id,
-      ...(activeTab === "facility" && selectedFacility && {
-        facilityId: selectedFacility.id,
-        facilityName: selectedFacility.name,
-      }),
-      ...(activeTab === "water_quality" && selectedSensor && {
-        sensorId: selectedSensor.id,
-        sensorName: selectedSensor.name,
-      }),
     };
 
     try {
@@ -130,9 +100,11 @@ export default function ReportPage() {
       });
       if (res.ok) {
         setSubmitted(true);
-        setDescription("");
-        setSelectedFacilityId("");
-        setSelectedSensorId("");
+        setSystemInfo("");
+        setIdentifiedIssues("");
+        setLaoActivities("");
+        setCommunityParticipation("");
+        if (isAdmin) setAdminSelectedLaoId("");
         await fetchReports();
       }
     } catch (err) {
@@ -140,6 +112,24 @@ export default function ReportPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const startEdit = (report: CommunityReport) => {
+    setEditingId(report.id);
+    setEditValues({
+      systemInfo: report.systemInfo,
+      identifiedIssues: report.identifiedIssues,
+      laoActivities: report.laoActivities,
+      communityParticipation: report.communityParticipation,
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId) return;
+    setSavingEdit(true);
+    await updateReportFields(editingId, editValues);
+    setSavingEdit(false);
+    setEditingId(null);
   };
 
   const handleStatusChange = (reportId: string, status: CommunityReport["status"]) => {
@@ -166,7 +156,7 @@ export default function ReportPage() {
             <Lock className="h-8 w-8 text-primary-400" />
           </div>
           <h2 className="text-xl font-bold text-primary-800">กรุณาเข้าสู่ระบบก่อน</h2>
-          <p className="text-text-secondary text-sm">เจ้าหน้าที่ต้องเข้าสู่ระบบเพื่อแจ้งปัญหา</p>
+          <p className="text-text-secondary text-sm">เจ้าหน้าที่ต้องเข้าสู่ระบบเพื่อรายงานปัญหา อปท.</p>
           <button
             onClick={() => router.push(`/${locale}/auth/login`)}
             className="px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors"
@@ -179,295 +169,345 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-primary-800">แจ้งปัญหา / รายงานสถานการณ์</h1>
-          <p className="text-text-secondary text-sm mt-1">บันทึกปัญหาที่พบเพื่อให้ปรากฏบนแผนที่</p>
+          <h1 className="text-2xl font-bold text-primary-800">แจ้งปัญหา / รายงานผลการดำเนินงาน</h1>
+          <p className="text-text-secondary text-sm mt-1">รายงานข้อมูลและกิจกรรมการจัดการน้ำเสียของ อปท.</p>
         </div>
-        {currentUser.province && (
-          <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 border border-primary-200 rounded-xl text-xs font-semibold text-primary-700">
-            <Shield className="h-3.5 w-3.5" />
-            {currentUser.province}
-          </div>
-        )}
-        {isAdmin && (
-          <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-chula-50 border border-chula-200 rounded-xl text-xs font-semibold text-chula-700">
-            <Shield className="h-3.5 w-3.5" />
-            ผู้ดูแลระบบ (ทุกจังหวัด)
-          </div>
-        )}
+        
+        {/* User Context Badge */}
+        <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border bg-primary-50 border-primary-200 text-primary-700">
+          <Shield className="h-3.5 w-3.5" />
+          {isAdmin ? "ผู้ดูแลระบบ (ทุกพื้นที่)" : currentUser.laoName}
+        </div>
       </div>
 
-      {/* Form Card */}
-      <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-        {/* 3 Tab buttons */}
-        <div className="grid grid-cols-3 border-b border-border">
-          {(["facility", "water_quality", "community"] as ReportType[]).map((tab) => {
-            const { th, icon: Icon, color, bg } = TYPE_LABELS[tab];
-            const active = activeTab === tab;
-            return (
+      {/* Report Form Component */}
+      {(isOfficer || isAdmin) && (
+        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="bg-primary-50 border-b border-border px-6 py-4 flex items-center gap-2 text-primary-800 font-bold">
+            <FileText className="h-5 w-5" />
+            แบบฟอร์มบันทึกข้อมูลรายงานระดับท้องถิ่น
+          </div>
+          
+          <div className="p-6 space-y-6">
+            {submitted && (
+              <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm font-semibold animate-fade-up">
+                <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                บันทึกรายงานข้อมูล อปท. เรียบร้อยแล้ว (ข้อมูลถูกจัดเก็บอย่างถาวร)
+                <button onClick={() => setSubmitted(false)} className="ml-auto"><X className="h-4 w-4" /></button>
+              </div>
+            )}
+
+            {!currentUser.laoId && !isAdmin && (
+              <div className="p-4 bg-yellow-50 text-yellow-800 rounded-xl text-sm mb-4 border border-yellow-200">
+                คุณยังไม่มีสังกัด อปท. ในระบบ กรุณาติดต่อผู้ดูแลระบบเพื่อเชื่อมโยงบัญชี
+              </div>
+            )}
+
+            {/* Admin LAO Selector */}
+            {isAdmin && (
+              <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
+                <label className="block text-sm font-bold text-primary-800 mb-2">
+                  <Shield className="h-4 w-4 inline-block mr-1.5 text-chula-600" />
+                  เลือก อปท. ที่ต้องการรายงานแทน (เฉพาะ Admin)
+                </label>
+                <div className="relative max-w-md">
+                  <select
+                    value={adminSelectedLaoId}
+                    onChange={(e) => setAdminSelectedLaoId(e.target.value)}
+                    className="w-full appearance-none pl-4 pr-10 py-2.5 rounded-xl border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
+                  >
+                    <option value="">-- ค้นหาและเลือก อปท. --</option>
+                    {allLaos.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.name} จ.{l.province}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Field 1: System Info */}
+              <div>
+                <label className="block text-sm font-bold text-primary-800 mb-2">1. ข้อมูลระบบบำบัดน้ำเสีย</label>
+                <textarea
+                  value={systemInfo}
+                  onChange={(e) => setSystemInfo(e.target.value)}
+                  disabled={!targetLaoId}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  placeholder="เช่น ระบบบำบัดน้ำเสียแบบ Aerated lagoon สามารถรองรับน้ำเสียได้สูงสุด 1,500 ลบ.ม. ต่อวัน..."
+                />
+              </div>
+
+              {/* Field 2: Identified Issues */}
+              <div>
+                <label className="block text-sm font-bold text-primary-800 mb-2">2. ปัญหาที่พบ</label>
+                <textarea
+                  value={identifiedIssues}
+                  onChange={(e) => setIdentifiedIssues(e.target.value)}
+                  disabled={!targetLaoId}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed bg-orange-50/30"
+                  placeholder="เช่น คุณภาพน้ำในแหล่งน้ำเสื่อมโทรม, ขาดอุปกรณ์เร่งด่วน, ตรวจพบการลักลอบปล่อยน้ำเสีย..."
+                />
+              </div>
+
+              {/* Field 3: LAO Activities */}
+              <div>
+                <label className="block text-sm font-bold text-primary-800 mb-2">3. กิจกรรมของ อปท.</label>
+                <textarea
+                  value={laoActivities}
+                  onChange={(e) => setLaoActivities(e.target.value)}
+                  disabled={!targetLaoId}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  placeholder="เช่น การจัดกิจกรรมทำความสะอาดแหล่งน้ำ, การปรับปรุงระบบรวบรวมน้ำเสีย..."
+                />
+              </div>
+
+              {/* Field 4: Community Participation */}
+              <div>
+                <label className="block text-sm font-bold text-primary-800 mb-2">4. การมีส่วนร่วมของชุมชน</label>
+                <textarea
+                  value={communityParticipation}
+                  onChange={(e) => setCommunityParticipation(e.target.value)}
+                  disabled={!targetLaoId}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  placeholder="เช่น แผนงานรณรงค์ส่งเสริมให้บ้านเรือนติดตั้งถังดักไขมัน, การเฝ้าระวังคุณภาพน้ำโดยชุมชน..."
+                />
+              </div>
+            </div>
+
+            {/* Reporter info & Submit */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border">
+              <div className="flex items-center gap-2 text-xs text-text-secondary">
+                <span className="font-semibold px-2 py-1 bg-gray-100 rounded-md truncate max-w-[150px]">
+                  ผู้รายงาน: {currentUser.name}
+                </span>
+                <span className="truncate max-w-[200px]">
+                  อปท: {targetLaoName || "ยังไม่เลือก อปท."}
+                </span>
+              </div>
+              
               <button
-                key={tab}
-                onClick={() => { setActiveTab(tab); setSubmitted(false); }}
+                onClick={handleSubmit}
+                disabled={!canSubmit || submitting}
                 className={cn(
-                  "flex flex-col items-center gap-1.5 py-4 px-2 text-xs font-semibold border-b-2 transition-all",
-                  active
-                    ? `border-primary-500 ${color} bg-primary-50/60`
-                    : "border-transparent text-text-secondary hover:text-primary-600 hover:bg-primary-50/40"
+                  "w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-2.5 font-bold rounded-xl transition-all text-sm",
+                  canSubmit && !submitting
+                    ? "bg-primary-600 text-white hover:bg-primary-700 shadow-sm"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 )}
               >
-                <Icon className={cn("h-5 w-5", active ? color : "text-text-secondary")} />
-                <span className="text-center leading-tight">{th}</span>
+                {submitting ? (
+                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> กำลังบันทึก...</>
+                ) : (
+                  <><Send className="h-4 w-4" /> ส่งรายงาน</>
+                )}
               </button>
-            );
-          })}
-        </div>
-
-        <div className="p-6 space-y-5">
-          {submitted && (
-            <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm font-semibold animate-fade-up">
-              <CheckCircle className="h-4 w-4 flex-shrink-0" />
-              บันทึกรายงานเรียบร้อยแล้ว — ปรากฏบนแผนที่แล้ว
-              <button onClick={() => setSubmitted(false)} className="ml-auto"><X className="h-4 w-4" /></button>
             </div>
-          )}
-
-          {/* Tab: ระบบบำบัดน้ำเสีย */}
-          {activeTab === "facility" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-primary-800 mb-2">
-                  เลือกระบบบำบัดน้ำเสีย {provinceFilter && <span className="text-text-secondary font-normal">({provinceFilter})</span>}
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedFacilityId}
-                    onChange={(e) => setSelectedFacilityId(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-9 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white"
-                  >
-                    <option value="">-- เลือกระบบบำบัดน้ำเสีย --</option>
-                    {myFacilities.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name} ({f.province}) — {
-                          { operational: "เปิดใช้งาน", non_operational: "ปิดใช้งาน", construction: "กำลังก่อสร้าง", cancelled: "ยกเลิก" }[f.status]
-                        }
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-secondary pointer-events-none" />
-                </div>
-                {selectedFacility && (
-                  <div className="mt-2 flex gap-2 text-xs">
-                    <span className="px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 font-medium">{selectedFacility.province}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                      ความจุ {selectedFacility.capacity.toLocaleString()} ม.³/วัน
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Tab: คุณภาพน้ำ */}
-          {activeTab === "water_quality" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-primary-800 mb-2">
-                  เลือกสถานีตรวจวัด {provinceFilter && <span className="text-text-secondary font-normal">({provinceFilter})</span>}
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedSensorId}
-                    onChange={(e) => setSelectedSensorId(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-9 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white"
-                  >
-                    <option value="">-- เลือกสถานีตรวจวัด --</option>
-                    {mySensors.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} — {
-                          { excellent: "ดีมาก", good: "ดี", fair: "พอใช้", poor: "แย่", critical: "วิกฤต" }[s.level]
-                        }
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-secondary pointer-events-none" />
-                </div>
-                {selectedSensor && (
-                  <div className="mt-2 flex gap-2 text-xs flex-wrap">
-                    <span className="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-700 font-medium">
-                      {{ excellent: "ดีมาก", good: "ดี", fair: "พอใช้", poor: "แย่", critical: "วิกฤต" }[selectedSensor.level]}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">BOD: {selectedSensor.bod} mg/L</span>
-                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">pH: {selectedSensor.ph}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Tab: รายงานชุมชน */}
-          {activeTab === "community" && (
-            <div>
-              <label className="block text-sm font-semibold text-primary-800 mb-3">ประเภทปัญหา</label>
-              <div className="grid grid-cols-2 gap-2">
-                {COMMUNITY_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setCommunityCategory(cat)}
-                    className={cn(
-                      "py-2.5 px-3 rounded-xl border-2 text-sm font-medium transition-all",
-                      communityCategory === cat
-                        ? "border-orange-400 bg-orange-50 text-orange-700"
-                        : "border-border bg-white text-text-secondary hover:border-orange-300"
-                    )}
-                  >
-                    {CAT_LABELS[cat]}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Description — shared across all tabs */}
-          <div>
-            <label className="block text-sm font-semibold text-primary-800 mb-2">รายละเอียดปัญหา</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none"
-              placeholder={
-                activeTab === "facility" ? "อธิบายปัญหาของระบบบำบัดน้ำเสีย เช่น ระบบชำรุด, ประสิทธิภาพลดลง..." :
-                activeTab === "water_quality" ? "อธิบายสภาพน้ำที่พบ เช่น น้ำสีผิดปกติ, มีกลิ่น, ค่าวัดสูงผิดปกติ..." :
-                "อธิบายปัญหาที่พบในชุมชน..."
-              }
-            />
           </div>
-
-          {/* Reporter info */}
-          <div className="flex items-center gap-2 text-xs text-text-secondary bg-surface rounded-xl px-3 py-2">
-            <Shield className="h-3.5 w-3.5 text-primary-400" />
-            <span>รายงานโดย: <span className="font-semibold text-primary-700">{currentUser.name}</span></span>
-            {currentUser.province && (
-              <><span className="text-border">·</span><span>{currentUser.province}</span></>
-            )}
-          </div>
-
-          {/* Submit */}
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit || submitting}
-            className={cn(
-              "w-full flex items-center justify-center gap-2 py-3 font-bold rounded-xl transition-all text-sm",
-              canSubmit && !submitting
-                ? "bg-primary-600 text-white hover:bg-primary-700 shadow-sm"
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
-            )}
-          >
-            {submitting ? (
-              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> กำลังบันทึก...</>
-            ) : (
-              <><Send className="h-4 w-4" /> บันทึกรายงาน</>
-            )}
-          </button>
         </div>
-      </div>
+      )}
 
-      {/* My Province Reports */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
+      {/* History List */}
+      <div className="pt-4">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-primary-800">
-            รายงานในพื้นที่{currentUser.province ? ` — ${currentUser.province}` : "ทั้งหมด"}
+            {isAdmin ? "ประวัติการรายงานทั้งหมด" : `ประวัติการรายงานของ ${currentUser.laoName || ""}`}
           </h2>
-          <span className="text-xs text-text-secondary bg-surface px-3 py-1 rounded-full border border-border">
+          <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-200">
             {myReports.length} รายการ
           </span>
         </div>
 
         {myReports.length === 0 ? (
-          <div className="text-center py-12 text-text-secondary text-sm">ยังไม่มีรายงานในพื้นที่นี้</div>
+          <div className="text-center py-16 bg-white rounded-2xl border border-border">
+            <p className="text-text-secondary text-sm">ยังไม่มีประวัติการรายงาน</p>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {[...myReports].reverse().map((report) => {
-              const rType = (report.type || "community") as ReportType;
-              const TypeIcon = TYPE_LABELS[rType].icon;
               const pendingStatus = pendingStatuses[report.id];
               const displayStatus = pendingStatus ?? report.status;
+              const isEditing = editingId === report.id;
+              
+              // Officers can edit their own LAO's reports. Admins can edit anything.
+              const canEdit = isAdmin || currentUser.laoId === report.laoId;
 
               return (
-                <div key={report.id} className="bg-white rounded-xl border border-border p-4 space-y-3">
-                  {/* Top row */}
-                  <div className="flex items-start gap-3">
-                    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5",
-                      rType === "facility" ? "bg-primary-100" : rType === "water_quality" ? "bg-cyan-100" : "bg-orange-100"
-                    )}>
-                      <TypeIcon className={cn("h-4 w-4", TYPE_LABELS[rType].color)} />
+                <div key={report.id} className={cn(
+                  "bg-white rounded-xl border p-5 space-y-4 shadow-sm transition-all",
+                  isEditing ? "border-primary-400 ring-4 ring-primary-50" : "border-border hover:shadow-md"
+                )}>
+                  {/* Card Header */}
+                  <div className="flex items-center justify-between gap-4 border-b border-border/50 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="h-4 w-4 text-primary-700" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-primary-800 text-sm md:text-base leading-tight">
+                          {report.laoName}
+                        </div>
+                        <div className="text-xs text-text-secondary mt-0.5">
+                          {new Date(report.createdAt).toLocaleString("th-TH")} · จังหวัด{report.province}
+                          {report.updatedAt && <span className="text-primary-500 font-medium ml-1">(แก้ไขแล้ว)</span>}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className={cn("text-xs font-semibold", TYPE_LABELS[rType].color)}>
-                          {TYPE_LABELS[rType].th}
-                        </span>
-                        {rType === "community" && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                            {CAT_LABELS[report.category]}
-                          </span>
-                        )}
-                        {(report.facilityName || report.sensorName) && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 text-primary-600 truncate max-w-[160px]">
-                            {report.facilityName || report.sensorName}
-                          </span>
-                        )}
-                        <span className={cn("text-xs px-2 py-0.5 rounded-full border font-semibold ml-auto", STATUS_LABELS[report.status].color)}>
-                          {STATUS_LABELS[report.status].th}
-                        </span>
-                      </div>
-                      <p className="text-sm text-primary-800 leading-snug">{report.description}</p>
-                      <div className="text-xs text-text-secondary mt-1">
-                        {new Date(report.createdAt).toLocaleString("th-TH")} · {report.province}
-                      </div>
+                    
+                    <div className="flex items-center gap-2">
+                      {canEdit && !isEditing && (
+                        <button
+                          onClick={() => startEdit(report)}
+                          className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-800 hover:bg-primary-50 px-2.5 py-1.5 rounded-lg transition-colors border border-transparent hover:border-primary-200"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                          แก้ไข
+                        </button>
+                      )}
+                      <span className={cn("text-xs px-2.5 py-1 rounded-full border font-bold shadow-sm whitespace-nowrap", STATUS_LABELS[report.status].color)}>
+                        {STATUS_LABELS[report.status].th}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Status update */}
-                  <div className="flex items-center gap-2 pt-1 border-t border-border/50">
-                    <span className="text-xs text-text-secondary font-medium flex-shrink-0">อัปเดต:</span>
-                    <div className="flex gap-1.5 flex-1">
-                      {(["pending", "reviewing", "resolved"] as const).map((s) => {
-                        const isSelected = displayStatus === s;
-                        const colors: Record<string, string> = {
-                          pending:   isSelected ? "bg-yellow-500 text-white border-yellow-500" : "border-yellow-200 text-yellow-700 hover:bg-yellow-50",
-                          reviewing: isSelected ? "bg-blue-500 text-white border-blue-500"   : "border-blue-200 text-blue-700 hover:bg-blue-50",
-                          resolved:  isSelected ? "bg-green-500 text-white border-green-500" : "border-green-200 text-green-700 hover:bg-green-50",
-                        };
-                        return (
-                          <button
-                            key={s}
-                            onClick={() => handleStatusChange(report.id, s)}
-                            className={cn("flex-1 text-xs font-semibold py-1 px-1.5 rounded-lg border transition-colors", colors[s])}
-                          >
-                            {STATUS_LABELS[s].th}
-                          </button>
-                        );
-                      })}
+                  {/* 4-Column Data Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                    {/* Column 1 */}
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-gray-700 text-xs uppercase tracking-wide">1. ข้อมูลระบบบำบัดน้ำเสีย</h4>
+                      {isEditing ? (
+                        <textarea
+                          value={editValues.systemInfo || ""}
+                          onChange={(e) => setEditValues({ ...editValues, systemInfo: e.target.value })}
+                          rows={3}
+                          className="w-full text-xs p-2.5 bg-white border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-100 outline-none resize-none"
+                        />
+                      ) : (
+                        <p className="text-gray-600 leading-relaxed bg-gray-50/50 p-2.5 rounded-lg border border-transparent">{report.systemInfo}</p>
+                      )}
                     </div>
-                    {pendingStatus && pendingStatus !== report.status && (
-                      <button
-                        onClick={() => handleStatusSave(report.id)}
-                        disabled={statusUpdating === report.id}
-                        className="flex-shrink-0 text-xs font-bold px-3 py-1 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-60"
-                      >
-                        {statusUpdating === report.id ? "..." : "💾"}
-                      </button>
-                    )}
-                    {statusSaved === report.id && (
-                      <span className="text-xs text-green-600 font-semibold flex-shrink-0">✅</span>
-                    )}
+                    
+                    {/* Column 2 */}
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-orange-700 text-xs uppercase tracking-wide">2. ปัญหาที่พบ</h4>
+                      {isEditing ? (
+                        <textarea
+                          value={editValues.identifiedIssues || ""}
+                          onChange={(e) => setEditValues({ ...editValues, identifiedIssues: e.target.value })}
+                          rows={3}
+                          className="w-full text-xs p-2.5 bg-orange-50/30 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-100 outline-none resize-none"
+                        />
+                      ) : (
+                        <p className="text-gray-800 leading-relaxed bg-orange-50/50 p-2.5 rounded-lg border border-transparent">{report.identifiedIssues}</p>
+                      )}
+                    </div>
+                    
+                    {/* Column 3 */}
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-cyan-700 text-xs uppercase tracking-wide">3. กิจกรรมของ อปท.</h4>
+                      {isEditing ? (
+                        <textarea
+                          value={editValues.laoActivities || ""}
+                          onChange={(e) => setEditValues({ ...editValues, laoActivities: e.target.value })}
+                          rows={3}
+                          className="w-full text-xs p-2.5 bg-cyan-50/30 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-100 outline-none resize-none"
+                        />
+                      ) : (
+                        <p className="text-gray-600 leading-relaxed bg-cyan-50/50 p-2.5 rounded-lg border border-transparent">{report.laoActivities}</p>
+                      )}
+                    </div>
+                    
+                    {/* Column 4 */}
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-green-700 text-xs uppercase tracking-wide">4. การมีส่วนร่วมของชุมชน</h4>
+                       {isEditing ? (
+                        <textarea
+                          value={editValues.communityParticipation || ""}
+                          onChange={(e) => setEditValues({ ...editValues, communityParticipation: e.target.value })}
+                          rows={3}
+                          className="w-full text-xs p-2.5 bg-green-50/30 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-100 outline-none resize-none"
+                        />
+                      ) : (
+                        <p className="text-gray-600 leading-relaxed bg-green-50/50 p-2.5 rounded-lg border border-transparent">{report.communityParticipation}</p>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Editing Controls */}
+                  {isEditing && (
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+                      <button
+                        onClick={() => setEditingId(null)}
+                        disabled={savingEdit}
+                        className="px-4 py-1.5 text-xs font-semibold text-text-secondary hover:bg-gray-100 rounded-lg transition-colors border border-transparent hover:border-border"
+                      >
+                        ยกเลิก
+                      </button>
+                      <button
+                        onClick={handleSaveEdit}
+                        disabled={savingEdit}
+                        className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-primary-600 text-white hover:bg-primary-700 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {savingEdit ? "กำลังบันทึก..." : <><Save className="h-3.5 w-3.5" /> บันทึกการแก้ไข</>}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Status Update Controls */}
+                  {canEdit && !isEditing && (
+                    <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-border/50">
+                      <span className="text-xs text-text-secondary font-medium mr-1">อัปเดตสถานะ:</span>
+                      
+                      <div className="relative">
+                        <select
+                          value={displayStatus}
+                          onChange={(e) => handleStatusChange(report.id, e.target.value as CommunityReport["status"])}
+                          className={cn(
+                            "appearance-none pl-4 pr-8 py-1.5 text-xs font-bold rounded-full border outline-none shadow-sm transition-colors cursor-pointer",
+                            displayStatus === "pending" ? "bg-yellow-100 border-yellow-200 text-yellow-700 focus:ring-2 focus:ring-yellow-200 hover:bg-yellow-200/60" :
+                            displayStatus === "reviewing" ? "bg-blue-100 border-blue-200 text-blue-700 focus:ring-2 focus:ring-blue-200 hover:bg-blue-200/60" :
+                            "bg-green-100 border-green-200 text-green-700 focus:ring-2 focus:ring-green-200 hover:bg-green-200/60"
+                          )}
+                        >
+                          {(["pending", "reviewing", "resolved"] as const).map(s => (
+                            <option key={s} value={s} className="bg-white text-gray-800 font-medium">
+                              {STATUS_LABELS[s].th}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className={cn(
+                          "absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none",
+                          displayStatus === "pending" ? "text-yellow-700" :
+                          displayStatus === "reviewing" ? "text-blue-700" :
+                          "text-green-700"
+                        )} />
+                      </div>
+
+                      {pendingStatus && pendingStatus !== report.status && (
+                        <button
+                          onClick={() => handleStatusSave(report.id)}
+                          disabled={statusUpdating === report.id}
+                          className="text-xs font-bold px-4 py-1.5 bg-primary-600 text-white rounded-full hover:bg-primary-700 transition-colors shadow-sm ml-1"
+                        >
+                          {statusUpdating === report.id ? "กำลังบันทึก..." : "บันทึกสถานะ"}
+                        </button>
+                      )}
+                      {statusSaved === report.id && (
+                        <span className="text-sm border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full inline-flex items-center">✅</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

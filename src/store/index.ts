@@ -25,6 +25,7 @@ interface AppState {
   reportsLoaded: boolean;
   fetchReports: () => Promise<void>;
   updateReportStatus: (reportId: string, status: CommunityReport["status"]) => Promise<void>;
+  updateReportFields: (reportId: string, fields: Partial<CommunityReport>) => Promise<void>;
 
   // Map state
   mapLayers: {
@@ -146,11 +147,33 @@ export const useAppStore = create<AppState>((set, get) => ({
       });
       if (!res.ok) {
         get().fetchReports();
-        console.error("Failed to save status update");
+        console.error("Failed to save report status");
       }
     } catch (err) {
       get().fetchReports();
-      console.error("Failed to save status update:", err);
+      console.error("Failed to save report status:", err);
+    }
+  },
+  updateReportFields: async (id, fields) => {
+    // Optimistic update
+    set((state) => ({
+      reports: state.reports.map((r) =>
+        r.id === id ? { ...r, ...fields } : r
+      ),
+    }));
+    try {
+      const res = await fetch("/api/reports", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...fields }),
+      });
+      if (!res.ok) {
+        get().fetchReports();
+        console.error("Failed to save report fields");
+      }
+    } catch (err) {
+      get().fetchReports();
+      console.error("Failed to save report fields:", err);
     }
   },
 

@@ -9,7 +9,8 @@ import { useAppStore } from "@/store";
 
 const navItems = [
   { key: "home", href: "/" },
-  { key: "map", href: "/map" },
+  { key: "lao", href: "/lao" },
+  { key: "lao_map", href: "/lao-map" },
   { key: "feed", href: "/feed" },
   { key: "report", href: "/report" },
 ];
@@ -17,8 +18,6 @@ const navItems = [
 const ROLE_LABELS: Record<string, { th: string; en: string; color: string }> = {
   admin:       { th: "ผู้ดูแลระบบ",  en: "Admin",       color: "bg-chula-500" },
   official:    { th: "เจ้าหน้าที่",   en: "Official",    color: "bg-primary-500" },
-  coordinator: { th: "ผู้ประสานงาน",  en: "Coordinator", color: "bg-quality-good" },
-  public:      { th: "ประชาชน",      en: "Public",      color: "bg-gray-400" },
 };
 
 export default function Navbar() {
@@ -40,7 +39,12 @@ export default function Navbar() {
 
   const isActive = (href: string) => {
     const fullHref = `/${locale}${href === "/" ? "" : href}`;
-    return pathname === fullHref || (href !== "/" && pathname.startsWith(fullHref));
+    if (pathname === fullHref) return true;
+    if (href === "/") return false;
+    // Ensure the match ends at a segment boundary (next char must be / ? # or nothing)
+    // This prevents /lao matching /lao-map
+    const remaining = pathname.slice(fullHref.length);
+    return pathname.startsWith(fullHref) && (remaining === "" || remaining[0] === "/" || remaining[0] === "?" || remaining[0] === "#");
   };
 
   const handleLogout = () => {
