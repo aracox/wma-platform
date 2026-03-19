@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { Globe, Menu, X, Droplets, LogOut, User, Shield } from "lucide-react";
+import { Globe, Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store";
@@ -60,13 +61,20 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href={`/${locale}`} className="flex items-center gap-3 group">
-            <div className="bg-white/20 rounded-full p-1.5 group-hover:bg-white/30 transition-colors">
-              <Droplets className="h-6 w-6 text-primary-300" />
+          <Link href={`/${locale}`} className="flex items-center gap-3.5 group">
+            <div className="bg-white/20 rounded-full p-1 group-hover:bg-white/30 transition-colors">
+              <Image
+                src="/images/wma-logo.png"
+                alt="WMA Logo"
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-full object-contain"
+                priority
+              />
             </div>
             <div className="hidden sm:block">
-              <div className="text-white font-bold text-sm leading-tight">WMA Platform</div>
-              <div className="text-primary-300 text-xs leading-tight">องค์การจัดการน้ำเสีย</div>
+              <div className="text-white font-bold text-base leading-tight">WMA Platform</div>
+              <div className="text-primary-300 text-sm leading-tight">องค์การจัดการน้ำเสีย</div>
             </div>
           </Link>
 

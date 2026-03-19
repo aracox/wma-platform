@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Building2, CalendarCheck2, MessageCircleHeart, Siren, Waves } from "lucide-react";
 import PurposeTrendChart from "@/components/dashboard/PurposeTrendChart";
 
@@ -115,6 +116,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <div className="bg-slate-50">
       <section className="relative overflow-hidden bg-gradient-to-r from-slate-950 via-primary-950 to-blue-950 text-white">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, #38bdf8 0, transparent 28%), radial-gradient(circle at 80% 10%, #0ea5e9 0, transparent 20%)" }} />
+        <div className="pointer-events-none absolute right-12 top-1/2 hidden -translate-y-1/2 lg:block">
+          <Image
+            src="/images/wma-logo.png"
+            alt="WMA Logo"
+            width={320}
+            height={266}
+            className="h-auto w-[320px] object-contain opacity-95 drop-shadow-[0_8px_24px_rgba(15,23,42,0.5)]"
+            priority
+          />
+        </div>
         <div className="relative mx-auto max-w-6xl px-4 py-16">
           <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
             <Waves className="h-4 w-4" />

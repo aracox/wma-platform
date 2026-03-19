@@ -149,7 +149,7 @@ export default function FeedPage() {
           <Megaphone className="h-4 w-4" />
           {isThai ? "แจ้งข่าวสาร" : "Announcements"}
         </p>
-        <h1 className="text-2xl font-bold md:text-3xl">
+        <h1 className="text-2xl font-bold text-white drop-shadow-[0_2px_8px_rgba(15,23,42,0.45)] md:text-3xl">
           {isThai ? "ศูนย์แจ้งข่าวสารด้านการจัดการน้ำเสียของ อปท และชุมชน" : "Wastewater announcement center for LAOs and communities"}
         </h1>
         <p className="mt-2 max-w-3xl text-sm text-sky-100">
