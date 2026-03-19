@@ -118,6 +118,7 @@ export default function MapClient({ layers, selectedProvince }: Props) {
     () => officerProvince ? reports.filter((r) => r.province === officerProvince) : reports,
     [reports, officerProvince]
   );
+  const selectedReportCategory = selectedReport?.category ?? "other";
 
   useEffect(() => { if (!facilitiesLoaded) fetchFacilities(); }, [facilitiesLoaded, fetchFacilities]);
   useEffect(() => { if (!sensorsLoaded) fetchSensors(); }, [sensorsLoaded, fetchSensors]);
@@ -221,10 +222,11 @@ export default function MapClient({ layers, selectedProvince }: Props) {
     if (layers.reports) {
       visibleReports.forEach((report) => {
         const statusBorder = REPORT_STATUS_BORDER[report.status] || "#FFC107";
-        const rType = report.type || "community";
+        const rType = report.type ?? "community";
+        const reportCategory = report.category ?? "other";
         const triColor = rType !== "community"
           ? REPORT_TYPE_COLORS[rType]
-          : (REPORT_COLORS[report.category] || "#607D8B");
+          : (REPORT_COLORS[reportCategory] || "#607D8B");
         const wrapper = document.createElement("div");
         wrapper.style.cssText = `
           width: 32px; height: 32px;
@@ -609,9 +611,9 @@ export default function MapClient({ layers, selectedProvince }: Props) {
           <div className="p-4 space-y-3">
             <div className="flex gap-2">
               <span className={cn("text-xs px-2 py-0.5 rounded-full font-semibold",
-                { odor: "bg-purple-100 text-purple-700", discharge: "bg-red-100 text-red-700", overflow: "bg-orange-100 text-orange-700", other: "bg-gray-100 text-gray-700" }[selectedReport.category]
+                { odor: "bg-purple-100 text-purple-700", discharge: "bg-red-100 text-red-700", overflow: "bg-orange-100 text-orange-700", other: "bg-gray-100 text-gray-700" }[selectedReportCategory]
               )}>
-                {{ odor: "กลิ่นเหม็น", discharge: "ปล่อยน้ำเสีย", overflow: "น้ำล้น", other: "อื่นๆ" }[selectedReport.category]}
+                {{ odor: "กลิ่นเหม็น", discharge: "ปล่อยน้ำเสีย", overflow: "น้ำล้น", other: "อื่นๆ" }[selectedReportCategory]}
               </span>
               <span className={cn("text-xs px-2 py-0.5 rounded-full font-semibold",
                 { pending: "bg-yellow-100 text-yellow-700", reviewing: "bg-blue-100 text-blue-700", resolved: "bg-green-100 text-green-700" }[selectedReport.status]
@@ -696,7 +698,7 @@ export default function MapClient({ layers, selectedProvince }: Props) {
               </div>
             )}
 
-            <p className="text-sm text-primary-800">{selectedReport.description}</p>
+            <p className="text-sm text-primary-800">{selectedReport.identifiedIssues || "-"}</p>
             <div className="text-xs text-text-secondary space-y-0.5">
               <div>จังหวัด: {selectedReport.province}</div>
               <div>วันที่: {new Date(selectedReport.createdAt).toLocaleString(locale === "th" ? "th-TH" : "en-US")}</div>

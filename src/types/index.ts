@@ -3,6 +3,8 @@ export type Locale = "th" | "en";
 export type SystemStatus = "operational" | "non_operational" | "construction" | "cancelled";
 
 export type WaterQualityLevel = "excellent" | "good" | "fair" | "poor" | "critical";
+export type ReportCategory = "odor" | "discharge" | "overflow" | "other";
+export type ReportType = "community" | "facility" | "water_quality";
 
 export type UserRole = "official" | "admin";
 
@@ -49,6 +51,8 @@ export interface CommunityReport {
   province: string;
   lat: number;
   lng: number;
+  category?: ReportCategory;
+  type?: ReportType;
   
   status: "pending" | "reviewing" | "resolved";
   createdAt: string;
