@@ -1,183 +1,246 @@
 "use client";
-import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
-import { Newspaper, Scale, Users, ExternalLink, Download, Calendar, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import FeedCard from "@/components/dashboard/FeedCard";
-import { NEWS_ITEMS, LEGAL_ITEMS, PARTICIPATION_ITEMS } from "@/data/feed";
 
-const TABS = [
-  { id: "news", labelTh: "ข่าวสาร", labelEn: "News & Updates", icon: Newspaper },
-  { id: "legal", labelTh: "กฎหมาย & มาตรฐาน", labelEn: "Laws & Standards", icon: Scale },
-  { id: "participation", labelTh: "การมีส่วนร่วม", labelEn: "Participation", icon: Users },
+import { useMemo, useState } from "react";
+import { useLocale } from "next-intl";
+import { ArrowRight, Building2, CalendarDays, CheckCircle2, Megaphone, MessageCircleHeart, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface AnnouncementItem {
+  id: string;
+  type: "system" | "lao" | "community";
+  titleTh: string;
+  titleEn: string;
+  summaryTh: string;
+  summaryEn: string;
+  provinceTh: string;
+  provinceEn: string;
+  date: string;
+  statusTh: string;
+  statusEn: string;
+}
+
+const ANNOUNCEMENTS: AnnouncementItem[] = [
+  {
+    id: "a001",
+    type: "system",
+    titleTh: "อปท เมืองสุพรรณบุรีอัปเกรดบ่อเติมอากาศเฟส 2",
+    titleEn: "Suphan Buri LAO upgraded aeration basin phase 2",
+    summaryTh: "เพิ่มความสามารถรองรับน้ำเสียจาก 6,500 เป็น 8,000 ลบ.ม./วัน พร้อมติดตั้งระบบตรวจวัดออนไลน์",
+    summaryEn: "Capacity increased from 6,500 to 8,000 m3/day with online monitoring installed.",
+    provinceTh: "สุพรรณบุรี",
+    provinceEn: "Suphan Buri",
+    date: "2026-03-18",
+    statusTh: "ดำเนินการแล้ว",
+    statusEn: "Completed",
+  },
+  {
+    id: "a002",
+    type: "lao",
+    titleTh: "เทศบาล 9 แห่งเริ่มกิจกรรมตรวจท่อรวบรวมน้ำเสียรายสัปดาห์",
+    titleEn: "9 municipalities launched weekly wastewater pipe inspections",
+    summaryTh: "ดำเนินงานเชิงป้องกันร่วมกับทีมช่างท้องถิ่น และรายงานผลผ่าน dashboard กลาง",
+    summaryEn: "Preventive operations started with local technicians, reported via central dashboard.",
+    provinceTh: "นครราชสีมา",
+    provinceEn: "Nakhon Ratchasima",
+    date: "2026-03-16",
+    statusTh: "กำลังดำเนินการ",
+    statusEn: "In progress",
+  },
+  {
+    id: "a003",
+    type: "community",
+    titleTh: "ชุมชนคลองเปรมประชากรจัดกิจกรรมเก็บตัวอย่างน้ำร่วมกับ อปท",
+    titleEn: "Khlong Prem Prachakorn community held joint water sampling with LAO",
+    summaryTh: "มีผู้เข้าร่วม 73 คน พร้อมบันทึกค่าตรวจเบื้องต้นเข้าสู่ระบบแจ้งข่าวสาร",
+    summaryEn: "73 participants joined and uploaded initial readings to the announcement system.",
+    provinceTh: "กรุงเทพมหานคร",
+    provinceEn: "Bangkok",
+    date: "2026-03-15",
+    statusTh: "รายงานผลแล้ว",
+    statusEn: "Reported",
+  },
+  {
+    id: "a004",
+    type: "system",
+    titleTh: "อปท บ้านฉางตรวจประเมินประสิทธิภาพระบบบำบัดไตรมาส 1",
+    titleEn: "Ban Chang LAO completed Q1 treatment performance assessment",
+    summaryTh: "ค่า BOD หลังบำบัดเฉลี่ย 13 mg/L ผ่านเกณฑ์ และเตรียมแผนอัปเกรดระบบควบคุมกลิ่น",
+    summaryEn: "Average treated BOD at 13 mg/L passed standards, with odor control upgrade planned.",
+    provinceTh: "ระยอง",
+    provinceEn: "Rayong",
+    date: "2026-03-13",
+    statusTh: "ประเมินแล้ว",
+    statusEn: "Assessed",
+  },
+  {
+    id: "a005",
+    type: "lao",
+    titleTh: "อบต กลุ่มลุ่มน้ำยมเปิดแผนกิจกรรมลดน้ำเสียจากตลาดชุมชน",
+    titleEn: "Yom basin SAOs launched market wastewater reduction activity plan",
+    summaryTh: "เริ่มแยกน้ำเสียก่อนเข้าระบบและจัดอบรมผู้ประกอบการ 4 ตลาดนำร่อง",
+    summaryEn: "Started pre-treatment separation and training for vendors in 4 pilot markets.",
+    provinceTh: "สุโขทัย",
+    provinceEn: "Sukhothai",
+    date: "2026-03-12",
+    statusTh: "เริ่มแผนงาน",
+    statusEn: "Plan started",
+  },
+  {
+    id: "a006",
+    type: "community",
+    titleTh: "อาสาสมัครชุมชนฝั่งธนฯ เปิดรอบอบรมการแจ้งเหตุผ่านแพลตฟอร์ม",
+    titleEn: "Thonburi community volunteers opened training on digital issue reporting",
+    summaryTh: "เน้นการแจ้งเหตุพร้อมพิกัดและหลักฐานภาพถ่าย เพื่อเร่งการตอบสนองของหน่วยงาน",
+    summaryEn: "Focused on geotagged reporting with photo evidence to speed response.",
+    provinceTh: "กรุงเทพมหานคร",
+    provinceEn: "Bangkok",
+    date: "2026-03-10",
+    statusTh: "เปิดรับสมัคร",
+    statusEn: "Open registration",
+  },
 ];
 
-const CATEGORY_LABELS: Record<string, { th: string; en: string; color: string }> = {
-  act:          { th: "พ.ร.บ.",     en: "Act",         color: "bg-primary-100 text-primary-700" },
-  regulation:   { th: "พระราชกฤษฎีกา", en: "Regulation", color: "bg-purple-100 text-purple-700" },
-  standard:     { th: "มาตรฐาน",    en: "Standard",    color: "bg-quality-good/10 text-quality-good" },
-  announcement: { th: "ประกาศ",     en: "Announcement", color: "bg-quality-fair/10 text-quality-fair" },
-};
+const TABS = [
+  { id: "all", labelTh: "ทั้งหมด", labelEn: "All", icon: Megaphone },
+  { id: "system", labelTh: "ระบบบำบัดของ อปท", labelEn: "LAO Systems", icon: Building2 },
+  { id: "lao", labelTh: "กิจกรรมของ อปท", labelEn: "LAO Activities", icon: CalendarDays },
+  { id: "community", labelTh: "การมีส่วนร่วมชุมชน", labelEn: "Community", icon: Users },
+] as const;
 
-const TYPE_LABELS: Record<string, { th: string; en: string; color: string; emoji: string }> = {
-  guide:    { th: "คู่มือ",      en: "Guide",    color: "bg-primary-100 text-primary-700",  emoji: "📘" },
-  activity: { th: "กิจกรรม",    en: "Activity", color: "bg-quality-good/10 text-quality-good", emoji: "🎯" },
-  network:  { th: "เครือข่าย",  en: "Network",  color: "bg-chula-100 text-chula-700",     emoji: "🤝" },
-  campaign: { th: "แคมเปญ",     en: "Campaign", color: "bg-quality-fair/10 text-quality-fair", emoji: "📢" },
-};
+const TYPE_META = {
+  system: {
+    className: "bg-primary-100 text-primary-700",
+    labelTh: "ระบบบำบัด",
+    labelEn: "System",
+  },
+  lao: {
+    className: "bg-chula-100 text-chula-700",
+    labelTh: "กิจกรรม อปท",
+    labelEn: "LAO Activity",
+  },
+  community: {
+    className: "bg-quality-good/10 text-quality-good",
+    labelTh: "ชุมชน",
+    labelEn: "Community",
+  },
+} as const;
 
 export default function FeedPage() {
   const locale = useLocale();
-  const [activeTab, setActiveTab] = useState("news");
+  const isThai = locale === "th";
+  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["id"]>("all");
+
+  const filteredItems = useMemo(() => {
+    if (activeTab === "all") return ANNOUNCEMENTS;
+    return ANNOUNCEMENTS.filter((item) => item.type === activeTab);
+  }, [activeTab]);
+
+  const summary = useMemo(() => {
+    const system = ANNOUNCEMENTS.filter((item) => item.type === "system").length;
+    const lao = ANNOUNCEMENTS.filter((item) => item.type === "lao").length;
+    const community = ANNOUNCEMENTS.filter((item) => item.type === "community").length;
+    return { system, lao, community };
+  }, []);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Page header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-primary-800">
-          {locale === "th" ? "ข้อมูลและข่าวสาร" : "Information & News"}
-        </h1>
-        <p className="text-text-secondary text-sm mt-1">
-          {locale === "th"
-            ? "ข่าวสาร กฎหมาย และช่องทางการมีส่วนร่วมของภาคประชาชน"
-            : "News, laws & standards, and citizen participation channels"}
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <header className="rounded-2xl border border-primary-200 bg-gradient-to-r from-primary-900 to-primary-700 p-6 text-white">
+        <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
+          <Megaphone className="h-4 w-4" />
+          {isThai ? "แจ้งข่าวสาร" : "Announcements"}
         </p>
-      </div>
+        <h1 className="text-2xl font-bold md:text-3xl">
+          {isThai ? "ศูนย์แจ้งข่าวสารด้านการจัดการน้ำเสียของ อปท และชุมชน" : "Wastewater announcement center for LAOs and communities"}
+        </h1>
+        <p className="mt-2 max-w-3xl text-sm text-sky-100">
+          {isThai
+            ? "เนื้อหาถูกจัดตามเป้าหมายหลักของแพลตฟอร์ม: ข้อมูลระบบบำบัดน้ำเสียของ อปท, กิจกรรมของ อปท ในการจัดการน้ำเสีย และกิจกรรมการมีส่วนร่วมของชุมชน"
+            : "Content is structured around the platform's core goals: LAO system data, LAO wastewater management activities, and community participation."}
+        </p>
+      </header>
 
-      {/* Tab bar */}
-      <div className="flex gap-1 bg-white rounded-xl p-1 border border-border shadow-sm mb-6">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200",
-                isActive
-                  ? "bg-primary-800 text-white shadow-sm"
-                  : "text-text-secondary hover:text-primary-700 hover:bg-primary-50"
-              )}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">
-                {locale === "th" ? tab.labelTh : tab.labelEn}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── TAB: NEWS ── */}
-      {activeTab === "news" && (
-        <div className="space-y-4 animate-fade-up">
-          {NEWS_ITEMS.map((item) => (
-            <FeedCard key={item.id} item={item} />
-          ))}
+      <section className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs text-slate-500">{isThai ? "อัปเดตระบบบำบัด" : "System updates"}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">{summary.system}</p>
         </div>
-      )}
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs text-slate-500">{isThai ? "กิจกรรม อปท" : "LAO activities"}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">{summary.lao}</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs text-slate-500">{isThai ? "กิจกรรมชุมชน" : "Community activities"}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">{summary.community}</p>
+        </div>
+      </section>
 
-      {/* ── TAB: LEGAL ── */}
-      {activeTab === "legal" && (
-        <div className="space-y-4 animate-fade-up">
-          {/* Banner */}
-          <div className="bg-primary-100 border border-primary-200 rounded-xl p-4 flex gap-3 items-start">
-            <Scale className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-primary-800">
-                {locale === "th" ? "กฎหมายและมาตรฐานที่เกี่ยวข้อง" : "Relevant Laws & Standards"}
-              </p>
-              <p className="text-xs text-primary-600 mt-0.5">
-                {locale === "th"
-                  ? "รวบรวมกฎหมาย ระเบียบ และมาตรฐานที่เกี่ยวข้องกับการจัดการน้ำเสียในประเทศไทย"
-                  : "Compiled laws, regulations and standards related to wastewater management in Thailand."}
-              </p>
-            </div>
-          </div>
-
-          {LEGAL_ITEMS.map((item) => {
-            const cat = CATEGORY_LABELS[item.category];
+      <section className="mt-6">
+        <div className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
             return (
-              <div key={item.id} className="kpi-card group cursor-pointer hover:border-primary-300 transition-all">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", cat.color)}>
-                        {locale === "th" ? cat.th : cat.en}
-                      </span>
-                      <span className="text-xs text-text-secondary flex items-center gap-1">
-                        <Calendar className="h-3 w-3" /> พ.ศ. {item.year}
-                      </span>
-                    </div>
-                    <h3 className="text-sm font-bold text-primary-800 leading-snug group-hover:text-primary-600 transition-colors">
-                      {locale === "th" ? item.title : item.titleEn}
-                    </h3>
-                    <p className="text-xs text-text-secondary mt-2 leading-relaxed">
-                      {locale === "th" ? item.description : item.descriptionEn}
-                    </p>
-                    <p className="text-xs text-primary-400 mt-2 font-medium">{item.agency}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                    <button className="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-semibold px-3 py-1.5 rounded-lg border border-primary-200 hover:bg-primary-50 transition-colors">
-                      <Download className="h-3 w-3" />
-                      {locale === "th" ? "ดาวน์โหลด" : "Download"}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition",
+                  active ? "bg-primary-800 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-primary-800"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{isThai ? tab.labelTh : tab.labelEn}</span>
+              </button>
             );
           })}
         </div>
-      )}
+      </section>
 
-      {/* ── TAB: PARTICIPATION ── */}
-      {activeTab === "participation" && (
-        <div className="animate-fade-up">
-          {/* Chula research banner */}
-          <div className="bg-chula-100 border border-chula-300/30 rounded-xl p-4 flex gap-3 items-start mb-6">
-            <span className="text-2xl">🎓</span>
-            <div>
-              <p className="text-sm font-bold text-chula-700">
-                {locale === "th" ? "โครงการวิจัย จุฬาลงกรณ์มหาวิทยาลัย" : "Chulalongkorn University Research Project"}
-              </p>
-              <p className="text-xs text-chula-600 mt-0.5">
-                {locale === "th"
-                  ? "ร่วมมือกับ อจน. ในการพัฒนาแพลตฟอร์มการมีส่วนร่วมของชุมชนเพื่อการจัดการน้ำเสียอย่างยั่งยืน"
-                  : "Collaborating with WMA to develop community participation platforms for sustainable wastewater management."}
-              </p>
-            </div>
-          </div>
+      <section className="mt-4 space-y-3">
+        {filteredItems.map((item) => {
+          const meta = TYPE_META[item.type];
+          return (
+            <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-primary-300">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={cn("rounded-full px-2 py-1 text-xs font-semibold", meta.className)}>
+                  {isThai ? meta.labelTh : meta.labelEn}
+                </span>
+                <span className="text-xs text-slate-500">{isThai ? item.provinceTh : item.provinceEn}</span>
+                <span className="text-xs text-slate-400">|</span>
+                <span className="text-xs text-slate-500">{item.date}</span>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {PARTICIPATION_ITEMS.map((item) => {
-              const typeInfo = TYPE_LABELS[item.type];
-              return (
-                <div key={item.id} className="kpi-card group cursor-pointer hover:border-primary-300 transition-all flex flex-col">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="text-3xl flex-shrink-0">{item.imageEmoji}</div>
-                    <div className="flex-1 min-w-0">
-                      <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full inline-block mb-1.5", typeInfo.color)}>
-                        {locale === "th" ? typeInfo.th : typeInfo.en}
-                      </span>
-                      <h3 className="text-sm font-bold text-primary-800 leading-snug group-hover:text-primary-600 transition-colors">
-                        {locale === "th" ? item.title : item.titleEn}
-                      </h3>
-                    </div>
-                  </div>
-                  <p className="text-xs text-text-secondary leading-relaxed flex-1">
-                    {locale === "th" ? item.description : item.descriptionEn}
-                  </p>
-                  <button className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 text-xs font-semibold text-primary-700 border border-primary-200 rounded-lg hover:bg-primary-50 hover:border-primary-400 transition-colors">
-                    {locale === "th" ? item.actionLabel : item.actionLabelEn}
-                    <ChevronRight className="h-3 w-3" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+              <h3 className="mt-2 text-base font-bold leading-snug text-slate-900">
+                {isThai ? item.titleTh : item.titleEn}
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">{isThai ? item.summaryTh : item.summaryEn}</p>
+
+              <div className="mt-3 flex items-center justify-between">
+                <p className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
+                  <CheckCircle2 className="h-4 w-4" />
+                  {isThai ? item.statusTh : item.statusEn}
+                </p>
+                <button className="inline-flex items-center gap-1 text-xs font-semibold text-primary-700 hover:text-primary-900">
+                  {isThai ? "ดูรายละเอียด" : "Details"}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-chula-300/50 bg-chula-100 p-4">
+        <p className="inline-flex items-center gap-2 text-sm font-semibold text-chula-700">
+          <MessageCircleHeart className="h-4 w-4" />
+          {isThai ? "พื้นที่ข้อมูลตัวอย่าง" : "Sample Data Zone"}
+        </p>
+        <p className="mt-1 text-sm text-chula-700/90">
+          {isThai
+            ? "ข้อมูลในหน้านี้เป็นตัวอย่างเพื่อออกแบบโครงสร้างการสื่อสารข่าวสารในเฟสปัจจุบัน"
+            : "Data on this page is mocked for the current design phase and communication structure."}
+        </p>
+      </section>
     </div>
   );
 }

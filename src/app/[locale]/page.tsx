@@ -1,163 +1,244 @@
-import { useTranslations } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Building2, Droplets, Users, Wind, ArrowRight, MapPin, AlertCircle } from "lucide-react";
-import KPICard from "@/components/dashboard/KPICard";
-import FeedCard from "@/components/dashboard/FeedCard";
-import StatusDonut from "@/components/dashboard/StatusDonutClient";
-import { FeedItem } from "@/types";
+import { ArrowRight, Building2, CalendarCheck2, MessageCircleHeart, Siren, Waves } from "lucide-react";
+import PurposeTrendChart from "@/components/dashboard/PurposeTrendChart";
 
-// Mock data - replace with API calls
-const MOCK_KPI = [
-  { id: "systems", value: 216, trend: 4.2, color: "#1976D2", icon: "building" },
-  { id: "volume", value: "572.9", trend: 1.8, color: "#4DB8E8", icon: "droplets" },
-];
+interface MissionPillar {
+  id: string;
+  titleTh: string;
+  titleEn: string;
+  descriptionTh: string;
+  descriptionEn: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
 
-const MOCK_STATUS = [
-  { status: "operational", count: 152 },
-  { status: "non_operational", count: 28 },
-  { status: "construction", count: 24 },
-  { status: "cancelled", count: 12 },
-];
+interface HomeAnnouncement {
+  id: string;
+  titleTh: string;
+  titleEn: string;
+  summaryTh: string;
+  summaryEn: string;
+  date: string;
+  type: "system" | "lao" | "community";
+}
 
-const MOCK_FEED: FeedItem[] = [
+const MISSION_PILLARS: MissionPillar[] = [
   {
-    id: "1", type: "news", source: "wma",
-    title: "เปิดใช้งานระบบบำบัดน้ำเสียแห่งใหม่ที่จังหวัดเชียงใหม่",
-    titleEn: "New wastewater treatment system launched in Chiang Mai",
-    summary: "องค์การจัดการน้ำเสียเปิดใช้งานระบบบำบัดน้ำเสียแห่งใหม่ความจุ 5,000 ม.³/วัน",
-    summaryEn: "WMA launched a new 5,000 m³/day treatment system in Chiang Mai province.",
-    publishedAt: "2026-03-15",
+    id: "system",
+    titleTh: "ข้อมูลระบบบำบัดน้ำเสียของ อปท",
+    titleEn: "LAO Wastewater System Data",
+    descriptionTh: "ติดตามสถานะระบบบำบัด ความจุ และความพร้อมใช้งานของแต่ละพื้นที่",
+    descriptionEn: "Track treatment status, capacity, and operational readiness by area.",
+    href: "/lao-map",
+    icon: Building2,
   },
   {
-    id: "2", type: "research", source: "chula",
-    title: "ผลการศึกษาคุณภาพน้ำในแม่น้ำเจ้าพระยา ประจำปี 2568",
-    titleEn: "Annual Chao Phraya River Water Quality Study 2025",
-    summary: "จุฬาลงกรณ์มหาวิทยาลัยเผยผลการตรวจวัดคุณภาพน้ำ พบค่า BOD ลดลง 12% จากปีก่อน",
-    summaryEn: "Chulalongkorn University reports 12% BOD reduction in Chao Phraya compared to last year.",
-    publishedAt: "2026-03-10",
+    id: "lao-activity",
+    titleTh: "กิจกรรมของ อปท ในการจัดการน้ำเสีย",
+    titleEn: "LAO Wastewater Management Activities",
+    descriptionTh: "ดูแผนงาน การดำเนินงาน และผลลัพธ์ของกิจกรรมที่ อปท ดำเนินการ",
+    descriptionEn: "View plans, execution, and outcomes of local wastewater activities.",
+    href: "/feed",
+    icon: CalendarCheck2,
   },
   {
-    id: "3", type: "alert", source: "community",
-    title: "แจ้งเหตุน้ำเสียในคลองแสนแสบ เขตมีนบุรี",
-    titleEn: "Wastewater alert - Saen Saep Canal, Min Buri district",
-    summary: "ชุมชนรายงานพบน้ำเสียบริเวณคลองแสนแสบ กำลังดำเนินการตรวจสอบ",
-    summaryEn: "Community reported wastewater discharge near Saen Saep Canal. Investigation underway.",
-    publishedAt: "2026-03-18",
+    id: "community",
+    titleTh: "กิจกรรมการมีส่วนร่วมของชุมชน",
+    titleEn: "Community Participation Activities",
+    descriptionTh: "รวบรวมกิจกรรมอาสา การเฝ้าระวังคุณภาพน้ำ และการมีส่วนร่วมจากประชาชน",
+    descriptionEn: "Collect volunteer programs, water monitoring, and citizen engagement updates.",
+    href: "/feed",
+    icon: MessageCircleHeart,
   },
 ];
 
-const ICONS: Record<string, React.ReactNode> = {
-  building: <Building2 className="h-6 w-6" />,
-  droplets: <Droplets className="h-6 w-6" />,
-  users: <Users className="h-6 w-6" />,
-  wind: <Wind className="h-6 w-6" />,
+const MOCK_OVERVIEW = [
+  { id: "lao", labelTh: "อปท ที่มีข้อมูลในระบบ", labelEn: "LAOs in platform", value: "1,426", noteTh: "+42 เดือนนี้", noteEn: "+42 this month" },
+  { id: "facility", labelTh: "ระบบบำบัดที่กำลังเดินระบบ", labelEn: "Operational systems", value: "874", noteTh: "คิดเป็น 82%", noteEn: "82% operational" },
+  { id: "activity", labelTh: "กิจกรรม อปท ไตรมาสนี้", labelEn: "LAO activities this quarter", value: "318", noteTh: "เพิ่มขึ้น 19%", noteEn: "+19% growth" },
+  { id: "community", labelTh: "กิจกรรมชุมชนที่บันทึก", labelEn: "Community activities logged", value: "591", noteTh: "ผู้เข้าร่วม 12,480 คน", noteEn: "12,480 participants" },
+];
+
+const MOCK_HOME_ANNOUNCEMENTS: HomeAnnouncement[] = [
+  {
+    id: "ha1",
+    titleTh: "อปท เมืองลำปาง ปรับปรุงระบบเติมอากาศแล้วเสร็จ",
+    titleEn: "Lampang LAO completed aeration system retrofit",
+    summaryTh: "เพิ่มประสิทธิภาพการบำบัดน้ำเสียได้ 18% และลดกลิ่นร้องเรียนในชุมชน",
+    summaryEn: "Treatment efficiency improved by 18% with fewer odor complaints.",
+    date: "2026-03-17",
+    type: "system",
+  },
+  {
+    id: "ha2",
+    titleTh: "เทศบาล 12 แห่งเริ่มกิจกรรมล้างท่อระบายน้ำเชิงรุก",
+    titleEn: "12 municipalities launched proactive drain-cleaning activities",
+    summaryTh: "ดำเนินการตามแผนป้องกันน้ำเสียสะสมก่อนเข้าฤดูฝน",
+    summaryEn: "Implemented as pre-rainy-season prevention for wastewater accumulation.",
+    date: "2026-03-14",
+    type: "lao",
+  },
+  {
+    id: "ha3",
+    titleTh: "เครือข่ายชุมชนคลองสามวาจัดเวรเฝ้าระวังคุณภาพน้ำ",
+    titleEn: "Khlong Sam Wa community network started water watch shifts",
+    summaryTh: "ชุมชนร่วมตรวจวัดค่าเบื้องต้นและรายงานเหตุผิดปกติผ่านแพลตฟอร์ม",
+    summaryEn: "Residents conduct basic checks and report anomalies through the platform.",
+    date: "2026-03-12",
+    type: "community",
+  },
+];
+
+const TYPE_STYLE: Record<HomeAnnouncement["type"], { th: string; en: string; className: string }> = {
+  system: {
+    th: "ระบบบำบัด",
+    en: "System",
+    className: "bg-primary-100 text-primary-700",
+  },
+  lao: {
+    th: "กิจกรรม อปท",
+    en: "LAO Activity",
+    className: "bg-chula-100 text-chula-700",
+  },
+  community: {
+    th: "ชุมชน",
+    en: "Community",
+    className: "bg-quality-good/10 text-quality-good",
+  },
 };
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const t = await getTranslations("home");
-  const tCommon = await getTranslations("common");
+  const isThai = locale === "th";
 
   return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative wave-divider bg-gradient-to-br from-primary-900 via-primary-800 to-primary-600 text-white py-20 px-4 overflow-hidden">
-        {/* Decorative water circles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary-300/10 rounded-full" />
-          <div className="absolute bottom-0 -left-10 w-64 h-64 bg-primary-400/10 rounded-full" />
-        </div>
-        <div className="relative max-w-4xl mx-auto text-center">
-          <div className="flex justify-center gap-6 mb-6 opacity-80">
-            <div className="flex flex-col items-center">
-              <Droplets className="h-8 w-8 text-primary-300 mb-1" />
-              <span className="text-xs text-primary-300">WMA</span>
-            </div>
-            <div className="w-px bg-chula-500/50" />
-            <div className="flex flex-col items-center">
-              <div className="h-8 w-8 rounded-full bg-chula-500/30 flex items-center justify-center mb-1">
-                <span className="text-chula-300 text-xs font-bold">CU</span>
-              </div>
-              <span className="text-xs text-chula-300">Chula</span>
-            </div>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            {t("hero.title")}
+    <div className="bg-slate-50">
+      <section className="relative overflow-hidden bg-gradient-to-r from-slate-950 via-primary-950 to-blue-950 text-white">
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, #38bdf8 0, transparent 28%), radial-gradient(circle at 80% 10%, #0ea5e9 0, transparent 20%)" }} />
+        <div className="relative mx-auto max-w-6xl px-4 py-16">
+          <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+            <Waves className="h-4 w-4" />
+            {isThai ? "แพลตฟอร์มข้อมูลและการมีส่วนร่วม" : "Data & Participation Platform"}
+          </p>
+          <h1 className="max-w-4xl text-3xl font-bold leading-tight text-white drop-shadow-[0_2px_12px_rgba(15,23,42,0.45)] md:text-5xl">
+            {isThai
+              ? "ศูนย์กลางข้อมูลระบบบำบัดน้ำเสียของ อปท และการขับเคลื่อนกิจกรรมชุมชน"
+              : "A unified hub for LAO wastewater systems and community-driven action"}
           </h1>
-          <p className="text-primary-200 text-lg mb-8 max-w-2xl mx-auto">{t("hero.subtitle")}</p>
-          <div className="flex flex-wrap justify-center gap-4">
+          <p className="mt-4 max-w-3xl text-sm text-sky-50 md:text-base">
+            {isThai
+              ? "โฟกัส 3 ภารกิจหลัก: ข้อมูลระบบบำบัดน้ำเสียของ อปท, กิจกรรมของ อปท ในการจัดการน้ำเสีย, และกิจกรรมการมีส่วนร่วมของชุมชน"
+              : "Focused on three core missions: LAO system information, LAO wastewater management activities, and community participation activities."}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href={`/${locale}/map`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-800 font-semibold rounded-xl hover:bg-primary-100 transition-colors shadow-lg"
+              href={`/${locale}/lao-map`}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-primary-900 transition hover:bg-sky-100"
             >
-              <MapPin className="h-5 w-5" />
-              {t("hero.cta_map")}
+              {isThai ? "ดูข้อมูล อปท บนแผนที่" : "Explore LAO Map"}
+              <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href={`/${locale}/report`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-chula-500 text-white font-semibold rounded-xl hover:bg-chula-700 transition-colors shadow-lg"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/50 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              <AlertCircle className="h-5 w-5" />
-              {t("hero.cta_report")}
+              <Siren className="h-4 w-4" />
+              {isThai ? "แจ้งเหตุ/แจ้งปัญหา" : "Report an Issue"}
             </Link>
           </div>
         </div>
       </section>
 
-      {/* KPI Cards */}
-      <section className="max-w-4xl mx-auto px-4 py-10 w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {MOCK_KPI.map((kpi) => (
-            <KPICard
-              key={kpi.id}
-              label={t(`kpi.${kpi.id}`)}
-              value={kpi.value}
-              unit={t(`kpi.${kpi.id}_unit`)}
-              trend={kpi.trend}
-              icon={ICONS[kpi.icon]}
-              accentColor={kpi.color}
-            />
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-primary-900 md:text-2xl">
+              {isThai ? "3 ภารกิจหลักของแพลตฟอร์ม" : "Three Core Missions"}
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              {isThai
+                ? "โครงสร้างหน้าแรกปรับใหม่ให้สอดคล้องกับวัตถุประสงค์การใช้งานหลัก"
+                : "Homepage structure aligned to the platform purpose."}
+            </p>
+          </div>
+          <Link href={`/${locale}/feed`} className="text-sm font-semibold text-primary-700 hover:text-primary-900">
+            {isThai ? "ไปหน้าแจ้งข่าวสาร" : "Go to Announcements"}
+          </Link>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {MISSION_PILLARS.map((pillar) => {
+            const Icon = pillar.icon;
+            return (
+              <Link
+                key={pillar.id}
+                href={`/${locale}${pillar.href}`}
+                className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-300 hover:shadow"
+              >
+                <div className="mb-3 inline-flex rounded-xl bg-primary-50 p-2 text-primary-700">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">
+                  {isThai ? pillar.titleTh : pillar.titleEn}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  {isThai ? pillar.descriptionTh : pillar.descriptionEn}
+                </p>
+                <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary-700 group-hover:text-primary-900">
+                  {isThai ? "ดูรายละเอียด" : "View details"}
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-6">
+        <h2 className="text-xl font-bold text-primary-900 md:text-2xl">
+          {isThai ? "ภาพรวมข้อมูลเชิงปฏิบัติการ" : "Operational Overview"}
+        </h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {MOCK_OVERVIEW.map((item) => (
+            <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-sm font-semibold text-slate-700">{isThai ? item.labelTh : item.labelEn}</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{item.value}</p>
+              <p className="mt-1 text-sm font-semibold text-primary-800">{isThai ? item.noteTh : item.noteEn}</p>
+            </div>
           ))}
         </div>
-      </section>
-
-      {/* Status + Feed */}
-      <section className="max-w-7xl mx-auto px-4 pb-12 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Status donut */}
-          <div className="lg:col-span-1">
-            <StatusDonut data={MOCK_STATUS} />
-          </div>
-          {/* Feed */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-primary-800">{t("latest_reports")}</h2>
-              <Link href={`/${locale}/feed`} className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-800 font-medium">
-                {tCommon("view_all")} <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {MOCK_FEED.map((item) => <FeedCard key={item.id} item={item} />)}
-            </div>
-          </div>
+        <div className="mt-5">
+          <PurposeTrendChart isThai={isThai} />
         </div>
       </section>
 
-      {/* Chula Research Strip */}
-      <section className="bg-chula-100 border-t border-chula-300/20 py-8 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <div className="text-chula-700 text-xs font-semibold uppercase tracking-wider mb-1">{t("research_highlight")}</div>
-            <h3 className="text-primary-800 font-bold text-lg">โครงการวิจัยจุฬาลงกรณ์มหาวิทยาลัย</h3>
-            <p className="text-text-secondary text-sm mt-1">ติดตามงานวิจัยด้านการจัดการน้ำเสียและสิ่งแวดล้อม</p>
-          </div>
-          <Link
-            href={`/${locale}/feed`}
-            className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-chula-500 text-white font-semibold rounded-xl hover:bg-chula-700 transition-colors text-sm"
-          >
-            ดูงานวิจัย <ArrowRight className="h-4 w-4" />
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 className="text-xl font-bold text-primary-900 md:text-2xl">
+            {isThai ? "แจ้งข่าวสารล่าสุด" : "Latest Announcements"}
+          </h2>
+          <Link href={`/${locale}/feed`} className="inline-flex items-center gap-1 text-sm font-semibold text-primary-700 hover:text-primary-900">
+            {isThai ? "ดูทั้งหมด" : "View all"}
+            <ArrowRight className="h-4 w-4" />
           </Link>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          {MOCK_HOME_ANNOUNCEMENTS.map((item) => {
+            const badge = TYPE_STYLE[item.type];
+            return (
+              <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ${badge.className}`}>
+                    {isThai ? badge.th : badge.en}
+                  </span>
+                  <time className="text-xs text-slate-500">{item.date}</time>
+                </div>
+                <h3 className="text-sm font-bold leading-snug text-slate-900">
+                  {isThai ? item.titleTh : item.titleEn}
+                </h3>
+                <p className="mt-2 text-sm text-slate-600">{isThai ? item.summaryTh : item.summaryEn}</p>
+              </article>
+            );
+          })}
         </div>
       </section>
     </div>
