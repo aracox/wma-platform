@@ -122,7 +122,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </p>
           <h1 className="max-w-4xl text-3xl font-bold leading-tight text-white drop-shadow-[0_2px_12px_rgba(15,23,42,0.45)] md:text-5xl">
             {isThai
-              ? "ศูนย์กลางข้อมูลระบบบำบัดน้ำเสียของ อปท และการขับเคลื่อนกิจกรรมชุมชน"
+              ? "แพลตฟอร์มการสื่อสารดิจิทัลเพื่อสนับสนุนการจัดการน้ำเสียชุมชน"
               : "A unified hub for LAO wastewater systems and community-driven action"}
           </h1>
           <p className="mt-4 max-w-3xl text-sm text-sky-50 md:text-base">
