@@ -43,7 +43,7 @@ const SLIDES: Slide[] = [
   {
     img: "/images/hero-slide-5.jpg",
     subtitleTh:
-      "เป้าหมายปลายทาง: แม่น้ำสะอาด ชุมชนยิ้มแย้ม — ขับเคลื่อนด้วยข้อมูลและการมีส่วนร่วมของทุกภาคส่วน",
+      "เป้าหมายปลายทาง: แม่น้ำ ลำคลองสะอาด — ขับเคลื่อนด้วยข้อมูลและการมีส่วนร่วมของทุกภาคส่วน",
     subtitleEn:
       "The end goal: clean rivers, smiling communities — driven by data and collective participation.",
   },
