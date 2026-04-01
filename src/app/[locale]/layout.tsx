@@ -27,8 +27,8 @@ export default async function LocaleLayout({
   if (!locales.includes(locale)) notFound();
   const messages = (await import(`../../../messages/${locale}.json`)).default;
   return (
-    <html lang={locale} className={inter.variable}>
-      <body className="min-h-screen flex flex-col bg-surface">
+    <html lang={locale} className={inter.variable} suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col bg-surface" suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Navbar />
           <main className="flex-1">{children}</main>

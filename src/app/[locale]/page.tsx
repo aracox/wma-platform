@@ -1,10 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Building2, CalendarCheck2, MessageCircleHeart, Siren, Waves } from "lucide-react";
+import { ArrowRight, Building2, CalendarCheck2, MessageCircleHeart } from "lucide-react";
 import PurposeTrendChart from "@/components/dashboard/PurposeTrendChart";
+import HeroSlider from "@/components/hero/HeroSlider";
 
 interface MissionPillar {
   id: string;
+  image: string;
+  labelTh: string;
+  labelEn: string;
   titleTh: string;
   titleEn: string;
   descriptionTh: string;
@@ -26,8 +30,11 @@ interface HomeAnnouncement {
 const MISSION_PILLARS: MissionPillar[] = [
   {
     id: "system",
+    image: "/images/mission-thai-1.png",
+    labelTh: "ข้อมูลระบบ",
+    labelEn: "SYSTEMS",
     titleTh: "ข้อมูลระบบบำบัดน้ำเสียของ อปท",
-    titleEn: "LAO Wastewater System Data",
+    titleEn: "Wastewater Treatment Systems",
     descriptionTh: "ติดตามสถานะระบบบำบัด ความจุ และความพร้อมใช้งานของแต่ละพื้นที่",
     descriptionEn: "Track treatment status, capacity, and operational readiness by area.",
     href: "/lao-map",
@@ -35,6 +42,9 @@ const MISSION_PILLARS: MissionPillar[] = [
   },
   {
     id: "lao-activity",
+    image: "/images/mission-thai-2.png",
+    labelTh: "แผนและการดำเนินการ",
+    labelEn: "MANAGEMENT",
     titleTh: "กิจกรรมของ อปท ในการจัดการน้ำเสีย",
     titleEn: "LAO Wastewater Management Activities",
     descriptionTh: "ดูแผนงาน การดำเนินงาน และผลลัพธ์ของกิจกรรมที่ อปท ดำเนินการ",
@@ -44,6 +54,9 @@ const MISSION_PILLARS: MissionPillar[] = [
   },
   {
     id: "community",
+    image: "/images/mission-thai-3.png",
+    labelTh: "เครือข่ายเปิด",
+    labelEn: "COMMUNITY",
     titleTh: "กิจกรรมการมีส่วนร่วมของชุมชน",
     titleEn: "Community Participation Activities",
     descriptionTh: "รวบรวมกิจกรรมอาสา การเฝ้าระวังคุณภาพน้ำ และการมีส่วนร่วมจากประชาชน",
@@ -114,51 +127,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="bg-slate-50">
-      <section className="relative overflow-hidden bg-gradient-to-r from-slate-950 via-primary-950 to-blue-950 text-white">
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, #38bdf8 0, transparent 28%), radial-gradient(circle at 80% 10%, #0ea5e9 0, transparent 20%)" }} />
-        <div className="pointer-events-none absolute right-12 top-1/2 hidden -translate-y-1/2 lg:block">
-          <Image
-            src="/images/wma-logo.png"
-            alt="WMA Logo"
-            width={320}
-            height={266}
-            className="h-auto w-[320px] object-contain opacity-95 drop-shadow-[0_8px_24px_rgba(15,23,42,0.5)]"
-            priority
-          />
-        </div>
-        <div className="relative mx-auto max-w-6xl px-4 py-16">
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-            <Waves className="h-4 w-4" />
-            {isThai ? "แพลตฟอร์มข้อมูลและการมีส่วนร่วม" : "Data & Participation Platform"}
-          </p>
-          <h1 className="max-w-4xl text-3xl font-bold leading-tight text-white drop-shadow-[0_2px_12px_rgba(15,23,42,0.45)] md:text-5xl">
-            {isThai
-              ? "แพลตฟอร์มการสื่อสารดิจิทัลเพื่อสนับสนุนการจัดการน้ำเสียชุมชน"
-              : "A unified hub for LAO wastewater systems and community-driven action"}
-          </h1>
-          <p className="mt-4 max-w-3xl text-sm text-sky-50 md:text-base">
-            {isThai
-              ? "โฟกัส 3 ภารกิจหลัก: ข้อมูลระบบบำบัดน้ำเสียของ อปท, กิจกรรมของ อปท ในการจัดการน้ำเสีย, และกิจกรรมการมีส่วนร่วมของชุมชน"
-              : "Focused on three core missions: LAO system information, LAO wastewater management activities, and community participation activities."}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={`/${locale}/lao-map`}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-primary-900 transition hover:bg-sky-100"
-            >
-              {isThai ? "ดูข้อมูล อปท บนแผนที่" : "Explore LAO Map"}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href={`/${locale}/report`}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/50 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              <Siren className="h-4 w-4" />
-              {isThai ? "แจ้งเหตุ/แจ้งปัญหา" : "Report an Issue"}
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HeroSlider locale={locale} isThai={isThai} />
 
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-5 flex items-end justify-between gap-4">
@@ -176,27 +145,34 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {isThai ? "ไปหน้าแจ้งข่าวสาร" : "Go to Announcements"}
           </Link>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {MISSION_PILLARS.map((pillar) => {
             const Icon = pillar.icon;
             return (
               <Link
                 key={pillar.id}
                 href={`/${locale}${pillar.href}`}
-                className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-300 hover:shadow"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-primary-300 hover:shadow-md"
               >
-                <div className="mb-3 inline-flex rounded-xl bg-primary-50 p-2 text-primary-700">
-                  <Icon className="h-5 w-5" />
+                <div className="relative h-56 w-full overflow-hidden bg-slate-100">
+                  <Image
+                    src={pillar.image}
+                    alt={isThai ? pillar.titleTh : pillar.titleEn}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
                 </div>
-                <h3 className="text-base font-bold text-slate-900">
-                  {isThai ? pillar.titleTh : pillar.titleEn}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  {isThai ? pillar.descriptionTh : pillar.descriptionEn}
-                </p>
-                <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary-700 group-hover:text-primary-900">
-                  {isThai ? "ดูรายละเอียด" : "View details"}
-                  <ArrowRight className="h-4 w-4" />
+                <div className="flex flex-1 flex-col p-6">
+                  <div className="mb-3 flex items-center gap-2 text-sm font-bold tracking-wider text-primary-600 uppercase">
+                    <Icon className="h-5 w-5" />
+                    <span>{isThai ? pillar.labelTh : pillar.labelEn}</span>
+                  </div>
+                  <h3 className="mb-3 text-xl font-bold leading-tight text-slate-900">
+                    {isThai ? pillar.titleTh : pillar.titleEn}
+                  </h3>
+                  <p className="flex-1 text-base leading-relaxed text-slate-600">
+                    {isThai ? pillar.descriptionTh : pillar.descriptionEn}
+                  </p>
                 </div>
               </Link>
             );

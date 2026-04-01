@@ -24,7 +24,7 @@ export default function PurposeTrendChart({ isThai }: PurposeTrendChartProps) {
           {isThai ? "เปรียบเทียบความคืบหน้า 3 ภารกิจหลักของแพลตฟอร์ม" : "Progress comparison across the 3 core platform missions."}
         </p>
       </div>
-      <div className="h-72 w-full">
+      <div className="h-72 w-full min-h-0" style={{ height: 288 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={DATA}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
