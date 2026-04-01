@@ -58,21 +58,10 @@ interface HeroSliderProps {
 
 export default function HeroSlider({ locale, isThai }: HeroSliderProps) {
   const [current, setCurrent] = useState(0);
-  const [prev, setPrev] = useState<number | null>(null);
-  const [subtitleVisible, setSubtitleVisible] = useState(true);
 
-  const goTo = useCallback(
-    (next: number) => {
-      setPrev(current);
-      setSubtitleVisible(false);
-      setTimeout(() => {
-        setCurrent(next);
-        setSubtitleVisible(true);
-        setPrev(null);
-      }, 700); // matches CSS transition
-    },
-    [current]
-  );
+  const goTo = useCallback((next: number) => {
+    setCurrent(next);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -87,7 +76,7 @@ export default function HeroSlider({ locale, isThai }: HeroSliderProps) {
       {SLIDES.map((slide, i) => (
         <div
           key={slide.img}
-          className="absolute inset-0 z-0 transition-opacity duration-700 ease-in-out"
+          className="absolute inset-0 z-0 transition-opacity duration-1000 ease-in-out"
           style={{ opacity: i === current ? 1 : 0 }}
           aria-hidden={i !== current}
         >
@@ -95,12 +84,12 @@ export default function HeroSlider({ locale, isThai }: HeroSliderProps) {
             src={slide.img}
             alt=""
             fill
-            className="object-cover object-center"
+            className={`object-cover object-center transition-transform duration-[10000ms] ease-linear ${i === current ? "scale-105" : "scale-100"}`}
             priority={i === 0}
             sizes="100vw"
           />
           {/* dark overlay so text stays readable */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-primary-950/75 to-blue-950/60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-primary-950/75 to-blue-950/60 transition-opacity duration-1000" />
         </div>
       ))}
 
@@ -140,12 +129,19 @@ export default function HeroSlider({ locale, isThai }: HeroSliderProps) {
         </h1>
 
         {/* Animated subtitle */}
-        <p
-          className="mt-4 max-w-3xl text-sm text-sky-50 transition-opacity duration-500 ease-in-out md:text-base"
-          style={{ opacity: subtitleVisible ? 1 : 0 }}
-        >
-          {isThai ? SLIDES[current].subtitleTh : SLIDES[current].subtitleEn}
-        </p>
+        <div className="relative mt-4 h-16 max-w-3xl md:h-12">
+          {SLIDES.map((slide, i) => (
+            <p
+              key={`subtitle-${i}`}
+              className={`absolute top-0 left-0 w-full text-sm text-sky-50 transition-all duration-1000 ease-in-out md:text-base ${
+                i === current ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+              }`}
+              aria-hidden={i !== current}
+            >
+              {isThai ? slide.subtitleTh : slide.subtitleEn}
+            </p>
+          ))}
+        </div>
 
         {/* CTA Buttons */}
         <div className="mt-8 flex flex-wrap gap-3">
