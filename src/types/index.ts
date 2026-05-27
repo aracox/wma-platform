@@ -140,6 +140,8 @@ export interface AnnouncementItem {
   statusEn: string;
 }
 
+export type CooperationStatus = "coordination" | "agreement" | "land_acquisition" | "construction" | "management";
+
 export interface CooperationRequest {
   id: string;
   subject: string;
@@ -151,7 +153,7 @@ export interface CooperationRequest {
   lat: number;
   lng: number;
   province: string;
-  status: "pending" | "reviewing" | "resolved";
+  status: CooperationStatus;
   createdAt: string;
   updatedAt?: string;
   reportedBy: string;

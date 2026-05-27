@@ -46,7 +46,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update only the provided fields
     if (status) {
-      const validStatuses = ["pending", "reviewing", "resolved"];
+      const validStatuses = ["coordination", "agreement", "land_acquisition", "construction", "management"];
       if (!validStatuses.includes(status)) {
         return NextResponse.json({ error: "Invalid status" }, { status: 400 });
       }

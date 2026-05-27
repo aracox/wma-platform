@@ -10,8 +10,9 @@
     "lat": 13.75,
     "lng": 100.5,
     "province": "กรุงเทพมหานคร",
-    "status": "pending",
+    "status": "agreement",
     "createdAt": "2026-05-27T06:38:19.974Z",
-    "reportedBy": "u02"
+    "reportedBy": "u02",
+    "updatedAt": "2026-05-27T07:01:41.042Z"
   }
 ]

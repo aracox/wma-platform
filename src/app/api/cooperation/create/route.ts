@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       lat,
       lng,
       province: province || "ไม่ระบุ",
-      status: "pending",
+      status: "coordination",
       createdAt: new Date().toISOString(),
       ...(reportedBy && { reportedBy }),
     };
