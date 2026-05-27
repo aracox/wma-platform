@@ -1,8 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Building2, CalendarCheck2, MessageCircleHeart } from "lucide-react";
+import fs from "fs";
+import path from "path";
+import { ArrowRight, Building2, CalendarCheck2, MessageCircleHeart, ShieldAlert } from "lucide-react";
+import { getLaos } from "@/data/lao";
 import PurposeTrendChart from "@/components/dashboard/PurposeTrendChart";
 import HeroSlider from "@/components/hero/HeroSlider";
+
+export const dynamic = "force-dynamic";
 
 interface MissionPillar {
   id: string;
@@ -15,16 +20,6 @@ interface MissionPillar {
   descriptionEn: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-}
-
-interface HomeAnnouncement {
-  id: string;
-  titleTh: string;
-  titleEn: string;
-  summaryTh: string;
-  summaryEn: string;
-  date: string;
-  type: "system" | "lao" | "community";
 }
 
 const MISSION_PILLARS: MissionPillar[] = [
@@ -66,69 +61,139 @@ const MISSION_PILLARS: MissionPillar[] = [
   },
 ];
 
-const MOCK_OVERVIEW = [
-  { id: "lao", labelTh: "อปท ที่มีข้อมูลในระบบ", labelEn: "LAOs in platform", value: "1,426", noteTh: "+42 เดือนนี้", noteEn: "+42 this month" },
-  { id: "facility", labelTh: "ระบบบำบัดที่กำลังเดินระบบ", labelEn: "Operational systems", value: "874", noteTh: "คิดเป็น 82%", noteEn: "82% operational" },
-  { id: "activity", labelTh: "กิจกรรม อปท ไตรมาสนี้", labelEn: "LAO activities this quarter", value: "318", noteTh: "เพิ่มขึ้น 19%", noteEn: "+19% growth" },
-  { id: "community", labelTh: "กิจกรรมชุมชนที่บันทึก", labelEn: "Community activities logged", value: "591", noteTh: "ผู้เข้าร่วม 12,480 คน", noteEn: "12,480 participants" },
-];
-
-const MOCK_HOME_ANNOUNCEMENTS: HomeAnnouncement[] = [
-  {
-    id: "ha1",
-    titleTh: "อปท เมืองลำปาง ปรับปรุงระบบเติมอากาศแล้วเสร็จ",
-    titleEn: "Lampang LAO completed aeration system retrofit",
-    summaryTh: "เพิ่มประสิทธิภาพการบำบัดน้ำเสียได้ 18% และลดกลิ่นร้องเรียนในชุมชน",
-    summaryEn: "Treatment efficiency improved by 18% with fewer odor complaints.",
-    date: "2026-03-17",
-    type: "system",
+const REPORT_STATUS_LABELS: Record<string, { th: string; en: string; className: string }> = {
+  pending: {
+    th: "รอดำเนินการ",
+    en: "Pending",
+    className: "bg-yellow-100 text-yellow-700 border-yellow-200"
   },
-  {
-    id: "ha2",
-    titleTh: "เทศบาล 12 แห่งเริ่มกิจกรรมล้างท่อระบายน้ำเชิงรุก",
-    titleEn: "12 municipalities launched proactive drain-cleaning activities",
-    summaryTh: "ดำเนินการตามแผนป้องกันน้ำเสียสะสมก่อนเข้าฤดูฝน",
-    summaryEn: "Implemented as pre-rainy-season prevention for wastewater accumulation.",
-    date: "2026-03-14",
-    type: "lao",
+  reviewing: {
+    th: "กำลังตรวจสอบ",
+    en: "Reviewing",
+    className: "bg-blue-100 text-blue-700 border-blue-200"
   },
-  {
-    id: "ha3",
-    titleTh: "เครือข่ายชุมชนคลองสามวาจัดเวรเฝ้าระวังคุณภาพน้ำ",
-    titleEn: "Khlong Sam Wa community network started water watch shifts",
-    summaryTh: "ชุมชนร่วมตรวจวัดค่าเบื้องต้นและรายงานเหตุผิดปกติผ่านแพลตฟอร์ม",
-    summaryEn: "Residents conduct basic checks and report anomalies through the platform.",
-    date: "2026-03-12",
-    type: "community",
-  },
-];
-
-const TYPE_STYLE: Record<HomeAnnouncement["type"], { th: string; en: string; className: string }> = {
-  system: {
-    th: "ระบบบำบัด",
-    en: "System",
-    className: "bg-primary-100 text-primary-700",
-  },
-  lao: {
-    th: "กิจกรรม อปท",
-    en: "LAO Activity",
-    className: "bg-chula-100 text-chula-700",
-  },
-  community: {
-    th: "ชุมชน",
-    en: "Community",
-    className: "bg-quality-good/10 text-quality-good",
-  },
+  resolved: {
+    th: "แก้ไขแล้ว",
+    en: "Resolved",
+    className: "bg-green-100 text-green-700 border-green-200"
+  }
 };
+
+function readJSONData<T>(filename: string): T[] {
+  try {
+    const filePath = path.join(process.cwd(), "src/data", filename);
+    const content = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(content);
+  } catch (err) {
+    console.error(`Failed to read data file ${filename}:`, err);
+    return [];
+  }
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const isThai = locale === "th";
 
+  // Load actual data from file databases
+  const laos = getLaos();
+  const facilities = readJSONData<any>("facilities.json");
+  const cooperations = readJSONData<any>("cooperation.json");
+  const reports = readJSONData<any>("reports.json");
+
+  // Calculate real metrics
+  const totalLaos = laos.length;
+  const totalFacilities = facilities.length;
+  const operationalFacilities = facilities.filter(f => f.status === "operational").length;
+  const operationalPercent = totalFacilities > 0 
+    ? Math.round((operationalFacilities / totalFacilities) * 100) 
+    : 0;
+
+  const totalCooperations = cooperations.length;
+  const totalReports = reports.length;
+
+  const overviewStats = [
+    {
+      id: "lao",
+      labelTh: "อปท. ในระบบข้อมูล",
+      labelEn: "LAOs in Platform",
+      value: totalLaos.toLocaleString(),
+      noteTh: "ครอบคลุมทุกภูมิภาค",
+      noteEn: "Nationwide coverage",
+    },
+    {
+      id: "facility",
+      labelTh: "ระบบบำบัดที่เปิดใช้งาน",
+      labelEn: "Operational Systems",
+      value: operationalFacilities.toString(),
+      noteTh: `คิดเป็น ${operationalPercent}% ของระบบทั้งหมด`,
+      noteEn: `${operationalPercent}% operational systems`,
+    },
+    {
+      id: "cooperation",
+      labelTh: "คำขอจัดตั้งศูนย์คุณภาพน้ำ",
+      labelEn: "WQMC Requests",
+      value: totalCooperations.toString(),
+      noteTh: "ประสานความร่วมมือ อปท.",
+      noteEn: "Cooperation requests logged",
+    },
+    {
+      id: "reports",
+      labelTh: "รายงานปัญหาน้ำเสียจากชุมชน",
+      labelEn: "Community Reports Logged",
+      value: totalReports.toString(),
+      noteTh: "รับเรื่องจากภาคประชาชน",
+      noteEn: "Wastewater issues reported",
+    },
+  ];
+
+  // Calculate real monthly trend data for the chart (covering Jan-May 2026)
+  const months = [
+    { monthTh: "ม.ค.", monthEn: "Jan", num: 1 },
+    { monthTh: "ก.พ.", monthEn: "Feb", num: 2 },
+    { monthTh: "มี.ค.", monthEn: "Mar", num: 3 },
+    { monthTh: "เม.ย.", monthEn: "Apr", num: 4 },
+    { monthTh: "พ.ค.", monthEn: "May", num: 5 },
+  ];
+
+  const chartData = months.map(m => {
+    // Cumulative operational systems
+    const system = facilities.length;
+
+    // Cumulative cooperation requests created on or before this month in 2026
+    const lao = cooperations.filter((c: any) => {
+      const d = new Date(c.createdAt);
+      const y = d.getFullYear();
+      const mon = d.getMonth() + 1;
+      return y < 2026 || (y === 2026 && mon <= m.num);
+    }).length;
+
+    // Cumulative community reports created on or before this month in 2026
+    const community = reports.filter((r: any) => {
+      const d = new Date(r.createdAt);
+      const y = d.getFullYear();
+      const mon = d.getMonth() + 1;
+      return y < 2026 || (y === 2026 && mon <= m.num);
+    }).length;
+
+    return {
+      monthTh: m.monthTh,
+      monthEn: m.monthEn,
+      system,
+      lao,
+      community,
+    };
+  });
+
+  // Get the 3 latest community reports sorted by date descending
+  const latestReports = [...reports]
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
+
   return (
     <div className="bg-slate-50">
       <HeroSlider locale={locale} isThai={isThai} />
 
+      {/* 3 Core Missions */}
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
@@ -137,12 +202,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               {isThai
-                ? "โครงสร้างหน้าแรกปรับใหม่ให้สอดคล้องกับวัตถุประสงค์การใช้งานหลัก"
+                ? "โครงสร้างข้อมูลสอดคล้องกับวัตถุประสงค์การใช้งานและภารกิจหลัก"
                 : "Homepage structure aligned to the platform purpose."}
             </p>
           </div>
           <Link href={`/${locale}/feed`} className="text-sm font-semibold text-primary-700 hover:text-primary-900">
-            {isThai ? "ไปหน้าแจ้งข่าวสาร" : "Go to Announcements"}
+            {isThai ? "ไปหน้าข่าวสารประชาสัมพันธ์" : "Go to Announcements"}
           </Link>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
@@ -180,53 +245,86 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
+      {/* Operational Overview Section */}
       <section className="mx-auto max-w-6xl px-4 pb-6">
         <h2 className="text-xl font-bold text-primary-900 md:text-2xl">
           {isThai ? "ภาพรวมข้อมูลเชิงปฏิบัติการ" : "Operational Overview"}
         </h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {MOCK_OVERVIEW.map((item) => (
-            <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-sm font-semibold text-slate-700">{isThai ? item.labelTh : item.labelEn}</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">{item.value}</p>
-              <p className="mt-1 text-sm font-semibold text-primary-800">{isThai ? item.noteTh : item.noteEn}</p>
+          {overviewStats.map((item) => (
+            <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                {isThai ? item.labelTh : item.labelEn}
+              </p>
+              <p className="mt-2 text-3xl font-black text-slate-900">{item.value}</p>
+              <p className="mt-1 text-xs font-semibold text-primary-700 bg-primary-50/50 border border-primary-100 inline-block px-2 py-0.5 rounded">
+                {isThai ? item.noteTh : item.noteEn}
+              </p>
             </div>
           ))}
         </div>
-        <div className="mt-5">
-          <PurposeTrendChart isThai={isThai} />
+        <div className="mt-6">
+          <PurposeTrendChart isThai={isThai} data={chartData} />
         </div>
       </section>
 
+      {/* Latest Reports Section */}
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="text-xl font-bold text-primary-900 md:text-2xl">
-            {isThai ? "แจ้งข่าวสารล่าสุด" : "Latest Announcements"}
+            {isThai ? "รายงานปัญหาน้ำเสียจากชุมชนล่าสุด" : "Latest Community Reports"}
           </h2>
-          <Link href={`/${locale}/feed`} className="inline-flex items-center gap-1 text-sm font-semibold text-primary-700 hover:text-primary-900">
-            {isThai ? "ดูทั้งหมด" : "View all"}
+          <Link href={`/${locale}/report`} className="inline-flex items-center gap-1 text-sm font-semibold text-primary-700 hover:text-primary-900">
+            {isThai ? "ดูประวัติรายงาน" : "View report history"}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          {MOCK_HOME_ANNOUNCEMENTS.map((item) => {
-            const badge = TYPE_STYLE[item.type];
-            return (
-              <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ${badge.className}`}>
-                    {isThai ? badge.th : badge.en}
-                  </span>
-                  <time className="text-xs text-slate-500">{item.date}</time>
-                </div>
-                <h3 className="text-sm font-bold leading-snug text-slate-900">
-                  {isThai ? item.titleTh : item.titleEn}
-                </h3>
-                <p className="mt-2 text-sm text-slate-600">{isThai ? item.summaryTh : item.summaryEn}</p>
-              </article>
-            );
-          })}
-        </div>
+
+        {latestReports.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
+            <p className="text-slate-500 text-sm">{isThai ? "ไม่มีข้อมูลรายงานจากชุมชนในขณะนี้" : "No community reports available."}</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-3">
+            {latestReports.map((item: any) => {
+              const status = REPORT_STATUS_LABELS[item.status] || REPORT_STATUS_LABELS.pending;
+              const dateStr = new Date(item.createdAt).toLocaleDateString(isThai ? "th-TH" : "en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+              });
+
+              // Truncate issues text
+              const description = item.identifiedIssues && item.identifiedIssues.length > 110 
+                ? item.identifiedIssues.slice(0, 110) + "..." 
+                : item.identifiedIssues || "-";
+
+              return (
+                <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${status.className}`}>
+                        {isThai ? status.th : status.en}
+                      </span>
+                      <time className="text-[10px] font-semibold text-slate-400">{dateStr}</time>
+                    </div>
+                    <h3 className="text-base font-bold leading-snug text-slate-800 flex items-center gap-1.5">
+                      <ShieldAlert className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                      <span>{item.laoName}</span>
+                    </h3>
+                    <p className="text-sm text-slate-500 leading-relaxed min-h-[4.5rem]">
+                      {description}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-bold">
+                    <span>จังหวัด: {item.province}</span>
+                    <span>อปท. รหัส: {item.laoId}</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
     </div>
   );

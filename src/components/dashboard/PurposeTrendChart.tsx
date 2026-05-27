@@ -4,6 +4,13 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 
 interface PurposeTrendChartProps {
   isThai: boolean;
+  data?: {
+    monthTh: string;
+    monthEn: string;
+    system: number;
+    lao: number;
+    community: number;
+  }[];
 }
 
 const DATA = [
@@ -13,7 +20,8 @@ const DATA = [
   { monthTh: "เม.ย.", monthEn: "Apr", system: 95, lao: 81, community: 92 },
 ];
 
-export default function PurposeTrendChart({ isThai }: PurposeTrendChartProps) {
+export default function PurposeTrendChart({ isThai, data }: PurposeTrendChartProps) {
+  const chartData = data || DATA;
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="mb-3">
@@ -26,7 +34,7 @@ export default function PurposeTrendChart({ isThai }: PurposeTrendChartProps) {
       </div>
       <div className="h-72 w-full min-h-0" style={{ height: 288 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={DATA}>
+          <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey={isThai ? "monthTh" : "monthEn"} stroke="#475569" />
             <YAxis stroke="#475569" />
