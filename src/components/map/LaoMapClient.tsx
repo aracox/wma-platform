@@ -13,9 +13,11 @@ const LAO_PIN_COLOR = "#0891b2"; // cyan-600
 interface Props {
   laos: LaoItem[];
   selectedProvince: string;
+  selectedDistrict: string;
+  searchQuery?: string;
 }
 
-export default function LaoMapClient({ laos, selectedProvince }: Props) {
+export default function LaoMapClient({ laos, selectedProvince, selectedDistrict, searchQuery = "" }: Props) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
@@ -33,9 +35,13 @@ export default function LaoMapClient({ laos, selectedProvince }: Props) {
     if (!map.current) return;
     clearMarkers();
 
-    const filtered = selectedProvince
-      ? laos.filter((l) => l.province === selectedProvince)
-      : laos;
+    let filtered = laos;
+    if (selectedProvince) {
+      filtered = filtered.filter((l) => l.province === selectedProvince);
+    }
+    if (selectedDistrict) {
+      filtered = filtered.filter((l) => l.district === selectedDistrict);
+    }
 
     // Require GPS-level decimal precision on at least one axis
     const hasGpsPrecision = (n: number) =>
@@ -59,6 +65,35 @@ export default function LaoMapClient({ laos, selectedProvince }: Props) {
         (hasGpsPrecision(l.lat) || hasGpsPrecision(l.lng))
     );
 
+    // Zoom/pan the map to fit the filtered markers dynamically
+    if (map.current && withCoords.length > 0 && (selectedProvince || selectedDistrict || searchQuery)) {
+      const lats = withCoords.map((c) => c.lat);
+      const lngs = withCoords.map((c) => c.lng);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+
+      if (minLat === maxLat && minLng === maxLng) {
+        map.current.flyTo({
+          center: [minLng, minLat],
+          zoom: 12,
+          duration: 1200,
+        });
+      } else {
+        map.current.fitBounds(
+          [[minLng, minLat], [maxLng, maxLat]],
+          { padding: 80, maxZoom: 13, duration: 1200 }
+        );
+      }
+    } else if (map.current && !selectedProvince && !selectedDistrict && !searchQuery) {
+      map.current.flyTo({
+        center: [101.0, 13.5],
+        zoom: 5.5,
+        duration: 1200,
+      });
+    }
+
     withCoords.forEach((lao) => {
       const el = document.createElement("div");
       el.title = lao.name;
@@ -68,9 +103,7 @@ export default function LaoMapClient({ laos, selectedProvince }: Props) {
         border: 2.5px solid white;
         box-shadow: 0 2px 6px rgba(0,0,0,0.28);
         cursor: pointer;
-        transition: box-shadow 0.15s, transform 0.15s;
-        transform-origin: center center;
-        will-change: transform;
+        transition: box-shadow 0.15s;
       `;
       el.addEventListener("mouseenter", () => {
         el.style.boxShadow = "0 0 0 5px rgba(8,145,178,0.35), 0 2px 8px rgba(0,0,0,0.3)";
@@ -88,7 +121,7 @@ export default function LaoMapClient({ laos, selectedProvince }: Props) {
         .addTo(map.current!);
       markers.current.push(marker);
     });
-  }, [laos, selectedProvince, clearMarkers]);
+  }, [laos, selectedProvince, selectedDistrict, searchQuery, clearMarkers]);
 
   // Init map
   useEffect(() => {
@@ -119,7 +152,7 @@ export default function LaoMapClient({ laos, selectedProvince }: Props) {
   // Refresh markers when data/filter changes
   useEffect(() => {
     if (mapReady) addMarkers();
-  }, [mapReady, laos, selectedProvince, addMarkers]);
+  }, [mapReady, laos, selectedProvince, selectedDistrict, searchQuery, addMarkers]);
 
   return (
     <div className="relative w-full h-full">

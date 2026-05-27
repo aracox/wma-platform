@@ -7,6 +7,7 @@
     "report": "Report Issue",
     "lao": "LAO Directory",
     "admin": "Admin",
+    "cooperation": "Request Cooperation",
     "login": "Sign In",
     "logout": "Sign Out"
   },
@@ -21,7 +22,15 @@
       "participation": "Community Participation",
       "capacity": "Capacity (m³/day)",
       "population": "Served Population",
-      "status": "System Status"
+      "status": "System Status",
+      "office_address": "Office Address",
+      "area": "Area",
+      "coordinates": "Coordinates",
+      "no_coordinates": "No coordinate data in system",
+      "open_maps": "Open in Google Maps",
+      "no_map_data": "No map data available for this LAO",
+      "no_map_description": "Unable to display map because latitude/longitude coordinates are missing.",
+      "no_data": "No data"
     }
   },
   "home": {

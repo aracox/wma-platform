@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, MapPin, Building2, ExternalLink, 
-  Droplets, Users, CheckCircle2, AlertCircle, Clock 
+  Droplets, Users, CheckCircle2, AlertCircle, Clock, Map
 } from "lucide-react";
 import { getLaoById } from "@/data/lao";
 import { useMemo } from "react";
@@ -16,6 +16,7 @@ export default function LAODetailPage() {
   
   const laoId = params.id as string;
   const lao = useMemo(() => getLaoById(laoId), [laoId]);
+  const hasCoordinates = useMemo(() => !!(lao && lao.lat !== 0 && lao.lng !== 0), [lao]);
 
   if (!lao) {
     return (
@@ -217,7 +218,9 @@ export default function LAODetailPage() {
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">ที่ตั้งสำนักงาน</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                    {t("details.office_address")}
+                  </label>
                   <p className="text-gray-800 font-medium">เลขที่ {lao.address} หมู่ {lao.moo}</p>
                   <p className="text-gray-600 mt-1">ต.{lao.subdistrict} อ.{lao.district}</p>
                   <p className="text-gray-600 mt-1">จ.{lao.province} {lao.zipcode}</p>
@@ -225,43 +228,80 @@ export default function LAODetailPage() {
                 
                 {lao.area && (
                   <div className="pt-4 border-t border-gray-50">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">พื้นที่</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                      {t("details.area")}
+                    </label>
                     <p className="text-gray-800 font-medium">{lao.area} ตร.กม.</p>
                   </div>
                 )}
 
                 <div className="pt-4 border-t border-gray-50">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">พิกัดสถานที่</label>
-                  <div className="flex justify-between bg-gray-50 p-3 rounded-xl text-sm font-mono text-gray-700 items-center">
-                    <span className="font-semibold text-gray-900">{lao.lat.toFixed(6)}</span>
-                    <span className="text-gray-300 px-2">|</span>
-                    <span className="font-semibold text-gray-900">{lao.lng.toFixed(6)}</span>
-                  </div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                    {t("details.coordinates")}
+                  </label>
+                  {hasCoordinates ? (
+                    <div className="flex justify-between bg-gray-50 p-3 rounded-xl text-sm font-mono text-gray-700 items-center">
+                      <span className="font-semibold text-gray-900">{lao.lat.toFixed(6)}</span>
+                      <span className="text-gray-300 px-2">|</span>
+                      <span className="font-semibold text-gray-900">{lao.lng.toFixed(6)}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-sm">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span className="font-medium">{t("details.no_coordinates")}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Map embed using iframe with standard Google Maps (Using coordinates) */}
-              <div className="aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 relative shadow-inner">
-                <iframe 
-                  width="100%" 
-                  height="100%" 
-                  frameBorder="0" 
-                  style={{ border: 0 }}
-                  src={`https://maps.google.com/maps?q=${lao.lat},${lao.lng}&hl=th&z=15&output=embed`}
-                  allowFullScreen
-                />
-                <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-2xl pointer-events-none" />
-              </div>
-              
-              <a 
-                href={`https://maps.google.com/maps?q=${lao.lat},${lao.lng}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 w-full flex items-center justify-center bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
-              >
-                เปิดพิกัดใน Google Maps
-                <ExternalLink className="w-4 h-4 ml-2" />
-              </a>
+              {hasCoordinates ? (
+                <>
+                  <div className="aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 relative shadow-inner">
+                    <iframe 
+                      width="100%" 
+                      height="100%" 
+                      frameBorder="0" 
+                      style={{ border: 0 }}
+                      src={`https://maps.google.com/maps?q=${lao.lat},${lao.lng}&hl=th&z=15&output=embed`}
+                      allowFullScreen
+                    />
+                    <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-2xl pointer-events-none" />
+                  </div>
+                  
+                  <a 
+                    href={`https://maps.google.com/maps?q=${lao.lat},${lao.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 w-full flex items-center justify-center bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
+                  >
+                    {t("details.open_maps")}
+                    <ExternalLink className="w-4 h-4 ml-2" />
+                  </a>
+                </>
+              ) : (
+                <>
+                  <div className="aspect-square bg-gray-50 rounded-2xl flex flex-col items-center justify-center border border-dashed border-gray-200 p-6 text-center shadow-inner relative">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3 text-gray-400">
+                      <Map className="w-6 h-6" />
+                    </div>
+                    <p className="font-bold text-gray-700 text-sm mb-1">
+                      {t("details.no_map_data")}
+                    </p>
+                    <p className="text-xs text-gray-500 max-w-[200px] leading-relaxed">
+                      {t("details.no_map_description")}
+                    </p>
+                  </div>
+                  
+                  <button 
+                    disabled
+                    className="mt-4 w-full flex items-center justify-center bg-gray-100 text-gray-400 py-3.5 rounded-xl text-sm font-medium cursor-not-allowed border border-gray-200/60"
+                  >
+                    {t("details.open_maps")}
+                    <ExternalLink className="w-4 h-4 ml-2 opacity-50" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

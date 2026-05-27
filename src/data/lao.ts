@@ -50,6 +50,17 @@ export const getLaoById = (id: string): LaoDetail | undefined => {
   const base = LAOS_DATA.find((l) => l.id === id);
   if (!base) return undefined;
 
+  // Deriving deterministic values from the ID to avoid hydration mismatch
+  const numericId = parseInt(id.replace(/\D/g, ""), 10) || 1000;
+  const capacity = 500 + (numericId % 2000);
+  const servedPopulation = 1000 + (numericId % 10000);
+  
+  // Deriving a deterministic maintenance date (e.g. 2024 or 2025)
+  const year = 2025 - (numericId % 2);
+  const month = String((numericId % 12) + 1).padStart(2, '0');
+  const day = String((numericId % 28) + 1).padStart(2, '0');
+  const lastMaintained = `${year}-${month}-${day}`;
+
   // Mocking the extra data specific to this LAO ID
   return {
     ...base,
@@ -58,9 +69,9 @@ export const getLaoById = (id: string): LaoDetail | undefined => {
         id: `sys-${id}-1`,
         name: `ระบบบำบัดน้ำเสียชุมชน ${base.name}แห่งที่ 1`,
         status: "operational",
-        capacityCubicMetersPerDay: 500 + Math.floor(Math.random() * 2000),
-        servedPopulation: 1000 + Math.floor(Math.random() * 10000),
-        lastMaintained: new Date(Date.now() - Math.random() * 10000000000).toISOString().split('T')[0],
+        capacityCubicMetersPerDay: capacity,
+        servedPopulation: servedPopulation,
+        lastMaintained: lastMaintained,
       }
     ],
     activities: [

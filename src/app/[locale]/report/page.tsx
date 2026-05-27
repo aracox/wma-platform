@@ -169,28 +169,29 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-primary-800">แจ้งปัญหา / รายงานผลการดำเนินงาน</h1>
-          <p className="text-text-secondary text-sm mt-1">รายงานข้อมูลและกิจกรรมการจัดการน้ำเสียของ อปท.</p>
-        </div>
-        
-        {/* User Context Badge */}
-        <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border bg-primary-50 border-primary-200 text-primary-700">
-          <Shield className="h-3.5 w-3.5" />
-          {isAdmin ? "ผู้ดูแลระบบ (ทุกพื้นที่)" : currentUser.laoName}
-        </div>
-      </div>
-
-      {/* Report Form Component */}
-      {(isOfficer || isAdmin) && (
-        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-          <div className="bg-primary-50 border-b border-border px-6 py-4 flex items-center gap-2 text-primary-800 font-bold">
-            <FileText className="h-5 w-5" />
-            แบบฟอร์มบันทึกข้อมูลรายงานระดับท้องถิ่น
+    <div className="min-h-screen bg-slate-50 py-12 animate-fade-up">
+      <div className="max-w-4xl mx-auto px-4 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900">แจ้งปัญหา / รายงานผลการดำเนินงาน</h1>
+            <p className="text-slate-500 text-sm mt-1">รายงานข้อมูลและกิจกรรมการจัดการน้ำเสียของ อปท.</p>
           </div>
+          
+          {/* User Context Badge */}
+          <div className="sm:self-center self-start flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border bg-primary-50 border-primary-200 text-primary-700">
+            <Shield className="h-3.5 w-3.5" />
+            {isAdmin ? "ผู้ดูแลระบบ (ทุกพื้นที่)" : currentUser.laoName}
+          </div>
+        </div>
+
+        {/* Report Form Component */}
+        {(isOfficer || isAdmin) && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-primary-900 to-primary-800 border-b border-primary-950 px-6 py-4.5 flex items-center gap-2 text-white font-bold">
+              <FileText className="h-5 w-5 text-blue-200" />
+              แบบฟอร์มบันทึกข้อมูลรายงานระดับท้องถิ่น
+            </div>
           
           <div className="p-6 space-y-6">
             {submitted && (
@@ -343,10 +344,16 @@ export default function ReportPage() {
               // Officers can edit their own LAO's reports. Admins can edit anything.
               const canEdit = isAdmin || currentUser.laoId === report.laoId;
 
+              const statusLeftBorderClass = 
+                report.status === "pending" ? "border-l-yellow-500" :
+                report.status === "reviewing" ? "border-l-blue-500" :
+                "border-l-green-500";
+
               return (
                 <div key={report.id} className={cn(
-                  "bg-white rounded-xl border p-5 space-y-4 shadow-sm transition-all",
-                  isEditing ? "border-primary-400 ring-4 ring-primary-50" : "border-border hover:shadow-md"
+                  "bg-white rounded-2xl border-y border-r p-6 space-y-4 shadow-sm transition-all border-l-4",
+                  statusLeftBorderClass,
+                  isEditing ? "border-primary-400 ring-4 ring-primary-50/50" : "border-slate-200 hover:shadow-md hover:shadow-slate-200/40"
                 )}>
                   {/* Card Header */}
                   <div className="flex items-center justify-between gap-4 border-b border-border/50 pb-3">
@@ -513,6 +520,7 @@ export default function ReportPage() {
             })}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

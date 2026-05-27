@@ -125,3 +125,34 @@ export interface CommunityEvent {
   descriptionEn: string;
   photoUrl?: string;
 }
+
+export interface AnnouncementItem {
+  id: string;
+  type: "system" | "lao" | "community";
+  titleTh: string;
+  titleEn: string;
+  summaryTh: string;
+  summaryEn: string;
+  provinceTh: string;
+  provinceEn: string;
+  date: string;
+  statusTh: string;
+  statusEn: string;
+}
+
+export interface CooperationRequest {
+  id: string;
+  subject: string;
+  details: string;
+  localPlan: string;
+  expectedOutcome: string;
+  laoId: string;
+  laoName: string;
+  lat: number;
+  lng: number;
+  province: string;
+  status: "pending" | "reviewing" | "resolved";
+  createdAt: string;
+  updatedAt?: string;
+  reportedBy: string;
+}

@@ -89,6 +89,22 @@ export default function Navbar() {
                 {t(item.key)}
               </Link>
             ))}
+            {currentUser && (
+              <Link
+                href={`/${locale}/cooperation`}
+                className={cn(isActive("/cooperation") ? "nav-link-active" : "nav-link")}
+              >
+                {t("cooperation")}
+              </Link>
+            )}
+            {currentUser?.role === "admin" && (
+              <Link
+                href={`/${locale}/feed/cms`}
+                className={cn(isActive("/feed/cms") ? "nav-link-active" : "nav-link")}
+              >
+                {t("admin")}
+              </Link>
+            )}
           </div>
 
           {/* Right actions */}
@@ -184,6 +200,30 @@ export default function Navbar() {
                 {t(item.key)}
               </Link>
             ))}
+            {currentUser && (
+              <Link
+                href={`/${locale}/cooperation`}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "block px-3 py-2 rounded-md text-sm font-medium",
+                  isActive("/cooperation") ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
+                )}
+              >
+                {t("cooperation")}
+              </Link>
+            )}
+            {currentUser?.role === "admin" && (
+              <Link
+                href={`/${locale}/feed/cms`}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "block px-3 py-2 rounded-md text-sm font-medium",
+                  isActive("/feed/cms") ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
+                )}
+              >
+                {t("admin")}
+              </Link>
+            )}
             {!currentUser && (
               <Link
                 href={`/${locale}/auth/login`}

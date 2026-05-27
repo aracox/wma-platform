@@ -1,6 +1,10 @@
 import { create } from "zustand";
-import { TreatmentFacility, WaterQualitySensor, CommunityReport, SystemStatus, WaterQualityLevel } from "@/types";
+import { 
+  TreatmentFacility, WaterQualitySensor, CommunityReport, 
+  SystemStatus, WaterQualityLevel, AnnouncementItem, CooperationRequest 
+} from "@/types";
 import { User } from "@/data/users";
+import { INITIAL_ANNOUNCEMENTS } from "@/data/announcements";
 
 interface AppState {
   // Auth
@@ -36,6 +40,21 @@ interface AppState {
   selectedProvince: string;
   toggleLayer: (layer: keyof AppState["mapLayers"]) => void;
   setProvince: (province: string) => void;
+
+  // Announcements (CMS)
+  announcements: AnnouncementItem[];
+  announcementsLoaded: boolean;
+  loadAnnouncements: () => void;
+  createAnnouncement: (item: AnnouncementItem) => void;
+  updateAnnouncement: (id: string, updated: Partial<AnnouncementItem>) => void;
+  deleteAnnouncement: (id: string) => void;
+
+  // Cooperation Requests (from API)
+  cooperations: CooperationRequest[];
+  cooperationsLoaded: boolean;
+  fetchCooperations: () => Promise<void>;
+  updateCooperationStatus: (id: string, status: CooperationRequest["status"]) => Promise<void>;
+  updateCooperationFields: (id: string, fields: Partial<CooperationRequest>) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -192,4 +211,99 @@ export const useAppStore = create<AppState>((set, get) => ({
       },
     })),
   setProvince: (province) => set({ selectedProvince: province }),
+
+  // Announcements
+  announcements: [],
+  announcementsLoaded: false,
+  loadAnnouncements: () => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("wma_announcements");
+      if (stored) {
+        set({ announcements: JSON.parse(stored), announcementsLoaded: true });
+      } else {
+        localStorage.setItem("wma_announcements", JSON.stringify(INITIAL_ANNOUNCEMENTS));
+        set({ announcements: INITIAL_ANNOUNCEMENTS, announcementsLoaded: true });
+      }
+    }
+  },
+  createAnnouncement: (item) => {
+    const next = [item, ...get().announcements];
+    set({ announcements: next });
+    if (typeof window !== "undefined") {
+      localStorage.setItem("wma_announcements", JSON.stringify(next));
+    }
+  },
+  updateAnnouncement: (id, updated) => {
+    const next = get().announcements.map((a) => a.id === id ? { ...a, ...updated } : a);
+    set({ announcements: next });
+    if (typeof window !== "undefined") {
+      localStorage.setItem("wma_announcements", JSON.stringify(next));
+    }
+  },
+  deleteAnnouncement: (id) => {
+    const next = get().announcements.filter((a) => a.id !== id);
+    set({ announcements: next });
+    if (typeof window !== "undefined") {
+      localStorage.setItem("wma_announcements", JSON.stringify(next));
+    }
+  },
+
+  // Cooperation Requests
+  cooperations: [],
+  cooperationsLoaded: false,
+  fetchCooperations: async () => {
+    try {
+      const res = await fetch("/api/cooperation");
+      if (res.ok) {
+        const data = await res.json();
+        set({ cooperations: data, cooperationsLoaded: true });
+      }
+    } catch (err) {
+      console.error("Failed to fetch cooperations:", err);
+    }
+  },
+  updateCooperationStatus: async (id, status) => {
+    // Optimistic update
+    set((state) => ({
+      cooperations: state.cooperations.map((c) =>
+        c.id === id ? { ...c, status } : c
+      ),
+    }));
+    try {
+      const res = await fetch("/api/cooperation", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (!res.ok) {
+        get().fetchCooperations();
+        console.error("Failed to save cooperation status");
+      }
+    } catch (err) {
+      get().fetchCooperations();
+      console.error("Failed to save cooperation status:", err);
+    }
+  },
+  updateCooperationFields: async (id, fields) => {
+    // Optimistic update
+    set((state) => ({
+      cooperations: state.cooperations.map((c) =>
+        c.id === id ? { ...c, ...fields } : c
+      ),
+    }));
+    try {
+      const res = await fetch("/api/cooperation", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...fields }),
+      });
+      if (!res.ok) {
+        get().fetchCooperations();
+        console.error("Failed to save cooperation fields");
+      }
+    } catch (err) {
+      get().fetchCooperations();
+      console.error("Failed to save cooperation fields:", err);
+    }
+  },
 }));

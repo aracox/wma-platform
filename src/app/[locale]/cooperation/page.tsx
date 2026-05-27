@@ -1,0 +1,532 @@
+"use client";
+import { useState, useEffect, useMemo } from "react";
+import { useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
+import { Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, Building2, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAppStore } from "@/store";
+import { CooperationRequest } from "@/types";
+import { getLaos } from "@/data/lao";
+
+const STATUS_LABELS: Record<string, { th: string; color: string }> = {
+  pending:   { th: "รอดำเนินการ",    color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+  reviewing: { th: "กำลังตรวจสอบ",  color: "bg-blue-100 text-blue-700 border-blue-200" },
+  resolved:  { th: "ได้รับการอนุมัติ",  color: "bg-green-100 text-green-700 border-green-200" },
+};
+
+export default function CooperationPage() {
+  const locale = useLocale();
+  const router = useRouter();
+
+  const currentUser = useAppStore((s) => s.currentUser);
+  const cooperations = useAppStore((s) => s.cooperations);
+  const cooperationsLoaded = useAppStore((s) => s.cooperationsLoaded);
+  const fetchCooperations = useAppStore((s) => s.fetchCooperations);
+  const updateCooperationStatus = useAppStore((s) => s.updateCooperationStatus);
+  const updateCooperationFields = useAppStore((s) => s.updateCooperationFields);
+
+  useEffect(() => {
+    if (!cooperationsLoaded) fetchCooperations();
+  }, [cooperationsLoaded, fetchCooperations]);
+
+  const isAdmin = currentUser?.role === "admin";
+  const isOfficer = currentUser?.role === "official";
+
+  // Data for Admin LAO dropdown
+  const allLaos = useMemo(() => getLaos(), []);
+  const [adminSelectedLaoId, setAdminSelectedLaoId] = useState("");
+
+  // Create Form state
+  const [subject, setSubject] = useState("");
+  const [details, setDetails] = useState("");
+  const [localPlan, setLocalPlan] = useState("");
+  const [expectedOutcome, setExpectedOutcome] = useState("");
+  
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Partial<CooperationRequest>>({});
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Status List state
+  const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
+  const [statusSaved, setStatusSaved] = useState<string | null>(null);
+  const [pendingStatuses, setPendingStatuses] = useState<Record<string, CooperationRequest["status"]>>({});
+
+  // Filtered cooperations
+  const myCooperations = isAdmin 
+    ? cooperations 
+    : cooperations.filter((c) => c.laoId === currentUser?.laoId);
+
+  // Form derived state
+  const targetLaoId = isAdmin ? adminSelectedLaoId : currentUser?.laoId;
+  const selectedLao = useMemo(() => {
+    return allLaos.find((l) => l.id === targetLaoId);
+  }, [allLaos, targetLaoId]);
+
+  const targetLaoName = isAdmin ? (selectedLao?.name || "") : currentUser?.laoName;
+  const targetProvince = isAdmin ? (selectedLao?.province || "ไม่ระบุ") : (currentUser?.province || "ไม่ระบุ");
+  
+  const canSubmit = !!(
+    targetLaoId &&
+    subject.trim() && 
+    details.trim() && 
+    localPlan.trim() && 
+    expectedOutcome.trim()
+  );
+
+  const handleSubmit = async () => {
+    if (!canSubmit || !currentUser) return;
+    setSubmitting(true);
+
+    const lat = selectedLao?.lat || 13.75;
+    const lng = selectedLao?.lng || 100.5;
+
+    const body = {
+      subject,
+      details,
+      localPlan,
+      expectedOutcome,
+      laoId: targetLaoId,
+      laoName: targetLaoName || "ไม่ระบุ อปท.",
+      lat,
+      lng,
+      province: targetProvince,
+      reportedBy: currentUser.id,
+    };
+
+    try {
+      const res = await fetch("/api/cooperation/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+        setSubject("");
+        setDetails("");
+        setLocalPlan("");
+        setExpectedOutcome("");
+        if (isAdmin) setAdminSelectedLaoId("");
+        await fetchCooperations();
+      }
+    } catch (err) {
+      console.error("Failed to submit cooperation request:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const startEdit = (req: CooperationRequest) => {
+    setEditingId(req.id);
+    setEditValues({
+      subject: req.subject,
+      details: req.details,
+      localPlan: req.localPlan,
+      expectedOutcome: req.expectedOutcome,
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId) return;
+    setSavingEdit(true);
+    await updateCooperationFields(editingId, editValues);
+    setSavingEdit(false);
+    setEditingId(null);
+  };
+
+  const handleStatusChange = (reqId: string, status: CooperationRequest["status"]) => {
+    setPendingStatuses((prev) => ({ ...prev, [reqId]: status }));
+    setStatusSaved(null);
+  };
+
+  const handleStatusSave = async (reqId: string) => {
+    const newStatus = pendingStatuses[reqId];
+    if (!newStatus) return;
+    setStatusUpdating(reqId);
+    await updateCooperationStatus(reqId, newStatus);
+    setPendingStatuses((prev) => { const n = { ...prev }; delete n[reqId]; return n; });
+    setStatusUpdating(null);
+    setStatusSaved(reqId);
+    setTimeout(() => setStatusSaved(null), 2000);
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="text-center space-y-4 animate-fade-up">
+          <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto">
+            <Lock className="h-8 w-8 text-primary-400" />
+          </div>
+          <h2 className="text-xl font-bold text-primary-800">กรุณาเข้าสู่ระบบก่อน</h2>
+          <p className="text-text-secondary text-sm">เจ้าหน้าที่หรือผู้ดูแลระบบต้องเข้าสู่ระบบเพื่อดำเนินการเสนอความร่วมมือ</p>
+          <button
+            onClick={() => router.push(`/${locale}/auth/login`)}
+            className="px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors"
+          >
+            เข้าสู่ระบบ
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 py-12 animate-fade-up">
+      <div className="max-w-4xl mx-auto px-4 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900">อปท. แจ้งต้องการความร่วมมือกับ อจน.</h1>
+            <p className="text-slate-500 text-sm mt-1">ยื่นเรื่องเพื่อเสนอโครงการความร่วมมือหรือขอรับการสนับสนุนจากองค์การจัดการน้ำเสีย</p>
+          </div>
+          
+          {/* User Context Badge */}
+          <div className="sm:self-center self-start flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border bg-primary-50 border-primary-200 text-primary-700">
+            <Shield className="h-3.5 w-3.5" />
+            {isAdmin ? "ผู้ดูแลระบบ (ทุกพื้นที่)" : currentUser.laoName}
+          </div>
+        </div>
+
+        {/* Cooperation Form Component */}
+        {(isOfficer || isAdmin) && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-primary-900 to-primary-800 border-b border-primary-950 px-6 py-4.5 flex items-center gap-2 text-white font-bold">
+              <FileText className="h-5 w-5 text-blue-200" />
+              แบบฟอร์มบันทึกข้อมูลขอความร่วมมือจาก อปท.
+            </div>
+          
+            <div className="p-6 space-y-6">
+              {submitted && (
+                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm font-semibold animate-fade-up">
+                  <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                  บันทึกข้อมูลและส่งเรื่องเสนอความร่วมมือเรียบร้อยแล้ว
+                  <button onClick={() => setSubmitted(false)} className="ml-auto"><X className="h-4 w-4" /></button>
+                </div>
+              )}
+
+              {!currentUser.laoId && !isAdmin && (
+                <div className="p-4 bg-yellow-50 text-yellow-800 rounded-xl text-sm mb-4 border border-yellow-200">
+                  คุณยังไม่มีสังกัด อปท. ในระบบ กรุณาติดต่อผู้ดูแลระบบเพื่อเชื่อมโยงบัญชี
+                </div>
+              )}
+
+              {/* Admin LAO Selector */}
+              {isAdmin && (
+                <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
+                  <label className="block text-sm font-bold text-primary-800 mb-2">
+                    <Shield className="h-4 w-4 inline-block mr-1.5 text-chula-600" />
+                    เลือก อปท. ที่ต้องการส่งรายงานแทน (เฉพาะ Admin)
+                  </label>
+                  <div className="relative max-w-md">
+                    <select
+                      value={adminSelectedLaoId}
+                      onChange={(e) => setAdminSelectedLaoId(e.target.value)}
+                      className="w-full appearance-none pl-4 pr-10 py-2.5 rounded-xl border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
+                    >
+                      <option value="">-- ค้นหาและเลือก อปท. --</option>
+                      {allLaos.map((l) => (
+                        <option key={l.id} value={l.id}>
+                          {l.name} จ.{l.province}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Field 1: Subject / Objective */}
+                <div>
+                  <label className="block text-sm font-bold text-primary-800 mb-2">1. หัวข้อ / วัตถุประสงค์ความร่วมมือ</label>
+                  <textarea
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    disabled={!targetLaoId}
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                    placeholder="ระบุวัตถุประสงค์ เช่น ขอความร่วมมือด้านวิศวกรรมในการออกแบบระบบบำบัด, การอบรมบุคลากร, หรือการลงทุนร่วมกัน..."
+                  />
+                </div>
+
+                {/* Field 2: Details / Current Issues */}
+                <div>
+                  <label className="block text-sm font-bold text-primary-800 mb-2">2. รายละเอียด / สภาพปัญหาปัจจุบัน</label>
+                  <textarea
+                    value={details}
+                    onChange={(e) => setDetails(e.target.value)}
+                    disabled={!targetLaoId}
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed bg-orange-50/30"
+                    placeholder="อธิบายรายละเอียดปัญหาความเดือดร้อน สภาพปัญหาแหล่งน้ำ หรือขีดความสามารถของระบบบำบัดน้ำเสียในปัจจุบัน..."
+                  />
+                </div>
+
+                {/* Field 3: LAO Plan */}
+                <div>
+                  <label className="block text-sm font-bold text-primary-800 mb-2">3. แผนงานเดิม / โครงการที่กำลังดำเนินการของ อปท.</label>
+                  <textarea
+                    value={localPlan}
+                    onChange={(e) => setLocalPlan(e.target.value)}
+                    disabled={!targetLaoId}
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                    placeholder="ระบุแผนงานหรือโครงการที่ อปท. มีอยู่ในปัจจุบัน หรือกิจกรรมที่ได้เคยดำเนินการไปแล้วเพื่อประกอบการพิจารณาความร่วมมือ..."
+                  />
+                </div>
+
+                {/* Field 4: Expected Outcome */}
+                <div>
+                  <label className="block text-sm font-bold text-primary-800 mb-2">4. ผลลัพธ์ที่คาดว่าจะได้รับ</label>
+                  <textarea
+                    value={expectedOutcome}
+                    onChange={(e) => setExpectedOutcome(e.target.value)}
+                    disabled={!targetLaoId}
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                    placeholder="ประโยชน์ที่จะได้รับจากการทำความร่วมมือ เช่น สามารถบำบัดน้ำเสียได้เพิ่มขึ้น, ชุมชนมีความรู้ความเข้าใจเพิ่มขึ้น..."
+                  />
+                </div>
+              </div>
+
+              {/* Submitter info & Submit Button */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border">
+                <div className="flex items-center gap-2 text-xs text-text-secondary">
+                  <span className="font-semibold px-2 py-1 bg-gray-100 rounded-md truncate max-w-[150px]">
+                    ผู้แจ้ง: {currentUser.name}
+                  </span>
+                  <span className="truncate max-w-[200px]">
+                    อปท: {targetLaoName || "ยังไม่เลือก อปท."}
+                  </span>
+                </div>
+                
+                <button
+                  onClick={handleSubmit}
+                  disabled={!canSubmit || submitting}
+                  className={cn(
+                    "w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-2.5 font-bold rounded-xl transition-all text-sm",
+                    canSubmit && !submitting
+                      ? "bg-primary-600 text-white hover:bg-primary-700 shadow-sm"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  )}
+                >
+                  {submitting ? (
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> กำลังบันทึก...</>
+                  ) : (
+                    <><Send className="h-4 w-4" /> ส่งความต้องการความร่วมมือ</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* History List */}
+        <div className="pt-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-primary-800">
+              {isAdmin ? "ประวัติการขอความร่วมมือของทุก อปท." : `ประวัติการขอความร่วมมือของ ${currentUser.laoName || ""}`}
+            </h2>
+            <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-200">
+              {myCooperations.length} รายการ
+            </span>
+          </div>
+
+          {myCooperations.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-2xl border border-border">
+              <p className="text-text-secondary text-sm">ยังไม่มีประวัติการส่งความต้องการความร่วมมือ</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {[...myCooperations].reverse().map((req) => {
+                const pendingStatus = pendingStatuses[req.id];
+                const displayStatus = pendingStatus ?? req.status;
+                const isEditing = editingId === req.id;
+                
+                // Officers can edit their own LAO's requests. Admins can edit anything.
+                const canEdit = isAdmin || currentUser.laoId === req.laoId;
+
+                const statusLeftBorderClass = 
+                  req.status === "pending" ? "border-l-yellow-500" :
+                  req.status === "reviewing" ? "border-l-blue-500" :
+                  "border-l-green-500";
+
+                return (
+                  <div key={req.id} className={cn(
+                    "bg-white rounded-2xl border-y border-r p-6 space-y-4 shadow-sm transition-all border-l-4",
+                    statusLeftBorderClass,
+                    isEditing ? "border-primary-400 ring-4 ring-primary-50/50" : "border-slate-200 hover:shadow-md hover:shadow-slate-200/40"
+                  )}>
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between gap-4 border-b border-border/50 pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="h-4 w-4 text-primary-700" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-primary-800 text-sm md:text-base leading-tight">
+                            {req.laoName}
+                          </div>
+                          <div className="text-xs text-text-secondary mt-0.5">
+                            {new Date(req.createdAt).toLocaleString("th-TH")} · จังหวัด{req.province}
+                            {req.updatedAt && <span className="text-primary-500 font-medium ml-1">(แก้ไขแล้ว)</span>}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {canEdit && !isEditing && (
+                          <button
+                            onClick={() => startEdit(req)}
+                            className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-800 hover:bg-primary-50 px-2.5 py-1.5 rounded-lg transition-colors border border-transparent hover:border-primary-200"
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                            แก้ไข
+                          </button>
+                        )}
+                        <span className={cn("text-xs px-2.5 py-1 rounded-full border font-bold shadow-sm whitespace-nowrap", STATUS_LABELS[req.status].color)}>
+                          {STATUS_LABELS[req.status].th}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 4-Column Data Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                      {/* Column 1 */}
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-gray-700 text-xs uppercase tracking-wide">1. หัวข้อ / วัตถุประสงค์ความร่วมมือ</h4>
+                        {isEditing ? (
+                          <textarea
+                            value={editValues.subject || ""}
+                            onChange={(e) => setEditValues({ ...editValues, subject: e.target.value })}
+                            rows={3}
+                            className="w-full text-xs p-2.5 bg-white border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-100 outline-none resize-none"
+                          />
+                        ) : (
+                          <p className="text-gray-600 leading-relaxed bg-gray-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-wrap">{req.subject}</p>
+                        )}
+                      </div>
+                      
+                      {/* Column 2 */}
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-orange-700 text-xs uppercase tracking-wide">2. รายละเอียด / สภาพปัญหาปัจจุบัน</h4>
+                        {isEditing ? (
+                          <textarea
+                            value={editValues.details || ""}
+                            onChange={(e) => setEditValues({ ...editValues, details: e.target.value })}
+                            rows={3}
+                            className="w-full text-xs p-2.5 bg-orange-50/30 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-100 outline-none resize-none"
+                          />
+                        ) : (
+                          <p className="text-gray-800 leading-relaxed bg-orange-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-wrap">{req.details}</p>
+                        )}
+                      </div>
+                      
+                      {/* Column 3 */}
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-cyan-700 text-xs uppercase tracking-wide">3. แผนงานเดิม / โครงการที่กำลังดำเนินการของ อปท.</h4>
+                        {isEditing ? (
+                          <textarea
+                            value={editValues.localPlan || ""}
+                            onChange={(e) => setEditValues({ ...editValues, localPlan: e.target.value })}
+                            rows={3}
+                            className="w-full text-xs p-2.5 bg-cyan-50/30 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-100 outline-none resize-none"
+                          />
+                        ) : (
+                          <p className="text-gray-600 leading-relaxed bg-cyan-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-wrap">{req.localPlan}</p>
+                        )}
+                      </div>
+                      
+                      {/* Column 4 */}
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-green-700 text-xs uppercase tracking-wide">4. ผลลัพธ์ที่คาดว่าจะได้รับ</h4>
+                        {isEditing ? (
+                          <textarea
+                            value={editValues.expectedOutcome || ""}
+                            onChange={(e) => setEditValues({ ...editValues, expectedOutcome: e.target.value })}
+                            rows={3}
+                            className="w-full text-xs p-2.5 bg-green-50/30 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-100 outline-none resize-none"
+                          />
+                        ) : (
+                          <p className="text-gray-600 leading-relaxed bg-green-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-wrap">{req.expectedOutcome}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Editing Controls */}
+                    {isEditing && (
+                      <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+                        <button
+                          onClick={() => setEditingId(null)}
+                          disabled={savingEdit}
+                          className="px-4 py-1.5 text-xs font-semibold text-text-secondary hover:bg-gray-100 rounded-lg transition-colors border border-transparent hover:border-border"
+                        >
+                          ยกเลิก
+                        </button>
+                        <button
+                          onClick={handleSaveEdit}
+                          disabled={savingEdit}
+                          className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-primary-600 text-white hover:bg-primary-700 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          {savingEdit ? "กำลังบันทึก..." : <><Save className="h-3.5 w-3.5" /> บันทึกการแก้ไข</>}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Status Update Controls (Only for Admin to save/edit status, but canEdit ensures we display appropriate actions) */}
+                    {isAdmin && !isEditing && (
+                      <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-border/50">
+                        <span className="text-xs text-text-secondary font-medium mr-1">อัปเดตสถานะโครงการ (เฉพาะผู้ดูแลระบบ):</span>
+                        
+                        <div className="relative">
+                          <select
+                            value={displayStatus}
+                            onChange={(e) => handleStatusChange(req.id, e.target.value as CooperationRequest["status"])}
+                            className={cn(
+                              "appearance-none pl-4 pr-8 py-1.5 text-xs font-bold rounded-full border outline-none shadow-sm transition-colors cursor-pointer",
+                              displayStatus === "pending" ? "bg-yellow-100 border-yellow-200 text-yellow-700 focus:ring-2 focus:ring-yellow-200 hover:bg-yellow-200/60" :
+                              displayStatus === "reviewing" ? "bg-blue-100 border-blue-200 text-blue-700 focus:ring-2 focus:ring-blue-200 hover:bg-blue-200/60" :
+                              "bg-green-100 border-green-200 text-green-700 focus:ring-2 focus:ring-green-200 hover:bg-green-200/60"
+                            )}
+                          >
+                            {(["pending", "reviewing", "resolved"] as const).map(s => (
+                              <option key={s} value={s} className="bg-white text-gray-800 font-medium">
+                                {STATUS_LABELS[s].th}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className={cn(
+                            "absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none",
+                            displayStatus === "pending" ? "text-yellow-700" :
+                            displayStatus === "reviewing" ? "text-blue-700" :
+                            "text-green-700"
+                          )} />
+                        </div>
+
+                        {pendingStatus && pendingStatus !== req.status && (
+                          <button
+                            onClick={() => handleStatusSave(req.id)}
+                            disabled={statusUpdating === req.id}
+                            className="text-xs font-bold px-4 py-1.5 bg-primary-600 text-white rounded-full hover:bg-primary-700 transition-colors shadow-sm ml-1"
+                          >
+                            {statusUpdating === req.id ? "กำลังบันทึก..." : "บันทึกสถานะ"}
+                          </button>
+                        )}
+                        {statusSaved === req.id && (
+                          <span className="text-sm border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full inline-flex items-center">✅</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
