@@ -148,24 +148,14 @@ export default function ReportPage() {
     setTimeout(() => setStatusSaved(null), 2000);
   };
 
+  useEffect(() => {
+    if (!currentUser) {
+      router.replace(`/${locale}/auth/login`);
+    }
+  }, [currentUser, locale, router]);
+
   if (!currentUser) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="text-center space-y-4 animate-fade-up">
-          <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto">
-            <Lock className="h-8 w-8 text-primary-400" />
-          </div>
-          <h2 className="text-xl font-bold text-primary-800">กรุณาเข้าสู่ระบบก่อน</h2>
-          <p className="text-text-secondary text-sm">เจ้าหน้าที่ต้องเข้าสู่ระบบเพื่อรายงานปัญหา อปท.</p>
-          <button
-            onClick={() => router.push(`/${locale}/auth/login`)}
-            className="px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors"
-          >
-            เข้าสู่ระบบ
-          </button>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

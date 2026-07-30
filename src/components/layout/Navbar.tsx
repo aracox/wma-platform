@@ -74,15 +74,20 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.key}
-                href={`/${locale}${item.href}`}
-                className={cn(isActive(item.href) ? "nav-link-active" : "nav-link")}
-              >
-                {t(item.key)}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const targetHref = item.href === "/report" && !currentUser
+                ? `/${locale}/auth/login`
+                : `/${locale}${item.href}`;
+              return (
+                <Link
+                  key={item.key}
+                  href={targetHref}
+                  className={cn(isActive(item.href) ? "nav-link-active" : "nav-link")}
+                >
+                  {t(item.key)}
+                </Link>
+              );
+            })}
             {currentUser && (
               <Link
                 href={`/${locale}/cooperation`}
@@ -172,19 +177,24 @@ export default function Navbar() {
         {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden pb-4 pt-2 border-t border-white/20 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.key}
-                href={`/${locale}${item.href}`}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "block px-3 py-2 rounded-md text-sm font-medium",
-                  isActive(item.href) ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
-                )}
-              >
-                {t(item.key)}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const targetHref = item.href === "/report" && !currentUser
+                ? `/${locale}/auth/login`
+                : `/${locale}${item.href}`;
+              return (
+                <Link
+                  key={item.key}
+                  href={targetHref}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "block px-3 py-2 rounded-md text-sm font-medium",
+                    isActive(item.href) ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
+                  )}
+                >
+                  {t(item.key)}
+                </Link>
+              );
+            })}
             {currentUser && (
               <Link
                 href={`/${locale}/cooperation`}
