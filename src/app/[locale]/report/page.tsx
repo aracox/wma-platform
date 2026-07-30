@@ -228,7 +228,7 @@ export default function ReportPage() {
           </div>
           <div className="pt-2">
             <button
-              onClick={() => router.push(`/${locale}/auth/login/user`)}
+              onClick={() => router.push(`/${locale}/auth/login/user?callbackUrl=/${locale}/report`)}
               className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg text-sm cursor-pointer"
             >
               เข้าสู่ระบบเพื่อแจ้งปัญหา

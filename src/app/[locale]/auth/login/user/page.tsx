@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, KeyRound, AlertTriangle, ArrowRight, RefreshCw, CheckCircle2, LogOut, FileText, Clock } from "lucide-react";
 import { useAppStore } from "@/store";
 import Link from "next/link";
@@ -9,6 +9,8 @@ import Link from "next/link";
 export default function UserLoginPage() {
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || `/${locale}/report`;
   const login = useAppStore((s) => s.login);
   const logout = useAppStore((s) => s.logout);
   const currentUser = useAppStore((s) => s.currentUser);
@@ -115,7 +117,7 @@ export default function UserLoginPage() {
 
       // Logged in successfully
       login(data.user);
-      router.push(`/${locale}/report`);
+      router.push(callbackUrl);
     } catch (err) {
       setError(locale === "th" ? "เกิดข้อผิดพลาดในการตรวจสอบ OTP" : "Error verifying OTP");
     } finally {
@@ -145,11 +147,11 @@ export default function UserLoginPage() {
 
           <div className="pt-2 space-y-3">
             <Link
-              href={`/${locale}/report`}
+              href={callbackUrl}
               className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-all shadow-sm text-sm"
             >
               <FileText className="h-4 w-4" />
-              {locale === "th" ? "ไปยังหน้าแจ้งปัญหา / ประวัติรายงาน" : "Go to Reports Page"}
+              {locale === "th" ? "ไปยังหน้าถัดไป" : "Continue"}
             </Link>
             
             <button

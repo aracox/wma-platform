@@ -202,7 +202,7 @@ export default function CooperationPage() {
           </div>
           <div className="pt-2">
             <button
-              onClick={() => router.push(`/${locale}/auth/login`)}
+              onClick={() => router.push(`/${locale}/auth/login/user?callbackUrl=/${locale}/cooperation`)}
               className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg text-sm cursor-pointer"
             >
               เข้าสู่ระบบเพื่อเสนอโครงการ
@@ -225,8 +225,7 @@ export default function CooperationPage() {
           
           {/* User Context Badge */}
           <div className="sm:self-center self-start flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border bg-primary-50 border-primary-200 text-primary-700">
-            <Shield className="h-3.5 w-3.5" />
-            {isAdmin ? "ผู้ดูแลระบบ (ทุกพื้นที่)" : currentUser.laoName}
+            {isAdmin ? "ผู้ดูแลระบบ (ทุกพื้นที่)" : (currentUser.laoName || (currentUser.email ? `ผู้ใช้งาน: ${currentUser.email}` : "ผู้ใช้งานทั่วไป"))}
           </div>
         </div>
 
@@ -368,7 +367,7 @@ export default function CooperationPage() {
         <div className="pt-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-primary-800">
-              {isAdmin ? "ประวัติการขอจัดตั้งศูนย์บริหารจัดการน้ำของทุก อปท." : `ประวัติการขอจัดตั้งศูนย์ฯ ของ ${currentUser.laoName || ""}`}
+              {isAdmin ? "ประวัติการขอจัดตั้งศูนย์บริหารจัดการน้ำของทุก อปท." : currentUser.laoName ? `ประวัติการขอจัดตั้งศูนย์ฯ ของ ${currentUser.laoName}` : "ประวัติการขอจัดตั้งศูนย์ฯ"}
             </h2>
             <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-200">
               {myCooperations.length} รายการ
