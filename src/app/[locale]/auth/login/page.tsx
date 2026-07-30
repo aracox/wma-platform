@@ -2,12 +2,12 @@
 import { useState } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Droplets, Lock, User, AlertTriangle, LogIn } from "lucide-react";
+import { Shield, Lock, User, AlertTriangle, LogIn } from "lucide-react";
 import { useAppStore } from "@/store";
 import { USERS } from "@/data/users";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const locale = useLocale();
   const router = useRouter();
   const login = useAppStore((s) => s.login);
@@ -29,7 +29,7 @@ export default function LoginPage() {
             {locale === "th" ? "เข้าสู่ระบบแล้ว" : "Already signed in"}
           </h2>
           <p className="text-text-secondary text-sm mb-4">
-            {locale === "th" ? currentUser.name : currentUser.nameEn}
+            {currentUser.name}
           </p>
           <Link
             href={`/${locale}`}
@@ -47,7 +47,7 @@ export default function LoginPage() {
     setError("");
 
     const user = USERS.find(
-      (u) => u.username === username && u.password === password
+      (u) => u.username === username && u.password === password && u.role === "admin"
     );
 
     if (user) {
@@ -56,26 +56,26 @@ export default function LoginPage() {
     } else {
       setError(
         locale === "th"
-          ? "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"
-          : "Invalid username or password"
+          ? "ชื่อผู้ใช้หรือรหัสผ่าน Admin ไม่ถูกต้อง"
+          : "Invalid admin username or password"
       );
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4">
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-100 rounded-2xl mb-4">
-            <Droplets className="h-8 w-8 text-primary-600" />
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-chula-100 rounded-2xl mb-4 text-chula-700 shadow-sm">
+            <Shield className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold text-primary-800">
-            {locale === "th" ? "เข้าสู่ระบบ" : "Sign In"}
+          <h1 className="text-2xl font-bold text-primary-900">
+            {locale === "th" ? "เข้าสู่ระบบผู้ดูแลระบบ (Admin)" : "Admin Sign In"}
           </h1>
-          <p className="text-text-secondary text-sm mt-1">WMA Platform</p>
+          <p className="text-text-secondary text-sm mt-1">WMA Platform - Admin Portal</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="kpi-card space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
           {error && (
             <div className="flex items-center gap-2 p-3 bg-quality-critical/10 border border-quality-critical/20 rounded-lg text-quality-critical text-sm">
               <AlertTriangle className="h-4 w-4 flex-shrink-0" />
@@ -85,7 +85,7 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-sm font-semibold text-primary-800 mb-1.5">
-              {locale === "th" ? "ชื่อผู้ใช้" : "Username"}
+              {locale === "th" ? "ชื่อผู้ใช้ (Admin)" : "Admin Username"}
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-secondary" />
@@ -93,8 +93,8 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm"
-                placeholder="username"
+                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm"
+                placeholder="admin"
                 autoComplete="username"
               />
             </div>
@@ -110,7 +110,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm"
+                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm"
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
@@ -119,28 +119,28 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-primary-800 text-white font-semibold rounded-xl hover:bg-primary-900 transition-colors cursor-pointer shadow-sm"
           >
             <LogIn className="h-5 w-5" />
-            {locale === "th" ? "เข้าสู่ระบบ" : "Sign In"}
+            {locale === "th" ? "เข้าสู่ระบบ Admin" : "Sign In as Admin"}
           </button>
 
-          {/* Test account hint */}
-          <div className="bg-surface rounded-lg p-3 text-xs text-text-secondary border border-border">
-            <div className="font-semibold text-primary-700 mb-1.5">
-              {locale === "th" ? "บัญชีทดสอบ" : "Test Account"}:
+          {/* Admin Test account hint */}
+          <div className="bg-slate-50 rounded-xl p-3 text-xs text-text-secondary border border-slate-200">
+            <div className="font-semibold text-primary-800 mb-1">
+              {locale === "th" ? "บัญชีทดสอบสำหรับ Admin" : "Admin Test Account"}:
             </div>
             <div className="space-y-1 font-mono">
-              <div className="text-primary-500 font-semibold text-[10px] uppercase tracking-wide">Admin</div>
-              <div>admin / <span className="text-primary-600">admin1234</span></div>
+              <div className="text-chula-600 font-semibold text-[10px] uppercase tracking-wide">System Admin</div>
+              <div>admin / <span className="text-primary-700 font-bold">admin1234</span></div>
             </div>
           </div>
         </form>
 
-        <p className="text-center text-sm text-text-secondary mt-4">
-          {locale === "th" ? "สำหรับประชาชนทั่วไป" : "For public visitors"}{" "}
-          <Link href={`/${locale}`} className="text-primary-600 hover:underline font-medium">
-            {locale === "th" ? "ดูข้อมูลโดยไม่ต้องเข้าสู่ระบบ" : "View data without signing in"}
+        <p className="text-center text-sm text-text-secondary mt-5">
+          {locale === "th" ? "สำหรับประชาชนทั่วไปในการแจ้งปัญหา" : "For general users reporting issues"}{" "}
+          <Link href={`/${locale}/auth/login/user`} className="text-primary-700 hover:underline font-semibold">
+            {locale === "th" ? "เข้าสู่ระบบผู้ใช้ทั่วไป" : "User Login"}
           </Link>
         </p>
       </div>

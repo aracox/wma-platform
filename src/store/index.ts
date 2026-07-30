@@ -57,11 +57,42 @@ interface AppState {
   updateCooperationFields: (id: string, fields: Partial<CooperationRequest>) => Promise<void>;
 }
 
+// Helper to read initial user from localStorage
+const getInitialUser = (): User | null => {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("wma_current_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
 export const useAppStore = create<AppState>((set, get) => ({
   // Auth
-  currentUser: null,
-  login: (user) => set({ currentUser: user }),
-  logout: () => set({ currentUser: null }),
+  currentUser: getInitialUser(),
+  login: (user) => {
+    set({ currentUser: user });
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("wma_current_user", JSON.stringify(user));
+      } catch (e) {
+        console.error("Failed to save user to localStorage", e);
+      }
+    }
+  },
+  logout: () => {
+    set({ currentUser: null });
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("wma_current_user");
+      } catch (e) {
+        console.error("Failed to clear user from localStorage", e);
+      }
+    }
+  },
 
   // Facilities
   facilities: [],

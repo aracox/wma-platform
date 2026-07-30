@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
       laoId, laoName, lat, lng, province, reportedBy 
     } = body;
 
-    // Validate the 4 fields and coordinates
-    if (!systemInfo || !identifiedIssues || !laoActivities || !communityParticipation || lat === undefined || lng === undefined) {
+    // Validate mandatory fields and coordinates
+    if (!systemInfo || !identifiedIssues || lat === undefined || lng === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
       id: `r${String(seq).padStart(3, "0")}_${Date.now()}`,
       systemInfo,
       identifiedIssues,
-      laoActivities,
-      communityParticipation,
+      laoActivities: laoActivities || "-",
+      communityParticipation: communityParticipation || "-",
       laoId,
       laoName,
       lat,
@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
       province: province || "ไม่ระบุ",
       status: "pending",
       createdAt: new Date().toISOString(),
-      ...(reportedBy && { reportedBy }),
+      reportedBy: reportedBy || body.reportedByEmail || "ไม่ระบุ",
+      reportedByEmail: body.reportedByEmail || (reportedBy && reportedBy.includes("@") ? reportedBy : undefined),
+      attachments: body.attachments || [],
     };
 
     reports.push(newReport);

@@ -42,6 +42,7 @@ export default function CooperationPage() {
   const locale = useLocale();
   const router = useRouter();
 
+  const [mounted, setMounted] = useState(false);
   const currentUser = useAppStore((s) => s.currentUser);
   const cooperations = useAppStore((s) => s.cooperations);
   const cooperationsLoaded = useAppStore((s) => s.cooperationsLoaded);
@@ -49,6 +50,7 @@ export default function CooperationPage() {
   const updateCooperationStatus = useAppStore((s) => s.updateCooperationStatus);
   const updateCooperationFields = useAppStore((s) => s.updateCooperationFields);
 
+  useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
     if (!cooperationsLoaded) fetchCooperations();
   }, [cooperationsLoaded, fetchCooperations]);
@@ -176,6 +178,14 @@ export default function CooperationPage() {
     setStatusSaved(reqId);
     setTimeout(() => setStatusSaved(null), 2000);
   };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (

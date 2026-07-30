@@ -1,10 +1,10 @@
 export interface User {
   id: string;
   username: string;
-  password: string;
+  password?: string;
   name: string;
   nameEn: string;
-  role: "official" | "admin";
+  role: "official" | "admin" | "user";
   email: string;
   // For officers: the LAO org they belong to
   laoId?: string;
@@ -23,5 +23,15 @@ export const USERS: User[] = [
     nameEn: "System Admin",
     role: "admin",
     email: "admin@wma.or.th",
+  },
+  // ─── General User ─────────────────────────────────────────
+  {
+    id: "u02",
+    username: "user",
+    password: "user1234",
+    name: "ประชาชนทั่วไป",
+    nameEn: "General User",
+    role: "official",
+    email: "user@community.or.th",
   },
 ];

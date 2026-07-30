@@ -6,7 +6,7 @@ export type WaterQualityLevel = "excellent" | "good" | "fair" | "poor" | "critic
 export type ReportCategory = "odor" | "discharge" | "overflow" | "other";
 export type ReportType = "community" | "facility" | "water_quality";
 
-export type UserRole = "official" | "admin";
+export type UserRole = "official" | "admin" | "user";
 
 export interface TreatmentFacility {
   id: string;
@@ -58,6 +58,8 @@ export interface CommunityReport {
   createdAt: string;
   updatedAt?: string;
   reportedBy?: string;
+  reportedByEmail?: string;
+  attachments?: { name: string; url: string; size?: string; type?: string }[];
 }
 
 export interface FeedItem {
