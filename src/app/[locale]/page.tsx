@@ -33,7 +33,7 @@ const MISSION_PILLARS: MissionPillar[] = [
     titleEn: "Wastewater Treatment Systems",
     descriptionTh: "ติดตามสถานะระบบบำบัด ความจุ และความพร้อมใช้งานของแต่ละพื้นที่",
     descriptionEn: "Track treatment status, capacity, and operational readiness by area.",
-    href: "/lao-map",
+    href: "/lao",
     icon: Building2,
   },
   {
@@ -45,7 +45,7 @@ const MISSION_PILLARS: MissionPillar[] = [
     titleEn: "LAO Wastewater Management Activities",
     descriptionTh: "ดูแผนงาน การดำเนินงาน และผลลัพธ์ของกิจกรรมที่ อปท ดำเนินการ",
     descriptionEn: "View plans, execution, and outcomes of local wastewater activities.",
-    href: "/feed",
+    href: "/lao-map",
     icon: CalendarCheck2,
   },
   {
@@ -207,9 +207,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 : "Homepage structure aligned to the platform purpose."}
             </p>
           </div>
-          <Link href={`/${locale}/feed`} className="text-sm font-semibold text-primary-700 hover:text-primary-900">
-            {isThai ? "ไปหน้าข่าวสารประชาสัมพันธ์" : "Go to Announcements"}
-          </Link>
+
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {MISSION_PILLARS.map((pillar) => {
@@ -246,7 +244,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
-      {/* Operational Overview Section */}
+      {/* Operational Overview Section — disabled */}
+      {false && (
       <section className="mx-auto max-w-6xl px-4 pb-6">
         <h2 className="text-xl font-bold text-primary-900 md:text-2xl">
           {isThai ? "ภาพรวมข้อมูลเชิงปฏิบัติการ" : "Operational Overview"}
@@ -268,8 +267,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <PurposeTrendChart isThai={isThai} data={chartData} />
         </div>
       </section>
+      )}
 
-      {/* Latest Reports Section */}
+      {/* Latest Reports Section — disabled */}
+      {false && (
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="text-xl font-bold text-primary-900 md:text-2xl">
@@ -323,6 +324,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
         )}
       </section>
+      )}
     </div>
   );
 }

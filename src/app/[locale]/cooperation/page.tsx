@@ -69,6 +69,9 @@ export default function CooperationPage() {
   const [expectedOutcome, setExpectedOutcome] = useState("");
   const [attachments, setAttachments] = useState<{ name: string; url: string; size?: string; type?: string }[]>([]);
   
+  // UX Tab state: "history" | "create"
+  const [activeTab, setActiveTab] = useState<"history" | "create">("history");
+
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -186,6 +189,7 @@ export default function CooperationPage() {
         setAttachments([]);
         if (isAdmin) setAdminSelectedLaoId("");
         await fetchCooperations();
+        setActiveTab("history");
       }
     } catch (err) {
       console.error("Failed to submit cooperation request:", err);
@@ -264,7 +268,7 @@ export default function CooperationPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 animate-fade-up">
-      <div className="max-w-4xl mx-auto px-4 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -277,14 +281,60 @@ export default function CooperationPage() {
           </div>
         </div>
 
-        {/* Cooperation Form Component */}
-        {currentUser && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-primary-900 to-primary-800 border-b border-primary-950 px-6 py-4.5 flex items-center gap-2 text-white font-bold">
-              <Building2 className="h-5 w-5 text-blue-200" />
-              แบบเสนอความประสงค์สร้างศูนย์บริหารจัดการคุณภาพน้ำร่วมกับ อจน.
+        {/* Tab Card Container */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+          {/* Top Navigation Tabs */}
+          <div className="flex items-center border-b border-slate-200 bg-slate-50/60">
+            <button
+              type="button"
+              onClick={() => setActiveTab("history")}
+              className={cn(
+                "flex items-center gap-2 px-6 py-4 font-bold text-sm border-b-2 transition-all cursor-pointer",
+                activeTab === "history"
+                  ? "border-primary-600 text-primary-700 bg-white"
+                  : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-white/70"
+              )}
+            >
+              <FileText className="h-4 w-4" />
+              <span>
+                {isAdmin ? "ประวัติการขอจัดตั้งศูนย์ฯ (ทุก อปท.)" : "ประวัติการขอจัดตั้งศูนย์ฯ"}
+              </span>
+              <span className={cn(
+                "ml-1 px-2 py-0.5 text-xs font-semibold rounded-full",
+                activeTab === "history" ? "bg-primary-100 text-primary-700" : "bg-slate-200 text-slate-500"
+              )}>
+                {baseCooperations.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("create")}
+              className={cn(
+                "flex items-center gap-2 px-6 py-4 font-bold text-sm border-b-2 transition-all cursor-pointer",
+                activeTab === "create"
+                  ? "border-primary-600 text-primary-700 bg-white"
+                  : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-white/70"
+              )}
+            >
+              <Building2 className="h-4 w-4" />
+              <span>แบบเสนอความประสงค์สร้างศูนย์ฯ</span>
+            </button>
+          </div>
+
+          {/* Global Submitted Banner */}
+          {submitted && (
+            <div className="mx-6 mt-4 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-5 py-3.5 text-green-700 text-sm font-semibold animate-fade-up shadow-sm">
+              <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
+              ยื่นความประสงค์สร้างศูนย์บริหารจัดการคุณภาพน้ำเรียบร้อยแล้ว (กำลังเริ่มต้นขั้นตอนที่ 1 ประสานงานในพื้นที่)
+              <button onClick={() => setSubmitted(false)} className="ml-auto text-green-600 hover:text-green-800 cursor-pointer p-1"><X className="h-4 w-4" /></button>
             </div>
-          
+          )}
+
+          {/* TAB 1: Create Proposal Form */}
+          {activeTab === "create" && currentUser && (
+            <div className="animate-fade-up">
             <div className="p-6 space-y-6">
               {submitted && (
                 <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm font-semibold animate-fade-up">
@@ -445,21 +495,17 @@ export default function CooperationPage() {
                 </button>
               </div>
             </div>
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* History List */}
-        <div className="pt-4 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-primary-800">
-              {isAdmin ? "ประวัติการขอจัดตั้งศูนย์บริหารจัดการน้ำของทุก อปท." : currentUser?.laoName ? `ประวัติการขอจัดตั้งศูนย์ฯ ของ ${currentUser.laoName}` : "ประวัติการขอจัดตั้งศูนย์ฯ"}
-            </h2>
-            <div className="flex items-center gap-2">
+          {/* TAB 2: History List */}
+          {activeTab === "history" && (
+            <div className="p-6 space-y-4 animate-fade-up">
+            <div className="flex items-center justify-end">
               <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-200">
                 {filteredCooperations.length} / {baseCooperations.length} รายการ
               </span>
             </div>
-          </div>
 
           {/* Status Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none text-xs">
@@ -778,7 +824,11 @@ export default function CooperationPage() {
               })}
             </div>
           )}
-        </div>
+          </div>
+        )}
+
+        </div>{/* end Tab Card Container */}
+
       </div>
     </div>
   );

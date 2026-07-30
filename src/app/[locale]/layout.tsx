@@ -12,6 +12,14 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "WMA Platform | แพลตฟอร์มการสื่อสารดิจิทัลเพื่อสนับสนุนการจัดการน้ำเสียชุมชน",
   description: "Digital Communication Platform for Smart Community Wastewater Management",
+  icons: {
+    icon: [
+      { url: "/images/wma-favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/wma-logo-favicon.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/images/wma-favicon-32.png",
+    apple: "/images/wma-logo-favicon.png",
+  },
 };
 
 const locales = ["th", "en"];
