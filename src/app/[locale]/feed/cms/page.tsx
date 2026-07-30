@@ -8,15 +8,28 @@ import {
   Building2, CalendarDays, Users, AlertCircle, 
   CheckCircle2, Megaphone, Globe, X
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDateBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { AnnouncementItem } from "@/types";
 
 const CATEGORIES = [
   { id: "system", labelTh: "ระบบบำบัดของ อปท", labelEn: "LAO Systems", icon: Building2, color: "text-primary-600 bg-primary-50 border-primary-100" },
   { id: "lao", labelTh: "กิจกรรมของ อปท", labelEn: "LAO Activities", icon: CalendarDays, color: "text-chula-700 bg-chula-50 border-chula-100" },
-  { id: "community", labelTh: "การมีส่วนร่วมชุมชน", labelEn: "Community", icon: Users, color: "text-emerald-700 bg-emerald-50 border-emerald-100" },
 ] as const;
+
+const PROVINCES_THAI = [
+  "กรุงเทพมหานคร", "กระบี่", "กาญจนบุรี", "กาฬสินธุ์", "กำแพงเพชร", "ขอนแก่น", "จันทบุรี",
+  "ฉะเชิงเทรา", "ชลบุรี", "ชัยนาท", "ชัยภูมิ", "ชุมพร", "เชียงราย", "เชียงใหม่", "ตรัง",
+  "ตราด", "ตาก", "นครนายก", "นครปฐม", "นครพนม", "นครราชสีมา", "นครศรีธรรมราช", "นครสวรรค์",
+  "นนทบุรี", "นราธิวาส", "น่าน", "บึงกาฬ", "บุรีรัมย์", "ปทุมธานี", "ประจวบคีรีขันธ์",
+  "ปราจีนบุรี", "ปัตตานี", "พระนครศรีอยุธยา", "พะเยา", "พังงา", "พัทลุง", "พิจิตร", "พิษณุโลก",
+  "เพชรบุรี", "เพชรบูรณ์", "แพร่", "ภูเก็ต", "มหาสารคาม", "มุกดาหาร", "แม่ฮ่องสอน", "ยโสธร",
+  "ยะลา", "ร้อยเอ็ด", "ระนอง", "ระยอง", "ราชบุรี", "ลพบุรี", "ลำปาง", "ลำพูน", "เลย",
+  "ศรีสะเกษ", "สกลนคร", "สงขลา", "สตูล", "สมุทรปราการ", "สมุทรสงคราม", "สมุทรสาคร",
+  "สระแก้ว", "สระบุรี", "สิงห์บุรี", "สุโขทัย", "สุพรรณบุรี", "สุราษฎร์ธานี", "สุรินทร์",
+  "หนองคาย", "หนองบัวลำภู", "อ่างทอง", "อำนาจเจริญ", "อุดรธานี", "อุตรดิตถ์", "อุทัยธานี",
+  "อุบลราชธานี"
+];
 
 export default function FeedCMSPage() {
   const locale = useLocale();
@@ -49,6 +62,7 @@ export default function FeedCMSPage() {
   const [date, setDate] = useState("");
   const [statusTh, setStatusTh] = useState("");
   const [statusEn, setStatusEn] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
 
   const [formError, setFormError] = useState("");
 
@@ -69,10 +83,6 @@ export default function FeedCMSPage() {
   const filteredItems = useMemo(() => {
     let result = announcements;
 
-    if (selectedCategoryFilter !== "all") {
-      result = result.filter((item) => item.type === selectedCategoryFilter);
-    }
-
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -87,7 +97,7 @@ export default function FeedCMSPage() {
     }
 
     return result;
-  }, [announcements, searchQuery, selectedCategoryFilter]);
+  }, [announcements, searchQuery]);
 
   // Form setup for Creating
   const handleOpenCreate = () => {
@@ -102,6 +112,7 @@ export default function FeedCMSPage() {
     setDate(new Date().toISOString().split("T")[0]);
     setStatusTh("ดำเนินการแล้ว");
     setStatusEn("Completed");
+    setIsPublic(true);
     setFormError("");
     setIsFormModalOpen(true);
   };
@@ -119,6 +130,7 @@ export default function FeedCMSPage() {
     setDate(item.date);
     setStatusTh(item.statusTh || "");
     setStatusEn(item.statusEn || "");
+    setIsPublic(item.isPublic !== false);
     setFormError("");
     setIsFormModalOpen(true);
   };
@@ -223,45 +235,16 @@ export default function FeedCMSPage() {
           </button>
         </div>
 
-        {/* Filters and Search Bar */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-            <button
-              onClick={() => setSelectedCategoryFilter("all")}
-              className={cn(
-                "px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-transparent",
-                selectedCategoryFilter === "all" 
-                  ? "bg-slate-900 text-white" 
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              )}
-            >
-              {isThai ? "ทั้งหมด" : "All"}
-            </button>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategoryFilter(cat.id)}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer border",
-                  selectedCategoryFilter === cat.id 
-                    ? "bg-primary-800 text-white border-transparent" 
-                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                )}
-              >
-                {isThai ? cat.labelTh : cat.labelEn}
-              </button>
-            ))}
-          </div>
-
-          {/* Search Box */}
-          <div className="relative w-full md:w-80 shadow-sm rounded-xl">
+        {/* Search Bar */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 mb-6">
+          <div className="relative w-full shadow-sm rounded-xl">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-slate-400" />
             </div>
             <input
               type="text"
               className="block w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl leading-5 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-sm"
-              placeholder={isThai ? "ค้นหาด้วยชื่อ หัวข้อ หรือจังหวัด..." : "Search by title, body, or province..."}
+              placeholder={isThai ? "ค้นหาข่าวสารด้วยชื่อ หัวข้อ หรือจังหวัด..." : "Search news by title, body, or province..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -279,14 +262,24 @@ export default function FeedCMSPage() {
               >
                 <div className="space-y-2.5 flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={cn("inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold border", catInfo?.color)}>
-                      {catInfo && (isThai ? catInfo.labelTh : catInfo.labelEn)}
-                    </span>
+                    <button
+                      onClick={() => updateAnnouncement(item.id, { isPublic: item.isPublic === false ? true : false })}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold transition cursor-pointer border",
+                        item.isPublic !== false 
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" 
+                          : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200"
+                      )}
+                      title={isThai ? "คลิกเพื่อเปลี่ยนสถานะการเผยแพร่" : "Click to toggle publication status"}
+                    >
+                      <span className={cn("w-2 h-2 rounded-full", item.isPublic !== false ? "bg-emerald-500" : "bg-slate-400")} />
+                      {item.isPublic !== false ? (isThai ? "เผยแพร่แล้ว (Public)" : "Public") : (isThai ? "ไม่เผยแพร่ (Not Public)" : "Not Public")}
+                    </button>
                     <span className="text-xs font-bold text-slate-400">ID: {item.id}</span>
                     <span className="text-xs text-slate-300">|</span>
-                    <span className="text-xs font-semibold text-slate-500">จ.{item.provinceTh} ({item.provinceEn})</span>
+                    <span className="text-xs font-semibold text-slate-500">จ.{item.provinceTh}</span>
                     <span className="text-xs text-slate-300">|</span>
-                    <span className="text-xs text-slate-500">{item.date}</span>
+                    <span className="text-xs text-slate-500">{formatDateBE(item.date, locale)}</span>
                   </div>
 
                   <h2 className="text-lg font-bold text-slate-900 group-hover:text-primary-800 transition-colors leading-tight">
@@ -295,13 +288,6 @@ export default function FeedCMSPage() {
                   <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
                     {isThai ? item.summaryTh : item.summaryEn}
                   </p>
-
-                  <div className="pt-2 flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                      {isThai ? item.statusTh : item.statusEn}
-                    </span>
-                  </div>
                 </div>
 
                 {/* CRUD Actions */}
@@ -352,8 +338,8 @@ export default function FeedCMSPage() {
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-primary-900 to-indigo-900 px-6 py-4 flex items-center justify-between text-white">
               <div className="flex items-center gap-2">
-                <Megaphone className="h-5 w-5" />
-                <h3 className="font-bold text-lg">
+                <Megaphone className="h-5 w-5 text-white" />
+                <h3 className="font-bold text-lg text-white">
                   {selectedItem 
                     ? (isThai ? "แก้ไขข่าวสาร" : "Edit Announcement") 
                     : (isThai ? "สร้างข่าวสารใหม่" : "Create Announcement")}
@@ -376,24 +362,8 @@ export default function FeedCMSPage() {
                 </div>
               )}
 
-              {/* Grid 1: Basic settings */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Category Select */}
-                <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                    {isThai ? "หมวดหมู่หลัก" : "Category"}
-                  </label>
-                  <select
-                    value={formType}
-                    onChange={(e) => setFormType(e.target.value as any)}
-                    className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  >
-                    <option value="system">ระบบบำบัดของ อปท</option>
-                    <option value="lao">กิจกรรมของ อปท</option>
-                    <option value="community">การมีส่วนร่วมชุมชน</option>
-                  </select>
-                </div>
-
+              {/* Grid 2: Date, Location, and Publication Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Date Selection */}
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
@@ -406,143 +376,79 @@ export default function FeedCMSPage() {
                     className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
-              </div>
 
-              {/* Grid 2: Location and Status */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Province Th */}
+                {/* Province Dropdown */}
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                    {isThai ? "จังหวัด (ไทย)" : "Province (TH)"}
+                    {isThai ? "จังหวัด" : "Province"}
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={provinceTh}
-                    onChange={(e) => setProvinceTh(e.target.value)}
-                    placeholder="e.g. สุพรรณบุรี"
-                    className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  />
+                    onChange={(e) => {
+                      setProvinceTh(e.target.value);
+                      setProvinceEn(e.target.value);
+                    }}
+                    className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 font-medium"
+                  >
+                    <option value="">-- เลือกจังหวัด --</option>
+                    {PROVINCES_THAI.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* Province En */}
+                {/* Publication Status Dropdown */}
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                    {isThai ? "จังหวัด (อังกฤษ)" : "Province (EN)"}
+                    {isThai ? "สถานะการเผยแพร่" : "Publication Status"}
                   </label>
-                  <input
-                    type="text"
-                    value={provinceEn}
-                    onChange={(e) => setProvinceEn(e.target.value)}
-                    placeholder="e.g. Suphan Buri"
-                    className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  />
+                  <select
+                    value={isPublic ? "public" : "draft"}
+                    onChange={(e) => setIsPublic(e.target.value === "public")}
+                    className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 font-semibold"
+                  >
+                    <option value="public">🟢 {isThai ? "เผยแพร่แล้ว (Public)" : "Public"}</option>
+                    <option value="draft">⚪ {isThai ? "ไม่เผยแพร่ (Not Public)" : "Not Public"}</option>
+                  </select>
                 </div>
               </div>
 
-              {/* Grid 3: Status fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Status Th */}
+              {/* News Details Content */}
+              <div className="border-t border-slate-100 pt-4 space-y-4">
+                {/* Title */}
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                    {isThai ? "สถานะการดำเนินงาน (ไทย)" : "Status Label (TH)"}
+                    {isThai ? "หัวข้อข่าวสาร *" : "Announcement Title *"}
                   </label>
                   <input
                     type="text"
-                    value={statusTh}
-                    onChange={(e) => setStatusTh(e.target.value)}
-                    placeholder="e.g. ดำเนินการแล้ว"
-                    className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    value={titleTh}
+                    onChange={(e) => {
+                      setTitleTh(e.target.value);
+                      setTitleEn(e.target.value);
+                    }}
+                    placeholder="พิมพ์หัวข้อข่าวสาร..."
+                    className="w-full border border-slate-250 rounded-xl px-3 py-2.5 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 font-semibold"
                   />
                 </div>
 
-                {/* Status En */}
+                {/* Summary */}
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                    {isThai ? "สถานะการดำเนินงาน (อังกฤษ)" : "Status Label (EN)"}
+                    {isThai ? "รายละเอียด/บทคัดย่อ *" : "Summary Description *"}
                   </label>
-                  <input
-                    type="text"
-                    value={statusEn}
-                    onChange={(e) => setStatusEn(e.target.value)}
-                    placeholder="e.g. Completed"
-                    className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  <textarea
+                    rows={4}
+                    value={summaryTh}
+                    onChange={(e) => {
+                      setSummaryTh(e.target.value);
+                      setSummaryEn(e.target.value);
+                    }}
+                    placeholder="พิมพ์คำอธิบายหรือเนื้อหาข่าวสาร..."
+                    className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 leading-relaxed"
                   />
-                </div>
-              </div>
-
-              {/* Section Divider: Thai Content */}
-              <div className="border-t border-slate-100 pt-4">
-                <h4 className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-1.5">
-                  <span className="w-1.5 h-3 bg-primary-700 rounded-sm" />
-                  {isThai ? "ข้อมูลภาษาไทย (บังคับ)" : "Thai Language Content (Required)"}
-                </h4>
-                
-                <div className="space-y-4">
-                  {/* Title Th */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                      {isThai ? "หัวข้อข่าวสาร (ไทย)" : "Announcement Title (TH)"}
-                    </label>
-                    <input
-                      type="text"
-                      value={titleTh}
-                      onChange={(e) => setTitleTh(e.target.value)}
-                      placeholder="พิมพ์หัวข้อภาษาไทย..."
-                      className="w-full border border-slate-250 rounded-xl px-3 py-2.5 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 font-semibold"
-                    />
-                  </div>
-
-                  {/* Summary Th */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                      {isThai ? "รายละเอียด/บทคัดย่อ (ไทย)" : "Summary Description (TH)"}
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={summaryTh}
-                      onChange={(e) => setSummaryTh(e.target.value)}
-                      placeholder="พิมพ์คำอธิบายข่าวสารภาษาไทย..."
-                      className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-850 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 leading-relaxed"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section Divider: English Content */}
-              <div className="border-t border-slate-100 pt-4">
-                <h4 className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-1.5">
-                  <Globe className="h-4 w-4 text-indigo-600" />
-                  {isThai ? "ข้อมูลภาษาอังกฤษ (ไม่บังคับ)" : "English Language Content (Optional)"}
-                </h4>
-                
-                <div className="space-y-4">
-                  {/* Title En */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                      {isThai ? "หัวข้อข่าวสาร (อังกฤษ)" : "Announcement Title (EN)"}
-                    </label>
-                    <input
-                      type="text"
-                      value={titleEn}
-                      onChange={(e) => setTitleEn(e.target.value)}
-                      placeholder="พิมพ์หัวข้อภาษาอังกฤษ..."
-                      className="w-full border border-slate-250 rounded-xl px-3 py-2.5 text-sm text-slate-855 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 font-semibold"
-                    />
-                  </div>
-
-                  {/* Summary En */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                      {isThai ? "รายละเอียด/บทคัดย่อ (อังกฤษ)" : "Summary Description (EN)"}
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={summaryEn}
-                      onChange={(e) => setSummaryEn(e.target.value)}
-                      placeholder="พิมพ์คำอธิบายข่าวสารภาษาอังกฤษ..."
-                      className="w-full border border-slate-250 rounded-xl px-3 py-2 text-sm text-slate-855 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 leading-relaxed"
-                    />
-                  </div>
                 </div>
               </div>
 

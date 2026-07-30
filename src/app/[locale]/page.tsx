@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { ArrowRight, Building2, CalendarCheck2, MessageCircleHeart, ShieldAlert } from "lucide-react";
 import { getLaos } from "@/data/lao";
+import { formatDateBE } from "@/lib/utils";
 import PurposeTrendChart from "@/components/dashboard/PurposeTrendChart";
 import HeroSlider from "@/components/hero/HeroSlider";
 
@@ -288,11 +289,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <div className="grid gap-4 md:grid-cols-3">
             {latestReports.map((item: any) => {
               const status = REPORT_STATUS_LABELS[item.status] || REPORT_STATUS_LABELS.pending;
-              const dateStr = new Date(item.createdAt).toLocaleDateString(isThai ? "th-TH" : "en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric"
-              });
+              const dateStr = formatDateBE(item.createdAt, locale);
 
               // Truncate issues text
               const description = item.identifiedIssues && item.identifiedIssues.length > 110 

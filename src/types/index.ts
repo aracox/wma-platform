@@ -142,6 +142,7 @@ export interface AnnouncementItem {
   date: string;
   statusTh?: string;
   statusEn?: string;
+  isPublic?: boolean;
 }
 
 export type CooperationStatus = "coordination" | "agreement" | "land_acquisition" | "construction" | "management";

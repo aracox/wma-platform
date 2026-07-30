@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Megaphone, Settings } from "lucide-react";
+import { formatDateBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 
 export default function FeedPage() {
@@ -58,7 +59,7 @@ export default function FeedPage() {
 
         {/* Feed Cards Section */}
         <section className="mt-8 space-y-4">
-          {announcements.map((item) => {
+          {announcements.filter((a) => a.isPublic !== false).map((item) => {
             const isExpanded = !!expandedIds[item.id];
             const detailsText = isThai ? item.detailsTh : item.detailsEn;
 
@@ -70,7 +71,7 @@ export default function FeedPage() {
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="text-xs font-semibold text-slate-500">จ.{isThai ? item.provinceTh : item.provinceEn}</span>
                   <span className="text-xs text-slate-300">|</span>
-                  <span className="text-xs text-slate-500">{item.date}</span>
+                  <span className="text-xs text-slate-500">{formatDateBE(item.date, locale)}</span>
                 </div>
 
                 <h3 className="mt-3 text-lg md:text-xl font-bold leading-tight text-slate-900 hover:text-primary-600 transition-colors">

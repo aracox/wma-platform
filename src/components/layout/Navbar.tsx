@@ -43,6 +43,8 @@ export default function Navbar() {
     const fullHref = `/${locale}${href === "/" ? "" : href}`;
     if (pathname === fullHref) return true;
     if (href === "/") return false;
+    if (href === "/feed" && pathname.startsWith(`/${locale}/feed/cms`)) return false;
+
     const remaining = pathname.slice(fullHref.length);
     return pathname.startsWith(fullHref) && (remaining === "" || remaining[0] === "/" || remaining[0] === "?" || remaining[0] === "#");
   };
@@ -89,14 +91,12 @@ export default function Navbar() {
                 {t(item.key)}
               </Link>
             ))}
-            {user && (
-              <Link
-                href={`/${locale}/cooperation`}
-                className={cn(isActive("/cooperation") ? "nav-link-active" : "nav-link")}
-              >
-                {t("cooperation")}
-              </Link>
-            )}
+            <Link
+              href={`/${locale}/cooperation`}
+              className={cn(isActive("/cooperation") ? "nav-link-active" : "nav-link")}
+            >
+              {t("cooperation")}
+            </Link>
             {user?.role === "admin" && (
               <Link
                 href={`/${locale}/feed/cms`}
@@ -195,18 +195,16 @@ export default function Navbar() {
                 {t(item.key)}
               </Link>
             ))}
-            {user && (
-              <Link
-                href={`/${locale}/cooperation`}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "block px-3 py-2 rounded-md text-sm font-medium",
-                  isActive("/cooperation") ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
-                )}
-              >
-                {t("cooperation")}
-              </Link>
-            )}
+            <Link
+              href={`/${locale}/cooperation`}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "block px-3 py-2 rounded-md text-sm font-medium",
+                isActive("/cooperation") ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
+              )}
+            >
+              {t("cooperation")}
+            </Link>
             {user?.role === "admin" && (
               <Link
                 href={`/${locale}/feed/cms`}

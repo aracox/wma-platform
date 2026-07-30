@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, Building2, ChevronDown, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CooperationRequest } from "@/types";
 import { getLaos } from "@/data/lao";
@@ -189,19 +189,25 @@ export default function CooperationPage() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="text-center space-y-4 animate-fade-up">
-          <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto">
-            <Lock className="h-8 w-8 text-primary-400" />
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12 animate-fade-up">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 p-8 shadow-xl text-center space-y-5">
+          <div className="w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center mx-auto shadow-inner">
+            <Lock className="h-8 w-8" />
           </div>
-          <h2 className="text-xl font-bold text-primary-800">กรุณาเข้าสู่ระบบก่อน</h2>
-          <p className="text-text-secondary text-sm">เจ้าหน้าที่หรือผู้ดูแลระบบต้องเข้าสู่ระบบเพื่อดำเนินการเสนอโครงการ</p>
-          <button
-            onClick={() => router.push(`/${locale}/auth/login`)}
-            className="px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors"
-          >
-            เข้าสู่ระบบ
-          </button>
+          <div>
+            <h2 className="text-2xl font-black text-slate-900">กรุณาเข้าสู่ระบบก่อนเสนอโครงการ</h2>
+            <p className="text-slate-500 text-sm mt-2 leading-relaxed">
+              กรุณาเข้าสู่ระบบด้วยบัญชีของคุณเพื่อเสนอโครงการสร้างศูนย์บริหารจัดการคุณภาพน้ำร่วมกับ อจน. และติดตามสถานะดำเนินงาน
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => router.push(`/${locale}/auth/login`)}
+              className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg text-sm cursor-pointer"
+            >
+              เข้าสู่ระบบเพื่อเสนอโครงการ
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -410,7 +416,7 @@ export default function CooperationPage() {
                             {req.laoName}
                           </div>
                           <div className="text-xs text-text-secondary mt-0.5">
-                            {new Date(req.createdAt).toLocaleString("th-TH")} · จังหวัด{req.province}
+                            {formatDateTimeBE(req.createdAt, locale)} · จังหวัด{req.province}
                             {req.updatedAt && <span className="text-primary-500 font-medium ml-1">(แก้ไขแล้ว)</span>}
                           </div>
                         </div>
@@ -487,64 +493,64 @@ export default function CooperationPage() {
                     </div>
 
                     {/* 4-Column Data Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                       {/* Column 1 */}
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-gray-700 text-xs uppercase tracking-wide">1. วัตถุประสงค์ / ความต้องการหลัก</h4>
+                      <div>
+                        <label className="block text-sm font-bold text-primary-800 mb-2">1. วัตถุประสงค์ / ความต้องการหลัก</label>
                         {isEditing ? (
                           <textarea
                             value={editValues.subject || ""}
                             onChange={(e) => setEditValues({ ...editValues, subject: e.target.value })}
-                            rows={3}
-                            className="w-full text-xs p-2.5 bg-white border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-100 outline-none resize-none"
+                            rows={4}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none bg-white font-medium"
                           />
                         ) : (
-                          <p className="text-gray-600 leading-relaxed bg-gray-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-wrap">{req.subject}</p>
+                          <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.subject}</p>
                         )}
                       </div>
                       
                       {/* Column 2 */}
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-orange-700 text-xs uppercase tracking-wide">2. รายละเอียดพื้นที่ / สภาพปัญหาปัจจุบัน</h4>
+                      <div>
+                        <label className="block text-sm font-bold text-primary-800 mb-2">2. รายละเอียดพื้นที่ / สภาพปัญหาปัจจุบัน</label>
                         {isEditing ? (
                           <textarea
                             value={editValues.details || ""}
                             onChange={(e) => setEditValues({ ...editValues, details: e.target.value })}
-                            rows={3}
-                            className="w-full text-xs p-2.5 bg-orange-50/30 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-100 outline-none resize-none"
+                            rows={4}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm resize-none bg-orange-50/30 font-medium"
                           />
                         ) : (
-                          <p className="text-gray-800 leading-relaxed bg-orange-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-wrap">{req.details}</p>
+                          <p className="text-sm text-slate-800 leading-relaxed bg-orange-50/40 p-3.5 rounded-xl border border-orange-100 whitespace-pre-wrap font-medium">{req.details}</p>
                         )}
                       </div>
                       
                       {/* Column 3 */}
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-cyan-700 text-xs uppercase tracking-wide">3. ความพร้อมและแผนงานรองรับเบื้องต้นของ อปท.</h4>
+                      <div>
+                        <label className="block text-sm font-bold text-primary-800 mb-2">3. ความพร้อมและแผนงานรองรับเบื้องต้นของ อปท.</label>
                         {isEditing ? (
                           <textarea
                             value={editValues.localPlan || ""}
                             onChange={(e) => setEditValues({ ...editValues, localPlan: e.target.value })}
-                            rows={3}
-                            className="w-full text-xs p-2.5 bg-cyan-50/30 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-100 outline-none resize-none"
+                            rows={4}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none bg-white font-medium"
                           />
                         ) : (
-                          <p className="text-gray-600 leading-relaxed bg-cyan-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-wrap">{req.localPlan}</p>
+                          <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.localPlan}</p>
                         )}
                       </div>
                       
                       {/* Column 4 */}
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-green-700 text-xs uppercase tracking-wide">4. ผลลัพธ์ที่คาดว่าจะได้รับ</h4>
+                      <div>
+                        <label className="block text-sm font-bold text-primary-800 mb-2">4. ผลลัพธ์ที่คาดว่าจะได้รับ</label>
                         {isEditing ? (
                           <textarea
                             value={editValues.expectedOutcome || ""}
                             onChange={(e) => setEditValues({ ...editValues, expectedOutcome: e.target.value })}
-                            rows={3}
-                            className="w-full text-xs p-2.5 bg-green-50/30 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-100 outline-none resize-none"
+                            rows={4}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none bg-white font-medium"
                           />
                         ) : (
-                          <p className="text-gray-600 leading-relaxed bg-green-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-wrap">{req.expectedOutcome}</p>
+                          <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.expectedOutcome}</p>
                         )}
                       </div>
                     </div>

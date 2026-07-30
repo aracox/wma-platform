@@ -6,7 +6,7 @@ import {
   Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, 
   Building2, ChevronDown, Paperclip, FileImage, Trash2, ExternalLink 
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CommunityReport } from "@/types";
 import { getLaos } from "@/data/lao";
@@ -482,7 +482,7 @@ export default function ReportPage() {
                             {report.laoName}
                           </div>
                           <div className="text-xs text-slate-500 mt-0.5">
-                            {new Date(report.createdAt).toLocaleString("th-TH")} · จังหวัด{report.province}
+                            {formatDateTimeBE(report.createdAt, locale)} · จังหวัด{report.province}
                             {report.updatedAt && <span className="text-primary-600 font-medium ml-1">(แก้ไขแล้ว)</span>}
                           </div>
                         </div>
