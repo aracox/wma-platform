@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { Globe, Menu, X, LogOut, User, Shield } from "lucide-react";
+import { Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store";
@@ -31,12 +31,6 @@ export default function Navbar() {
 
   const currentUser = useAppStore((s) => s.currentUser);
   const logout = useAppStore((s) => s.logout);
-
-  const switchLocale = () => {
-    const newLocale = locale === "th" ? "en" : "th";
-    const pathWithoutLocale = pathname.replace(`/${locale}`, "") || "/";
-    router.push(`/${newLocale}${pathWithoutLocale}`);
-  };
 
   const isActive = (href: string) => {
     const fullHref = `/${locale}${href === "/" ? "" : href}`;
@@ -109,15 +103,6 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-3">
-            {/* Language switcher */}
-            <button
-              onClick={switchLocale}
-              className="flex items-center gap-1.5 text-white/80 hover:text-white text-sm font-medium transition-colors px-2 py-1 rounded-md hover:bg-white/10"
-            >
-              <Globe className="h-4 w-4" />
-              <span className="hidden sm:inline">{locale === "th" ? "EN" : "ไทย"}</span>
-            </button>
-
             {/* Auth area */}
             {currentUser ? (
               <div className="relative">
@@ -130,10 +115,10 @@ export default function Navbar() {
                   </div>
                   <div className="hidden sm:block text-left">
                     <div className="text-white text-xs font-semibold leading-tight">
-                      {locale === "th" ? currentUser.name : currentUser.nameEn}
+                      {currentUser.name}
                     </div>
                     <div className="text-primary-300 text-[10px] leading-tight">
-                      {roleInfo && (locale === "th" ? roleInfo.th : roleInfo.en)}
+                      {roleInfo?.th}
                     </div>
                   </div>
                 </button>
@@ -144,13 +129,13 @@ export default function Navbar() {
                     <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-border shadow-xl z-50 overflow-hidden">
                       <div className="px-4 py-3 border-b border-border">
                         <div className="text-sm font-bold text-primary-800">
-                          {locale === "th" ? currentUser.name : currentUser.nameEn}
+                          {currentUser.name}
                         </div>
                         <div className="text-xs text-text-secondary">{currentUser.email}</div>
                         <div className="mt-1.5 flex items-center gap-1.5">
                           <span className={cn("w-2 h-2 rounded-full", roleInfo?.color)} />
                           <span className="text-xs font-medium text-text-secondary">
-                            {roleInfo && (locale === "th" ? roleInfo.th : roleInfo.en)}
+                            {roleInfo?.th}
                           </span>
                         </div>
                       </div>

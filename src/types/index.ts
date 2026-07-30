@@ -1,4 +1,4 @@
-export type Locale = "th" | "en";
+export type Locale = "th";
 
 export type SystemStatus = "operational" | "non_operational" | "construction" | "cancelled";
 
