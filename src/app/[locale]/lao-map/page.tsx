@@ -39,6 +39,10 @@ export default function LaoMapPage() {
 
   // Filter LAOs by search query, province, and district
   const filteredLaos = useMemo(() => {
+    if (!searchQuery && !selectedProvince && !selectedDistrict) {
+      return [];
+    }
+
     let filtered = allLaos;
 
     if (searchQuery) {
@@ -81,7 +85,9 @@ export default function LaoMapPage() {
         <div className="hidden sm:flex items-center gap-1.5 text-xs ml-2">
           <div className="w-2.5 h-2.5 rounded-full bg-cyan-600" />
           <span className="text-gray-500">
-            {countWithCoords.toLocaleString()} อปท. ที่มีพิกัด
+            {selectedProvince || selectedDistrict || searchQuery
+              ? `${countWithCoords.toLocaleString()} อปท. ที่มีพิกัด`
+              : "กรุณาเลือกจังหวัด หรือค้นหาข้อมูลเพื่อแสดงแผนที่"}
           </span>
         </div>
 
@@ -111,7 +117,7 @@ export default function LaoMapPage() {
             }}
             className="appearance-none pl-3 pr-7 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 focus:border-cyan-400 focus:outline-none bg-white cursor-pointer"
           >
-            <option value="">ทุกจังหวัด</option>
+            <option value="">-- เลือกจังหวัด --</option>
             {provinces.map((p) => (
               <option key={p} value={p}>
                 {p}
@@ -129,7 +135,7 @@ export default function LaoMapPage() {
             disabled={!selectedProvince}
             className="appearance-none pl-3 pr-7 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 focus:border-cyan-400 focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer"
           >
-            <option value="">ทุกอำเภอ</option>
+            <option value="">-- เลือกอำเภอ --</option>
             {districts.map((d) => (
               <option key={d} value={d}>
                 {d}

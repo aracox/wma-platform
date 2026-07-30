@@ -117,8 +117,8 @@ export default function FeedCMSPage() {
     setProvinceTh(item.provinceTh);
     setProvinceEn(item.provinceEn);
     setDate(item.date);
-    setStatusTh(item.statusTh);
-    setStatusEn(item.statusEn);
+    setStatusTh(item.statusTh || "");
+    setStatusEn(item.statusEn || "");
     setFormError("");
     setIsFormModalOpen(true);
   };

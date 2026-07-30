@@ -133,11 +133,13 @@ export interface AnnouncementItem {
   titleEn: string;
   summaryTh: string;
   summaryEn: string;
+  detailsTh?: string;
+  detailsEn?: string;
   provinceTh: string;
   provinceEn: string;
   date: string;
-  statusTh: string;
-  statusEn: string;
+  statusTh?: string;
+  statusEn?: string;
 }
 
 export type CooperationStatus = "coordination" | "agreement" | "land_acquisition" | "construction" | "management";
