@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate the fields
-    if (!subject || !details || !localPlan || !expectedOutcome || lat === undefined || lng === undefined) {
+    if (!subject || !details || !expectedOutcome || lat === undefined || lng === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       id: `c${String(seq).padStart(3, "0")}_${Date.now()}`,
       subject,
       details,
-      localPlan,
+      localPlan: localPlan || details,
       expectedOutcome,
       laoId,
       laoName,
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       status: "coordination",
       createdAt: new Date().toISOString(),
       ...(reportedBy && { reportedBy }),
+      attachments: body.attachments || [],
     };
 
     cooperations.push(newCooperation);

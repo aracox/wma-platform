@@ -10,9 +10,25 @@
     "lat": 13.75,
     "lng": 100.5,
     "province": "กรุงเทพมหานคร",
-    "status": "agreement",
+    "status": "land_acquisition",
     "createdAt": "2026-05-27T06:38:19.974Z",
     "reportedBy": "u02",
-    "updatedAt": "2026-05-27T07:01:41.042Z"
+    "updatedAt": "2026-07-30T18:03:49.799Z"
+  },
+  {
+    "id": "c002_1785434569458",
+    "subject": "ทดสอบ",
+    "details": "สามไร่",
+    "localPlan": "สามไร่",
+    "expectedOutcome": "ดีดี",
+    "laoId": "5810405",
+    "laoName": "ทรายขาว",
+    "lat": 13.75,
+    "lng": 100.5,
+    "province": "กระบี่",
+    "status": "coordination",
+    "createdAt": "2026-07-30T18:02:49.458Z",
+    "reportedBy": "user_aracox_gmail_com",
+    "attachments": []
   }
 ]

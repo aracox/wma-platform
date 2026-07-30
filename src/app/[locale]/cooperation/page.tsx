@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, Building2, ChevronDown, Check } from "lucide-react";
+import { Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, Building2, ChevronDown, Check, Paperclip, ExternalLink } from "lucide-react";
 import { cn, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CooperationRequest } from "@/types";
@@ -67,9 +67,40 @@ export default function CooperationPage() {
   const [details, setDetails] = useState("");
   const [localPlan, setLocalPlan] = useState("");
   const [expectedOutcome, setExpectedOutcome] = useState("");
+  const [attachments, setAttachments] = useState<{ name: string; url: string; size?: string; type?: string }[]>([]);
   
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const selectedFiles = Array.from(e.target.files);
+
+    selectedFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        const formattedSize = file.size > 1024 * 1024 
+          ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
+          : `${Math.round(file.size / 1024)} KB`;
+
+        setAttachments((prev) => [
+          ...prev,
+          {
+            name: file.name,
+            url: result,
+            size: formattedSize,
+            type: file.type,
+          },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -81,25 +112,41 @@ export default function CooperationPage() {
   const [statusSaved, setStatusSaved] = useState<string | null>(null);
   const [pendingStatuses, setPendingStatuses] = useState<Record<string, CooperationRequest["status"]>>({});
 
-  // Filtered cooperations
-  const myCooperations = isAdmin 
-    ? cooperations 
-    : cooperations.filter((c) => c.laoId === currentUser?.laoId);
+  const isSelectingLao = isAdmin || !currentUser?.laoId;
+
+  // Status filter state
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // Filtered cooperations: Admin sees all; users see requests created by them or for their LAO
+  const baseCooperations = useMemo(() => {
+    return isAdmin 
+      ? cooperations 
+      : cooperations.filter(
+          (c) => 
+            c.reportedBy === currentUser?.id || 
+            c.reportedBy === currentUser?.email || 
+            (currentUser?.laoId && c.laoId === currentUser.laoId)
+        );
+  }, [isAdmin, cooperations, currentUser]);
+
+  const filteredCooperations = useMemo(() => {
+    if (statusFilter === "all") return baseCooperations;
+    return baseCooperations.filter((c) => c.status === statusFilter);
+  }, [baseCooperations, statusFilter]);
 
   // Form derived state
-  const targetLaoId = isAdmin ? adminSelectedLaoId : currentUser?.laoId;
+  const targetLaoId = isSelectingLao ? adminSelectedLaoId : currentUser?.laoId;
   const selectedLao = useMemo(() => {
     return allLaos.find((l) => l.id === targetLaoId);
   }, [allLaos, targetLaoId]);
 
-  const targetLaoName = isAdmin ? (selectedLao?.name || "") : currentUser?.laoName;
-  const targetProvince = isAdmin ? (selectedLao?.province || "ไม่ระบุ") : (currentUser?.province || "ไม่ระบุ");
+  const targetLaoName = isSelectingLao ? (selectedLao?.name || "") : currentUser?.laoName;
+  const targetProvince = isSelectingLao ? (selectedLao?.province || "ไม่ระบุ") : (currentUser?.province || "ไม่ระบุ");
   
   const canSubmit = !!(
     targetLaoId &&
     subject.trim() && 
     details.trim() && 
-    localPlan.trim() && 
     expectedOutcome.trim()
   );
 
@@ -113,7 +160,7 @@ export default function CooperationPage() {
     const body = {
       subject,
       details,
-      localPlan,
+      localPlan: details,
       expectedOutcome,
       laoId: targetLaoId,
       laoName: targetLaoName || "ไม่ระบุ อปท.",
@@ -121,6 +168,7 @@ export default function CooperationPage() {
       lng,
       province: targetProvince,
       reportedBy: currentUser.id,
+      attachments,
     };
 
     try {
@@ -135,6 +183,7 @@ export default function CooperationPage() {
         setDetails("");
         setLocalPlan("");
         setExpectedOutcome("");
+        setAttachments([]);
         if (isAdmin) setAdminSelectedLaoId("");
         await fetchCooperations();
       }
@@ -220,7 +269,6 @@ export default function CooperationPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black text-slate-900">ขอสร้างศูนย์บริหารจัดการคุณภาพน้ำร่วมกับ อจน.</h1>
-            <p className="text-slate-500 text-sm mt-1">ยื่นข้อเสนอขอความร่วมมือเพื่อร่วมพัฒนาและบริหารจัดการศูนย์คุณภาพน้ำในท้องถิ่น</p>
           </div>
           
           {/* User Context Badge */}
@@ -230,7 +278,7 @@ export default function CooperationPage() {
         </div>
 
         {/* Cooperation Form Component */}
-        {(isOfficer || isAdmin) && (
+        {currentUser && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="bg-gradient-to-r from-primary-900 to-primary-800 border-b border-primary-950 px-6 py-4.5 flex items-center gap-2 text-white font-bold">
               <Building2 className="h-5 w-5 text-blue-200" />
@@ -246,18 +294,11 @@ export default function CooperationPage() {
                 </div>
               )}
 
-              {!currentUser.laoId && !isAdmin && (
-                <div className="p-4 bg-yellow-50 text-yellow-800 rounded-xl text-sm mb-4 border border-yellow-200">
-                  คุณยังไม่มีสังกัด อปท. ในระบบ กรุณาติดต่อผู้ดูแลระบบเพื่อเชื่อมโยงบัญชี
-                </div>
-              )}
-
-              {/* Admin LAO Selector */}
-              {isAdmin && (
+              {/* LAO Selector (Admin or User without assigned LAO) */}
+              {isSelectingLao && (
                 <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
                   <label className="block text-sm font-bold text-primary-800 mb-2">
-                    <Shield className="h-4 w-4 inline-block mr-1.5 text-chula-600" />
-                    เลือก อปท. ที่ต้องการส่งรายงานแทน (เฉพาะ Admin)
+                    เลือก อปท. ที่ต้องการยื่นข้อเสนอโครงการร่วมมือกับ อจน. <span className="text-rose-500 ml-1">*</span>
                   </label>
                   <div className="relative max-w-md">
                     <select
@@ -277,58 +318,102 @@ export default function CooperationPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Field 1: Subject / Objective */}
                 <div>
-                  <label className="block text-sm font-bold text-primary-800 mb-2">1. วัตถุประสงค์ / ความต้องการหลัก</label>
+                  <label className="block text-sm font-bold text-primary-800 mb-2">
+                    1. วัตถุประสงค์ / ความต้องการหลัก <span className="text-rose-500 ml-1">*</span>
+                  </label>
                   <textarea
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    disabled={!targetLaoId}
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none"
                     placeholder="ระบุวัตถุประสงค์ในการสร้างศูนย์ เช่น พัฒนาระบบบำบัดน้ำเสียหลักสำหรับเขตเทศบาล เพื่อแก้ไขปัญหาสิ่งแวดล้อมอย่างยั่งยืน..."
                   />
                 </div>
 
-                {/* Field 2: Details / Current Issues */}
+                {/* Field 2: Site Readiness */}
                 <div>
-                  <label className="block text-sm font-bold text-primary-800 mb-2">2. รายละเอียดพื้นที่ / สภาพปัญหาปัจจุบัน</label>
+                  <label className="block text-sm font-bold text-primary-800 mb-2">
+                    2. ความพร้อมเรื่องพื้นที่สำหรับก่อสร้าง <span className="text-rose-500 ml-1">*</span>
+                  </label>
                   <textarea
                     value={details}
                     onChange={(e) => setDetails(e.target.value)}
-                    disabled={!targetLaoId}
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed bg-orange-50/30"
-                    placeholder="อธิบายปริมาณน้ำเสียในชุมชน, อัตราการขยายตัวของเมือง, และสภาพความเดือดร้อนเนื่องจากน้ำเสียที่ยังไม่ผ่านการบำบัด..."
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 outline-none transition-all text-sm resize-none"
+                    placeholder="อธิบายรายละเอียดพื้นที่, สภาพปัญหาปัจจุบัน, และความพร้อมของ อปท. ในการจัดเตรียมพื้นที่สร้างศูนย์..."
                   />
                 </div>
 
-                {/* Field 3: LAO Plan */}
+                {/* Field 3: Expected Outcome */}
                 <div>
-                  <label className="block text-sm font-bold text-primary-800 mb-2">3. ความพร้อมและแผนงานรองรับเบื้องต้นของ อปท.</label>
-                  <textarea
-                    value={localPlan}
-                    onChange={(e) => setLocalPlan(e.target.value)}
-                    disabled={!targetLaoId}
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
-                    placeholder="อธิบายแผนงานสภาท้องถิ่น หรือการเตรียมงบประมาณ และความคืบหน้าในการประสานจัดเตรียมพื้นที่สร้างศูนย์..."
-                  />
-                </div>
-
-                {/* Field 4: Expected Outcome */}
-                <div>
-                  <label className="block text-sm font-bold text-primary-800 mb-2">4. ผลลัพธ์ที่คาดว่าจะได้รับ</label>
+                  <label className="block text-sm font-bold text-primary-800 mb-2">
+                    3. ผลลัพธ์ที่คาดว่าจะได้รับ <span className="text-rose-500 ml-1">*</span>
+                  </label>
                   <textarea
                     value={expectedOutcome}
                     onChange={(e) => setExpectedOutcome(e.target.value)}
-                    disabled={!targetLaoId}
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none"
                     placeholder="เช่น รองรับปริมาณน้ำเสียชุมชน 2,500 ลบ.ม./วัน, ลดค่าความสกปรกของน้ำทิ้งก่อนปล่อยลงแม่น้ำสำคัญ..."
                   />
                 </div>
+              </div>
+
+              {/* File Attachments Control */}
+              <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="block text-sm font-bold text-primary-800">
+                    แนบไฟล์เอกสาร / รูปภาพเพิ่มเติม <span className="text-xs text-slate-400 font-normal">(ไม่บังคับ)</span>
+                  </label>
+                  <span className="text-xs text-slate-400">
+                    รองรับไฟล์รูปภาพ, PDF, Word, Excel (แนบได้หลายไฟล์)
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border shadow-sm bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300">
+                    <Paperclip className="h-4 w-4 text-primary-600" />
+                    <span>แนบไฟล์...</span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* Attachments preview list */}
+                {attachments.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2">
+                    {attachments.map((att, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {att.type?.startsWith("image/") ? (
+                            <img src={att.url} alt={att.name} className="w-8 h-8 rounded-lg object-cover border border-slate-200 flex-shrink-0" />
+                          ) : (
+                            <FileText className="h-5 w-5 text-primary-600 flex-shrink-0" />
+                          )}
+                          <div className="truncate">
+                            <p className="font-semibold text-slate-800 truncate">{att.name}</p>
+                            <p className="text-[10px] text-slate-400">{att.size || "ไฟล์แนบ"}</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(idx)}
+                          className="text-slate-400 hover:text-rose-500 p-1 transition-colors cursor-pointer"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Submitter info & Submit Button */}
@@ -364,23 +449,71 @@ export default function CooperationPage() {
         )}
 
         {/* History List */}
-        <div className="pt-4">
-          <div className="flex items-center justify-between mb-6">
+        <div className="pt-4 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 className="text-lg font-bold text-primary-800">
-              {isAdmin ? "ประวัติการขอจัดตั้งศูนย์บริหารจัดการน้ำของทุก อปท." : currentUser.laoName ? `ประวัติการขอจัดตั้งศูนย์ฯ ของ ${currentUser.laoName}` : "ประวัติการขอจัดตั้งศูนย์ฯ"}
+              {isAdmin ? "ประวัติการขอจัดตั้งศูนย์บริหารจัดการน้ำของทุก อปท." : currentUser?.laoName ? `ประวัติการขอจัดตั้งศูนย์ฯ ของ ${currentUser.laoName}` : "ประวัติการขอจัดตั้งศูนย์ฯ"}
             </h2>
-            <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-200">
-              {myCooperations.length} รายการ
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-200">
+                {filteredCooperations.length} / {baseCooperations.length} รายการ
+              </span>
+            </div>
           </div>
 
-          {myCooperations.length === 0 ? (
+          {/* Status Filter Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none text-xs">
+            <button
+              type="button"
+              onClick={() => setStatusFilter("all")}
+              className={cn(
+                "px-3 py-1.5 rounded-xl font-bold transition-all border whitespace-nowrap cursor-pointer",
+                statusFilter === "all"
+                  ? "bg-primary-800 text-white border-primary-900 shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              )}
+            >
+              ทั้งหมด ({baseCooperations.length})
+            </button>
+
+            {Object.entries(STATUS_LABELS).map(([key, val]) => {
+              const count = baseCooperations.filter((c) => c.status === key).length;
+              const isActive = statusFilter === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setStatusFilter(key)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl font-bold transition-all border whitespace-nowrap cursor-pointer flex items-center gap-1.5",
+                    isActive
+                      ? "bg-primary-600 text-white border-primary-700 shadow-sm"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  )}
+                >
+                  <span>{val.th}</span>
+                  <span className={cn(
+                    "px-1.5 py-0.5 rounded-md text-[10px]",
+                    isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                  )}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {filteredCooperations.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-border">
-              <p className="text-text-secondary text-sm">ยังไม่มีประวัติการส่งความประสงค์เสนอความร่วมมือ</p>
+              <p className="text-text-secondary text-sm">
+                {statusFilter === "all"
+                  ? "ยังไม่มีประวัติการส่งความประสงค์เสนอความร่วมมือ"
+                  : `ไม่พบรายการในสถานะ "${STATUS_LABELS[statusFilter]?.th || statusFilter}"`}
+              </p>
             </div>
           ) : (
             <div className="space-y-6">
-              {[...myCooperations].reverse().map((req) => {
+              {[...filteredCooperations].reverse().map((req) => {
                 const safeStatus = (statusOrder as readonly string[]).includes(req.status) ? req.status : "coordination";
                 const pendingStatus = pendingStatuses[req.id];
                 const displayStatus = pendingStatus ?? safeStatus;
@@ -491,8 +624,8 @@ export default function CooperationPage() {
                       </div>
                     </div>
 
-                    {/* 4-Column Data Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    {/* 3-Column Data Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
                       {/* Column 1 */}
                       <div>
                         <label className="block text-sm font-bold text-primary-800 mb-2">1. วัตถุประสงค์ / ความต้องการหลัก</label>
@@ -510,49 +643,67 @@ export default function CooperationPage() {
                       
                       {/* Column 2 */}
                       <div>
-                        <label className="block text-sm font-bold text-primary-800 mb-2">2. รายละเอียดพื้นที่ / สภาพปัญหาปัจจุบัน</label>
+                        <label className="block text-sm font-bold text-primary-800 mb-2">2. ความพร้อมเรื่องพื้นที่สำหรับก่อสร้าง</label>
                         {isEditing ? (
                           <textarea
                             value={editValues.details || ""}
                             onChange={(e) => setEditValues({ ...editValues, details: e.target.value })}
                             rows={4}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm resize-none bg-orange-50/30 font-medium"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 outline-none transition-all text-sm resize-none bg-white font-medium"
                           />
                         ) : (
-                          <p className="text-sm text-slate-800 leading-relaxed bg-orange-50/40 p-3.5 rounded-xl border border-orange-100 whitespace-pre-wrap font-medium">{req.details}</p>
+                          <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.details || req.localPlan}</p>
                         )}
                       </div>
                       
                       {/* Column 3 */}
                       <div>
-                        <label className="block text-sm font-bold text-primary-800 mb-2">3. ความพร้อมและแผนงานรองรับเบื้องต้นของ อปท.</label>
-                        {isEditing ? (
-                          <textarea
-                            value={editValues.localPlan || ""}
-                            onChange={(e) => setEditValues({ ...editValues, localPlan: e.target.value })}
-                            rows={4}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none bg-white font-medium"
-                          />
-                        ) : (
-                          <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.localPlan}</p>
-                        )}
-                      </div>
-                      
-                      {/* Column 4 */}
-                      <div>
-                        <label className="block text-sm font-bold text-primary-800 mb-2">4. ผลลัพธ์ที่คาดว่าจะได้รับ</label>
+                        <label className="block text-sm font-bold text-primary-800 mb-2">3. ผลลัพธ์ที่คาดว่าจะได้รับ</label>
                         {isEditing ? (
                           <textarea
                             value={editValues.expectedOutcome || ""}
                             onChange={(e) => setEditValues({ ...editValues, expectedOutcome: e.target.value })}
                             rows={4}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none bg-white font-medium"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none bg-white font-medium"
                           />
                         ) : (
                           <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.expectedOutcome}</p>
                         )}
                       </div>
                     </div>
+
+                    {/* Display Attached Files if any */}
+                    {req.attachments && req.attachments.length > 0 && (
+                      <div className="pt-3 border-t border-slate-100">
+                        <span className="text-[11px] font-bold text-slate-500 block mb-1.5">
+                          📎 ไฟล์แนบ ({req.attachments.length} ไฟล์):
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                          {req.attachments.map((att, attIdx) => (
+                            <a
+                              key={attIdx}
+                              href={att.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs transition-colors group"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                {att.type?.startsWith("image/") ? (
+                                  <img src={att.url} alt={att.name} className="w-8 h-8 rounded-lg object-cover border border-slate-200 flex-shrink-0" />
+                                ) : (
+                                  <FileText className="h-5 w-5 text-primary-600 flex-shrink-0" />
+                                )}
+                                <div className="truncate">
+                                  <p className="font-semibold text-slate-800 truncate group-hover:text-primary-600">{att.name}</p>
+                                  <p className="text-[10px] text-slate-400">{att.size || "ไฟล์แนบ"}</p>
+                                </div>
+                              </div>
+                              <ExternalLink className="h-3.5 w-3.5 text-slate-400 group-hover:text-primary-600 flex-shrink-0 ml-1" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Editing Controls */}
                     {isEditing && (

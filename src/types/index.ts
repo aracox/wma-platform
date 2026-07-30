@@ -162,4 +162,5 @@ export interface CooperationRequest {
   createdAt: string;
   updatedAt?: string;
   reportedBy: string;
+  attachments?: { name: string; url: string; size?: string; type?: string }[];
 }
