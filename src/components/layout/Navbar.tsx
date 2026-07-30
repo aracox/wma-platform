@@ -123,9 +123,11 @@ export default function Navbar() {
                     <div className="text-white text-xs font-semibold leading-tight truncate max-w-[120px]">
                       {user.name}
                     </div>
-                    <div className="text-primary-300 text-[10px] leading-tight">
-                      {roleInfo?.th}
-                    </div>
+                    {user.role !== "user" && roleInfo?.th && (
+                      <div className="text-primary-300 text-[10px] leading-tight">
+                        {roleInfo.th}
+                      </div>
+                    )}
                   </div>
                 </button>
 
@@ -138,12 +140,14 @@ export default function Navbar() {
                           {user.name}
                         </div>
                         <div className="text-xs text-text-secondary truncate">{user.email}</div>
-                        <div className="mt-1.5 flex items-center gap-1.5">
-                          <span className={cn("w-2 h-2 rounded-full", roleInfo?.color)} />
-                          <span className="text-xs font-medium text-text-secondary">
-                            {roleInfo?.th}
-                          </span>
-                        </div>
+                        {user.role !== "user" && roleInfo?.th && (
+                          <div className="mt-1.5 flex items-center gap-1.5">
+                            <span className={cn("w-2 h-2 rounded-full", roleInfo?.color)} />
+                            <span className="text-xs font-medium text-text-secondary">
+                              {roleInfo?.th}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={handleLogout}
