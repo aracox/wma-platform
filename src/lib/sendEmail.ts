@@ -3,53 +3,31 @@ import nodemailer from "nodemailer";
 interface SendOTPEmailParams {
   to: string;
   otp: string;
+  ttlSeconds: number;
 }
 
-export async function sendOTPEmail({ to, otp }: SendOTPEmailParams): Promise<{ success: boolean; messageId?: string; error?: string }> {
+export async function sendOTPEmail({ to, otp, ttlSeconds }: SendOTPEmailParams): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
-    const smtpPort = Number(process.env.SMTP_PORT) || 587;
-    const smtpUser = process.env.SMTP_USER || "";
-    const smtpPass = process.env.SMTP_PASS || "";
-    const smtpFrom = process.env.SMTP_FROM || `"WMA Platform" <noreply@wma.or.th>`;
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = Number(process.env.SMTP_PORT);
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    const smtpFrom = process.env.SMTP_FROM;
 
-    // If SMTP credentials are provided, use them
-    let transporter: nodemailer.Transporter;
-
-    if (smtpUser && smtpPass) {
-      transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
-    } else {
-      // Dev mode: Create test account via Ethereal or log simulation if no credentials
-      console.log(`[EMAIL SERVICE] Sending OTP ${otp} to ${to}...`);
-      
-      // Try creating test ethereal account for dev preview if no env provided
-      try {
-        const testAccount = await nodemailer.createTestAccount();
-        transporter = nodemailer.createTransport({
-          host: "smtp.ethereal.email",
-          port: 587,
-          secure: false,
-          auth: {
-            user: testAccount.user,
-            pass: testAccount.pass,
-          },
-        });
-      } catch {
-        // Fallback JSON transport
-        transporter = nodemailer.createTransport({
-          jsonTransport: true,
-        });
-      }
+    if (!smtpHost || !smtpPort || !smtpUser || !smtpPass || !smtpFrom) {
+      return { success: false, error: "Email delivery is not configured." };
     }
 
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: { user: smtpUser, pass: smtpPass },
+      connectionTimeout: 10_000,
+      socketTimeout: 10_000,
+    });
+
+    const ttlMinutes = Math.ceil(ttlSeconds / 60);
     const htmlContent = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; color: #1e293b;">
         <div style="text-align: center; margin-bottom: 24px;">
@@ -66,7 +44,7 @@ export async function sendOTPEmail({ to, otp }: SendOTPEmailParams): Promise<{ s
             ${otp}
           </div>
           <p style="font-size: 12px; color: #e11d48; font-weight: 600; margin: 0;">
-            ⏳ รหัสนี้จะหมดอายุภายใน 1 นาที (60 วินาที)
+            ⏳ รหัสนี้จะหมดอายุภายใน ${ttlMinutes} นาที
           </p>
         </div>
 
@@ -86,18 +64,16 @@ export async function sendOTPEmail({ to, otp }: SendOTPEmailParams): Promise<{ s
       from: smtpFrom,
       to,
       subject: `[WMA Platform] รหัส OTP ของคุณคือ ${otp}`,
-      text: `รหัส OTP ของคุณคือ: ${otp} (มีอายุ 1 นาที)`,
+      text: `รหัส OTP ของคุณคือ: ${otp} (มีอายุ ${ttlMinutes} นาที)`,
       html: htmlContent,
     });
 
-    const testUrl = nodemailer.getTestMessageUrl(info);
-    if (testUrl) {
-      console.log(`[EMAIL SENT] Preview URL: ${testUrl}`);
-    }
-
     return { success: true, messageId: info.messageId };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed to send OTP email:", err);
-    return { success: false, error: err.message || "Failed to send email" };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to send email",
+    };
   }
 }

@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyOTP } from "@/lib/otpStore";
+import { isOTPConfigurationError, verifyOTP } from "@/lib/otpStore";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, otp } = body;
+    const { email, otp, token } = body;
 
-    if (!email || !otp) {
+    if (!email || !otp || !token) {
       return NextResponse.json(
         { error: "กรุณาระบุอีเมลและรหัส OTP" },
         { status: 400 }
       );
     }
 
-    const result = verifyOTP(email, otp);
+    const result = verifyOTP(email, otp, token);
 
     if (!result.valid) {
-      if (result.reason === "EXPIRED") {
-        return NextResponse.json(
-          { error: "รหัส OTP หมดอายุแล้ว (เกิน 1 นาที) กรุณากดขอรหัส OTP ใหม่" },
-          { status: 400 }
-        );
-      }
       if (result.reason === "INVALID") {
         return NextResponse.json(
           { error: "รหัส OTP ไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง" },
@@ -54,8 +48,12 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Failed to verify OTP:", err);
     return NextResponse.json(
-      { error: "เกิดข้อผิดพลาดในการตรวจสอบ OTP" },
-      { status: 500 }
+      {
+        error: isOTPConfigurationError(err)
+          ? "ระบบ OTP ยังไม่ได้ตั้งค่าสำหรับการใช้งาน"
+          : "เกิดข้อผิดพลาดในการตรวจสอบ OTP",
+      },
+      { status: isOTPConfigurationError(err) ? 503 : 500 }
     );
   }
 }
