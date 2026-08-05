@@ -19,14 +19,14 @@ export default function UserLoginPage() {
   const [step, setStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [otpToken, setOtpToken] = useState("");
   
   // UI Loading & Error states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Countdown timer state (60 seconds = 1 minute)
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isExpired, setIsExpired] = useState(false);
 
   // Timer effect
@@ -76,7 +76,8 @@ export default function UserLoginPage() {
 
       // OTP sent successfully
       setStep("otp");
-      setTimeLeft(60);
+      setOtpToken(data.token || "");
+      setTimeLeft(data.ttlSeconds || 300);
       setIsExpired(false);
       setSuccessMessage(data.message || (locale === "th" ? "ส่งรหัส OTP ไปยังอีเมลเรียบร้อยแล้ว" : "OTP code sent to your email"));
     } catch (err) {
@@ -106,7 +107,7 @@ export default function UserLoginPage() {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), otp }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), otp, token: otpToken }),
       });
 
       const data = await res.json();
