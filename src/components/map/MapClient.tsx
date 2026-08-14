@@ -3,10 +3,70 @@ import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { useLocale } from "next-intl";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import Supercluster, { type ClusterFeature, type PointFeature } from "supercluster";
 import { TreatmentFacility, WaterQualitySensor, CommunityReport, SystemStatus, WaterQualityLevel } from "@/types";
 import { cn } from "@/lib/utils";
 import { X, Building2, Droplets, AlertCircle, Shield, Lock, ChevronDown } from "lucide-react";
 import { useAppStore } from "@/store";
+
+// Clusters collapse markers that would otherwise overlap at low zoom into a
+// single bubble; both layers uncluster individually once you've zoomed in
+// far enough for the pins to have room (points are never dropped, only
+// grouped for rendering).
+const CLUSTER_OPTIONS = { radius: 50, maxZoom: 14 };
+
+function buildClusterIndex<P extends { id: string; lat: number; lng: number }>(points: P[]) {
+  const index = new Supercluster<P, P>(CLUSTER_OPTIONS);
+  index.load(
+    points.map((p) => ({
+      type: "Feature",
+      properties: p,
+      geometry: { type: "Point", coordinates: [p.lng, p.lat] },
+    }))
+  );
+  return index;
+}
+
+function getClustersForViewport<P extends { id: string; lat: number; lng: number }>(
+  index: Supercluster<P, P>,
+  map: maplibregl.Map
+): (PointFeature<P> | ClusterFeature<P>)[] {
+  const bounds = map.getBounds();
+  const bbox: [number, number, number, number] = [
+    bounds.getWest(),
+    bounds.getSouth(),
+    bounds.getEast(),
+    bounds.getNorth(),
+  ];
+  const zoom = Math.round(map.getZoom());
+  return index.getClusters(bbox, zoom);
+}
+
+function isClusterFeature<P>(
+  feature: PointFeature<P> | ClusterFeature<P>
+): feature is ClusterFeature<P> {
+  return (feature.properties as { cluster?: boolean }).cluster === true;
+}
+
+function createClusterBubble(count: number, color: string, onClick: () => void) {
+  const size = count < 10 ? 32 : count < 50 ? 40 : 48;
+  const el = document.createElement("div");
+  el.style.cssText = `
+    width: ${size}px; height: ${size}px; border-radius: 50%;
+    background: ${color};
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 13px;
+    transition: box-shadow 0.15s;
+  `;
+  el.textContent = String(count);
+  el.addEventListener("mouseenter", () => { el.style.boxShadow = "0 0 0 4px rgba(255,255,255,0.4), 0 2px 8px rgba(0,0,0,0.35)"; });
+  el.addEventListener("mouseleave", () => { el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.35)"; });
+  el.addEventListener("click", onClick);
+  return el;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   operational:     "#43A047",
@@ -123,6 +183,18 @@ export default function MapClient({ layers, selectedProvince }: Props) {
   );
   const selectedReportCategory = selectedReport?.category ?? "other";
 
+  // Facilities also respect the province dropdown filter (on top of the
+  // officer restriction), so the cluster index rebuilds when either changes.
+  const filteredFacilities = useMemo(
+    () => selectedProvince
+      ? visibleFacilities.filter((f) => f.province === selectedProvince || f.provinceEn === selectedProvince)
+      : visibleFacilities,
+    [visibleFacilities, selectedProvince]
+  );
+
+  const facilityClusterIndex = useMemo(() => buildClusterIndex(filteredFacilities), [filteredFacilities]);
+  const sensorClusterIndex = useMemo(() => buildClusterIndex(visibleSensors), [visibleSensors]);
+
   useEffect(() => { if (!facilitiesLoaded) fetchFacilities(); }, [facilitiesLoaded, fetchFacilities]);
   useEffect(() => { if (!sensorsLoaded) fetchSensors(); }, [sensorsLoaded, fetchSensors]);
   useEffect(() => { if (!reportsLoaded) fetchReports(); }, [reportsLoaded, fetchReports]);
@@ -158,13 +230,27 @@ export default function MapClient({ layers, selectedProvince }: Props) {
     if (!map.current) return;
     clearMarkers();
 
-    // Facilities
+    // Facilities (clustered — bubbles split apart as the user zooms in)
     if (layers.facilities) {
-      const filtered = selectedProvince
-        ? visibleFacilities.filter((f) => f.province === selectedProvince || f.provinceEn === selectedProvince)
-        : visibleFacilities;
+      const clusters = getClustersForViewport(facilityClusterIndex, map.current);
 
-      filtered.forEach((facility) => {
+      clusters.forEach((feature) => {
+        const [lng, lat] = feature.geometry.coordinates;
+
+        if (isClusterFeature(feature)) {
+          const clusterId = feature.properties.cluster_id;
+          const el = createClusterBubble(feature.properties.point_count, "rgb(48,111,199)", () => {
+            const expansionZoom = Math.min(facilityClusterIndex.getClusterExpansionZoom(clusterId), 16);
+            map.current!.easeTo({ center: [lng, lat], zoom: expansionZoom });
+          });
+          const marker = new maplibregl.Marker({ element: el, anchor: "center" })
+            .setLngLat([lng, lat])
+            .addTo(map.current!);
+          markers.current.push(marker);
+          return;
+        }
+
+        const facility = feature.properties;
         const el = document.createElement("div");
         el.className = "facility-marker";
         el.style.cssText = `
@@ -192,9 +278,27 @@ export default function MapClient({ layers, selectedProvince }: Props) {
       });
     }
 
-    // Sensors
+    // Sensors (clustered — same viewport-driven bubble/leaf split as facilities)
     if (layers.waterQuality) {
-      visibleSensors.forEach((sensor) => {
+      const clusters = getClustersForViewport(sensorClusterIndex, map.current);
+
+      clusters.forEach((feature) => {
+        const [lng, lat] = feature.geometry.coordinates;
+
+        if (isClusterFeature(feature)) {
+          const clusterId = feature.properties.cluster_id;
+          const el = createClusterBubble(feature.properties.point_count, "rgb(67,147,143)", () => {
+            const expansionZoom = Math.min(sensorClusterIndex.getClusterExpansionZoom(clusterId), 16);
+            map.current!.easeTo({ center: [lng, lat], zoom: expansionZoom });
+          });
+          const marker = new maplibregl.Marker({ element: el, anchor: "center" })
+            .setLngLat([lng, lat])
+            .addTo(map.current!);
+          markers.current.push(marker);
+          return;
+        }
+
+        const sensor = feature.properties;
         const el = document.createElement("div");
         el.style.cssText = `
           width: 22px; height: 22px; border-radius: 3px;
@@ -273,7 +377,7 @@ export default function MapClient({ layers, selectedProvince }: Props) {
         markers.current.push(marker);
       });
     }
-  }, [layers, selectedProvince, clearMarkers, visibleFacilities, visibleSensors, visibleReports]);
+  }, [layers, clearMarkers, facilityClusterIndex, sensorClusterIndex, visibleReports]);
 
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -303,7 +407,16 @@ export default function MapClient({ layers, selectedProvince }: Props) {
 
   useEffect(() => {
     if (mapReady) addMarkers();
-  }, [mapReady, layers, selectedProvince, visibleFacilities, visibleSensors, visibleReports, addMarkers]);
+  }, [mapReady, addMarkers]);
+
+  // Re-cluster whenever the viewport settles (pan/zoom), so bubbles split
+  // apart as the user zooms into an area.
+  useEffect(() => {
+    if (!mapReady || !map.current) return;
+    const m = map.current;
+    m.on("moveend", addMarkers);
+    return () => { m.off("moveend", addMarkers); };
+  }, [mapReady, addMarkers]);
 
   const loadPct = selectedFacility
     ? Math.round((selectedFacility.currentLoad / selectedFacility.capacity) * 100)
