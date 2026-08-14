@@ -18,7 +18,7 @@ export interface ServerUser {
 
 // Pre-hashed passwords:
 // "admin1234" -> $2b$10$.qPqhrx5YnND8nysz7Cv0elzr3OWe3ywmKlcl5Yb0QWKtV/R/wZQW
-// "user1234"  -> $2b$10$lU7929k1u7Y6.9u9n75kkuB0Zmg74V39t2q4/K7yWjT7g8iG6zW6W
+// "user1234"  -> $2b$10$1AJi8hL1HOcHyGLvkSbkjeStDagj9xIhRsldISI6pKs/PFHX16AVq
 const DEFAULT_USERS: ServerUser[] = [
   {
     id: "u01",
@@ -32,7 +32,7 @@ const DEFAULT_USERS: ServerUser[] = [
   {
     id: "u02",
     username: "user",
-    passwordHash: "$2b$10$lU7929k1u7Y6.9u9n75kkuB0Zmg74V39t2q4/K7yWjT7g8iG6zW6W",
+    passwordHash: "$2b$10$1AJi8hL1HOcHyGLvkSbkjeStDagj9xIhRsldISI6pKs/PFHX16AVq",
     name: "ประชาชนทั่วไป",
     nameEn: "General User",
     role: "user",
@@ -100,8 +100,12 @@ export async function findUserByEmail(email: string): Promise<User | null> {
  * Authenticate user with username and password on the server
  */
 export async function authenticateUser(username: string, plainTextPassword: string): Promise<User | null> {
-  // Allow plain text override from env if configured (e.g. ADMIN_PASSWORD in .env.local)
-  if (process.env.ADMIN_PASSWORD && username.trim().toLowerCase() === "admin") {
+  // Dev-only plain text override from env (e.g. ADMIN_PASSWORD in .env.local). Never honored in production.
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.ADMIN_PASSWORD &&
+    username.trim().toLowerCase() === "admin"
+  ) {
     if (plainTextPassword === process.env.ADMIN_PASSWORD) {
       const adminUser = await findServerUserByUsername("admin");
       return adminUser ? sanitizeUser(adminUser) : null;

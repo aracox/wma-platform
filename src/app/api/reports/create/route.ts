@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireAuth } from "@/lib/auth/session.server";
 
 const dataFile = path.join(process.cwd(), "src/data/reports.json");
 
@@ -20,6 +21,9 @@ function writeReports(reports: any[]) {
 // POST /api/reports/create — add a new report
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (auth.error) return auth.error;
+
     const body = await request.json();
     const { 
       systemInfo, identifiedIssues, laoActivities, communityParticipation, 

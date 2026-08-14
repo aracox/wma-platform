@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireAuth } from "@/lib/auth/session.server";
 
 const dataFile = path.join(process.cwd(), "src/data/cooperation.json");
 
@@ -20,6 +21,9 @@ function writeCooperations(cooperations: any[]) {
 // POST /api/cooperation/create — add a new cooperation request
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (auth.error) return auth.error;
+
     const body = await request.json();
     const { 
       subject, details, localPlan, expectedOutcome, 
