@@ -1,39 +1,43 @@
 -- CreateTable
 CREATE TABLE "Facility" (
-    "seq" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "seq" SERIAL NOT NULL,
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "nameEn" TEXT NOT NULL,
     "province" TEXT NOT NULL,
     "provinceEn" TEXT NOT NULL,
-    "lat" REAL NOT NULL,
-    "lng" REAL NOT NULL,
+    "lat" DOUBLE PRECISION NOT NULL,
+    "lng" DOUBLE PRECISION NOT NULL,
     "status" TEXT NOT NULL,
     "capacity" INTEGER NOT NULL,
     "currentLoad" INTEGER NOT NULL,
     "operator" TEXT NOT NULL,
-    "lastUpdated" TEXT NOT NULL
+    "lastUpdated" TEXT NOT NULL,
+
+    CONSTRAINT "Facility_pkey" PRIMARY KEY ("seq")
 );
 
 -- CreateTable
 CREATE TABLE "Sensor" (
-    "seq" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "seq" SERIAL NOT NULL,
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "lat" REAL NOT NULL,
-    "lng" REAL NOT NULL,
+    "lat" DOUBLE PRECISION NOT NULL,
+    "lng" DOUBLE PRECISION NOT NULL,
     "province" TEXT NOT NULL,
     "level" TEXT NOT NULL,
-    "bod" REAL NOT NULL,
-    "cod" REAL NOT NULL,
-    "ph" REAL NOT NULL,
-    "tss" REAL NOT NULL,
-    "timestamp" TEXT NOT NULL
+    "bod" DOUBLE PRECISION NOT NULL,
+    "cod" DOUBLE PRECISION NOT NULL,
+    "ph" DOUBLE PRECISION NOT NULL,
+    "tss" DOUBLE PRECISION NOT NULL,
+    "timestamp" TEXT NOT NULL,
+
+    CONSTRAINT "Sensor_pkey" PRIMARY KEY ("seq")
 );
 
 -- CreateTable
 CREATE TABLE "Report" (
-    "seq" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "seq" SERIAL NOT NULL,
     "id" TEXT NOT NULL,
     "systemInfo" TEXT NOT NULL,
     "identifiedIssues" TEXT NOT NULL,
@@ -42,19 +46,21 @@ CREATE TABLE "Report" (
     "laoId" TEXT NOT NULL,
     "laoName" TEXT NOT NULL,
     "province" TEXT NOT NULL,
-    "lat" REAL NOT NULL,
-    "lng" REAL NOT NULL,
+    "lat" DOUBLE PRECISION NOT NULL,
+    "lng" DOUBLE PRECISION NOT NULL,
     "status" TEXT NOT NULL,
     "createdAt" TEXT NOT NULL,
     "updatedAt" TEXT,
     "reportedBy" TEXT,
     "reportedByEmail" TEXT,
-    "attachments" TEXT NOT NULL DEFAULT '[]'
+    "attachments" TEXT NOT NULL DEFAULT '[]',
+
+    CONSTRAINT "Report_pkey" PRIMARY KEY ("seq")
 );
 
 -- CreateTable
 CREATE TABLE "Cooperation" (
-    "seq" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "seq" SERIAL NOT NULL,
     "id" TEXT NOT NULL,
     "subject" TEXT NOT NULL,
     "details" TEXT NOT NULL,
@@ -63,13 +69,15 @@ CREATE TABLE "Cooperation" (
     "laoId" TEXT NOT NULL,
     "laoName" TEXT NOT NULL,
     "province" TEXT NOT NULL,
-    "lat" REAL NOT NULL,
-    "lng" REAL NOT NULL,
+    "lat" DOUBLE PRECISION NOT NULL,
+    "lng" DOUBLE PRECISION NOT NULL,
     "status" TEXT NOT NULL,
     "createdAt" TEXT NOT NULL,
     "updatedAt" TEXT,
     "reportedBy" TEXT,
-    "attachments" TEXT NOT NULL DEFAULT '[]'
+    "attachments" TEXT NOT NULL DEFAULT '[]',
+
+    CONSTRAINT "Cooperation_pkey" PRIMARY KEY ("seq")
 );
 
 -- CreateIndex
