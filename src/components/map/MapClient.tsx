@@ -69,10 +69,21 @@ function createClusterBubble(count: number, color: string, onClick: () => void) 
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  operational:     "#43A047",
-  non_operational: "#E53935",
-  construction:    "#FFC107",
-  cancelled:       "#90A4AE",
+  operational:        "#43A047",
+  non_operational:    "#E53935",
+  construction:       "#FFC107",
+  cancelled:          "#90A4AE",
+  under_maintenance:  "#FB8C00",
+  temporarily_closed: "#8E24AA",
+};
+
+const STATUS_LABELS: Record<SystemStatus, string> = {
+  operational:        "เปิดใช้งาน",
+  non_operational:    "ปิดใช้งาน",
+  construction:       "กำลังก่อสร้าง",
+  cancelled:          "ยกเลิก",
+  under_maintenance:  "อยู่ระหว่างซ่อมบำรุง",
+  temporarily_closed: "ปิดปรับปรุงชั่วคราว",
 };
 
 const QUALITY_COLORS: Record<string, string> = {
@@ -465,12 +476,15 @@ export default function MapClient({ layers, selectedProvince }: Props) {
               {locale === "th" ? selectedFacility.name : selectedFacility.nameEn}
             </h3>
             <div className="flex gap-2 flex-wrap">
-              <span className={cn("text-xs px-2 py-0.5 rounded-full font-semibold border",
-                selectedFacility.status === "operational" ? "badge-operational" :
-                selectedFacility.status === "non_operational" ? "badge-non-operational" :
-                "badge-construction"
-              )}>
-                {{ operational: "เปิดใช้งาน", non_operational: "ปิดใช้งาน", construction: "กำลังก่อสร้าง", cancelled: "ยกเลิก" }[selectedFacility.status]}
+              <span className={cn("text-xs px-2 py-0.5 rounded-full font-semibold border", {
+                operational: "badge-operational",
+                non_operational: "badge-non-operational",
+                construction: "badge-construction",
+                cancelled: "badge-cancelled",
+                under_maintenance: "badge-under-maintenance",
+                temporarily_closed: "badge-temporarily-closed",
+              }[selectedFacility.status])}>
+                {STATUS_LABELS[selectedFacility.status]}
               </span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
                 {locale === "th" ? selectedFacility.province : selectedFacility.provinceEn}
@@ -515,20 +529,24 @@ export default function MapClient({ layers, selectedProvince }: Props) {
                   {locale === "th" ? "อัปเดตสถานะ" : "Update Status"}
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {(["operational", "non_operational", "construction", "cancelled"] as SystemStatus[]).map((s) => {
+                  {([
+                    "operational",
+                    "non_operational",
+                    "construction",
+                    "under_maintenance",
+                    "temporarily_closed",
+                    "cancelled",
+                  ] as SystemStatus[]).map((s) => {
                     const displayStatus = pendingFacilityStatus ?? selectedFacility.status;
                     const isSelected = displayStatus === s;
-                    const labels: Record<SystemStatus, string> = {
-                      operational: "เปิดใช้งาน",
-                      non_operational: "ปิดใช้งาน",
-                      construction: "กำลังก่อสร้าง",
-                      cancelled: "ยกเลิก",
-                    };
+                    const labels = STATUS_LABELS;
                     const colors: Record<SystemStatus, string> = {
                       operational: isSelected ? "bg-green-500 text-white border-green-500" : "border-green-300 text-green-700 hover:bg-green-50",
                       non_operational: isSelected ? "bg-red-500 text-white border-red-500" : "border-red-300 text-red-700 hover:bg-red-50",
                       construction: isSelected ? "bg-yellow-500 text-white border-yellow-500" : "border-yellow-300 text-yellow-700 hover:bg-yellow-50",
                       cancelled: isSelected ? "bg-gray-400 text-white border-gray-400" : "border-gray-300 text-gray-600 hover:bg-gray-50",
+                      under_maintenance: isSelected ? "bg-orange-500 text-white border-orange-500" : "border-orange-300 text-orange-700 hover:bg-orange-50",
+                      temporarily_closed: isSelected ? "bg-purple-500 text-white border-purple-500" : "border-purple-300 text-purple-700 hover:bg-purple-50",
                     };
                     return (
                       <button
@@ -874,10 +892,10 @@ export default function MapClient({ layers, selectedProvince }: Props) {
             </button>
             {legendOpen.facilities && (
               <div className="mt-1.5 space-y-0.5 pl-1">
-                {[["operational","#43A047","เปิดใช้งาน"],["non_operational","#E53935","ปิดใช้งาน"],["construction","#FFC107","กำลังก่อสร้าง"]].map(([key, color, label]) => (
+                {(Object.keys(STATUS_LABELS) as SystemStatus[]).map((key) => (
                   <div key={key} className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
-                    <span className="text-text-secondary">{label}</span>
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: STATUS_COLORS[key] }} />
+                    <span className="text-text-secondary">{STATUS_LABELS[key]}</span>
                   </div>
                 ))}
               </div>

@@ -476,10 +476,13 @@ export default function ReportPage() {
                 const isEditing = editingId === report.id;
                 const canEdit = isAdmin || currentUser.email === report.reportedByEmail || currentUser.laoId === report.laoId;
 
-                const statusLeftBorderClass = 
+                const statusLeftBorderClass =
                   report.status === "pending" ? "border-l-yellow-500" :
                   report.status === "reviewing" ? "border-l-blue-500" :
                   "border-l-green-500";
+
+                const SLA_MS = 48 * 60 * 60 * 1000;
+                const isOverdue = report.status === "pending" && (Date.now() - new Date(report.createdAt).getTime()) > SLA_MS;
 
                 return (
                   <div key={report.id} className={cn(
@@ -516,6 +519,11 @@ export default function ReportPage() {
                         <span className={cn("text-xs px-2.5 py-1 rounded-full border font-bold shadow-sm whitespace-nowrap", STATUS_LABELS[report.status].color)}>
                           {STATUS_LABELS[report.status].th}
                         </span>
+                        {isOverdue && (
+                          <span className="text-xs px-2.5 py-1 rounded-full border font-bold shadow-sm whitespace-nowrap bg-red-100 text-red-700 border-red-200">
+                            ⚠️ เกิน SLA (48 ชม.)
+                          </span>
+                        )}
                       </div>
                     </div>
 

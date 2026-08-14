@@ -18,7 +18,7 @@ export async function GET() {
 }
 
 // PATCH /api/facilities — update status (Admin only)
-// Body: { id: string, status: "operational" | "non_operational" | "construction" | "cancelled" }
+// Body: { id: string, status: "operational" | "non_operational" | "construction" | "cancelled" | "under_maintenance" | "temporarily_closed" }
 export async function PATCH(request: NextRequest) {
   try {
     const auth = await requireAuth(request, ["admin", "official"]);
@@ -31,7 +31,14 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Missing id or status" }, { status: 400 });
     }
 
-    const validStatuses = ["operational", "non_operational", "construction", "cancelled"];
+    const validStatuses = [
+      "operational",
+      "non_operational",
+      "construction",
+      "cancelled",
+      "under_maintenance",
+      "temporarily_closed",
+    ];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }

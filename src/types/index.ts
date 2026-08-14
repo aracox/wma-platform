@@ -1,6 +1,12 @@
 export type Locale = "th";
 
-export type SystemStatus = "operational" | "non_operational" | "construction" | "cancelled";
+export type SystemStatus =
+  | "operational"
+  | "non_operational"
+  | "construction"
+  | "cancelled"
+  | "under_maintenance"
+  | "temporarily_closed";
 
 export type WaterQualityLevel = "excellent" | "good" | "fair" | "poor" | "critical";
 export type ReportCategory = "odor" | "discharge" | "overflow" | "other";

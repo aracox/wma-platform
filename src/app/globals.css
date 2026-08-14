@@ -45,4 +45,7 @@
   .badge-operational { @apply bg-quality-excellent/10 text-quality-excellent border border-quality-excellent/20; }
   .badge-non-operational { @apply bg-quality-critical/10 text-quality-critical border border-quality-critical/20; }
   .badge-construction { @apply bg-quality-fair/10 text-quality-fair border border-quality-fair/20; }
+  .badge-cancelled { @apply bg-slate-100 text-slate-600 border border-slate-200; }
+  .badge-under-maintenance { @apply bg-orange-100 text-orange-700 border border-orange-200; }
+  .badge-temporarily-closed { @apply bg-purple-100 text-purple-700 border border-purple-200; }
 }
