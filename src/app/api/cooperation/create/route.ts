@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       subject, details, localPlan, expectedOutcome,
-      laoId, laoName, lat, lng, province, reportedBy,
+      laoId, laoName, lat, lng, province,
     } = body;
 
     // Validate the fields
@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
 
     const seq = (await prisma.cooperation.count()) + 1;
     const attachments = body.attachments || [];
+    // Identity comes from the verified session, never the request body.
+    const reportedBy = auth.user.id;
 
     const cooperation = await prisma.cooperation.create({
       data: {
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
         province: province || "ไม่ระบุ",
         status: "coordination",
         createdAt: new Date().toISOString(),
-        ...(reportedBy && { reportedBy }),
+        reportedBy,
         attachments: JSON.stringify(attachments),
       },
     });

@@ -43,6 +43,16 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
+    if (auth.user.role === "official") {
+      const existing = await prisma.facility.findUnique({ where: { id } });
+      if (!existing) {
+        return NextResponse.json({ error: "Facility not found" }, { status: 404 });
+      }
+      if (existing.province !== auth.user.province) {
+        return NextResponse.json({ error: "คุณไม่มีสิทธิ์ในการดำเนินการนี้ (Forbidden)" }, { status: 403 });
+      }
+    }
+
     const facility = await prisma.facility.update({
       where: { id },
       data: { status, lastUpdated: new Date().toISOString().split("T")[0] },

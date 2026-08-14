@@ -36,6 +36,16 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Invalid level" }, { status: 400 });
     }
 
+    if (auth.user.role === "official") {
+      const existing = await prisma.sensor.findUnique({ where: { id } });
+      if (!existing) {
+        return NextResponse.json({ error: "Sensor not found" }, { status: 404 });
+      }
+      if (existing.province !== auth.user.province) {
+        return NextResponse.json({ error: "คุณไม่มีสิทธิ์ในการดำเนินการนี้ (Forbidden)" }, { status: 403 });
+      }
+    }
+
     const sensor = await prisma.sensor.update({
       where: { id },
       data: { level, timestamp: new Date().toISOString() },

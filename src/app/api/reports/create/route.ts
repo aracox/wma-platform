@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       systemInfo, identifiedIssues, laoActivities, communityParticipation,
-      laoId, laoName, lat, lng, province, reportedBy,
+      laoId, laoName, lat, lng, province,
     } = body;
 
     // Validate mandatory fields and coordinates
@@ -20,8 +20,11 @@ export async function POST(request: NextRequest) {
     }
 
     const seq = (await prisma.report.count()) + 1;
-    const reportedByEmail = body.reportedByEmail || (reportedBy && reportedBy.includes("@") ? reportedBy : undefined);
     const attachments = body.attachments || [];
+    // Identity fields come from the verified session, never the request body -
+    // otherwise a caller could file a report while claiming to be someone else.
+    const reportedBy = auth.user.email || auth.user.id || "ไม่ระบุ";
+    const reportedByEmail = auth.user.email;
 
     const report = await prisma.report.create({
       data: {
@@ -37,7 +40,7 @@ export async function POST(request: NextRequest) {
         province: province || "ไม่ระบุ",
         status: "pending",
         createdAt: new Date().toISOString(),
-        reportedBy: reportedBy || body.reportedByEmail || "ไม่ระบุ",
+        reportedBy,
         reportedByEmail,
         attachments: JSON.stringify(attachments),
       },
