@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Building2, Droplets, AlertCircle, Layers, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ALL_STATUSES, STATUS_COLORS, STATUS_LABELS } from "@/lib/facilityStatus";
 import { useAppStore } from "@/store";
 
 const MapClient = dynamic(() => import("@/components/map/MapClient"), {
@@ -32,11 +33,10 @@ export default function MapPage() {
     setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const provinces = [...new Set(facilities.map((f) => f.province))].sort();
-  const stats = {
-    operational: facilities.filter((f) => f.status === "operational").length,
-    non_operational: facilities.filter((f) => f.status === "non_operational").length,
-    construction: facilities.filter((f) => f.status === "construction").length,
-  };
+  const statusCounts = ALL_STATUSES.map((status) => ({
+    status,
+    count: facilities.filter((f) => f.status === status).length,
+  }));
 
   return (
     <div className="flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
@@ -45,10 +45,13 @@ export default function MapPage() {
         <h1 className="font-bold text-primary-800 text-base hidden sm:block">แผนที่ระบบบำบัดน้ำเสีย</h1>
 
         {/* Quick stats */}
-        <div className="hidden md:flex items-center gap-3 text-xs ml-2">
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-quality-excellent" /><span className="text-text-secondary">{stats.operational} เปิดใช้งาน</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-quality-critical" /><span className="text-text-secondary">{stats.non_operational} ปิดใช้งาน</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-quality-fair" /><span className="text-text-secondary">{stats.construction} ก่อสร้าง</span></div>
+        <div className="hidden md:flex items-center gap-3 text-xs ml-2 flex-wrap">
+          {statusCounts.map(({ status, count }) => (
+            <div key={status} className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: STATUS_COLORS[status] }} />
+              <span className="text-text-secondary">{count} {STATUS_LABELS[status]}</span>
+            </div>
+          ))}
         </div>
 
         <div className="flex-1" />

@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import Supercluster, { type ClusterFeature, type PointFeature } from "supercluster";
 import { TreatmentFacility, WaterQualitySensor, CommunityReport, SystemStatus, WaterQualityLevel } from "@/types";
 import { cn } from "@/lib/utils";
+import { STATUS_COLORS, STATUS_LABELS } from "@/lib/facilityStatus";
 import { X, Building2, Droplets, AlertCircle, Shield, Lock, ChevronDown } from "lucide-react";
 import { useAppStore } from "@/store";
 
@@ -67,24 +68,6 @@ function createClusterBubble(count: number, color: string, onClick: () => void) 
   el.addEventListener("click", onClick);
   return el;
 }
-
-const STATUS_COLORS: Record<string, string> = {
-  operational:        "#43A047",
-  non_operational:    "#E53935",
-  construction:       "#FFC107",
-  cancelled:          "#90A4AE",
-  under_maintenance:  "#FB8C00",
-  temporarily_closed: "#8E24AA",
-};
-
-const STATUS_LABELS: Record<SystemStatus, string> = {
-  operational:        "เปิดใช้งาน",
-  non_operational:    "ปิดใช้งาน",
-  construction:       "กำลังก่อสร้าง",
-  cancelled:          "ยกเลิก",
-  under_maintenance:  "อยู่ระหว่างซ่อมบำรุง",
-  temporarily_closed: "ปิดปรับปรุงชั่วคราว",
-};
 
 const QUALITY_COLORS: Record<string, string> = {
   excellent: "#43A047",
