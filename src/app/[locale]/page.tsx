@@ -192,7 +192,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="bg-slate-50">
-      <HeroSlider locale={locale} isThai={isThai} />
+      <HeroSlider locale={locale} isThai={isThai} totalLaos={totalLaos} connectedFacilities={operationalFacilities} />
 
       {/* 3 Core Missions */}
       <section className="mx-auto max-w-6xl px-4 py-10">

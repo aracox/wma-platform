@@ -16,20 +16,20 @@ interface AppState {
   facilities: TreatmentFacility[];
   facilitiesLoaded: boolean;
   fetchFacilities: () => Promise<void>;
-  updateFacilityStatus: (id: string, status: SystemStatus) => Promise<void>;
+  updateFacilityStatus: (id: string, status: SystemStatus) => Promise<boolean>;
 
   // Sensors (from API)
   sensors: WaterQualitySensor[];
   sensorsLoaded: boolean;
   fetchSensors: () => Promise<void>;
-  updateSensorLevel: (id: string, level: WaterQualityLevel) => Promise<void>;
+  updateSensorLevel: (id: string, level: WaterQualityLevel) => Promise<boolean>;
 
   // Reports (from API)
   reports: CommunityReport[];
   reportsLoaded: boolean;
   fetchReports: () => Promise<void>;
-  updateReportStatus: (reportId: string, status: CommunityReport["status"]) => Promise<void>;
-  updateReportFields: (reportId: string, fields: Partial<CommunityReport>) => Promise<void>;
+  updateReportStatus: (reportId: string, status: CommunityReport["status"]) => Promise<boolean>;
+  updateReportFields: (reportId: string, fields: Partial<CommunityReport>) => Promise<boolean>;
 
   // Map state
   mapLayers: {
@@ -53,8 +53,8 @@ interface AppState {
   cooperations: CooperationRequest[];
   cooperationsLoaded: boolean;
   fetchCooperations: () => Promise<void>;
-  updateCooperationStatus: (id: string, status: CooperationRequest["status"]) => Promise<void>;
-  updateCooperationFields: (id: string, fields: Partial<CooperationRequest>) => Promise<void>;
+  updateCooperationStatus: (id: string, status: CooperationRequest["status"]) => Promise<boolean>;
+  updateCooperationFields: (id: string, fields: Partial<CooperationRequest>) => Promise<boolean>;
 }
 
 // Helper to read initial user from localStorage
@@ -128,10 +128,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!res.ok) {
         get().fetchFacilities();
         console.error("Failed to save facility status");
+        return false;
       }
+      return true;
     } catch (err) {
       get().fetchFacilities();
       console.error("Failed to save facility status:", err);
+      return false;
     }
   },
 
@@ -165,10 +168,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!res.ok) {
         get().fetchSensors();
         console.error("Failed to save sensor level");
+        return false;
       }
+      return true;
     } catch (err) {
       get().fetchSensors();
       console.error("Failed to save sensor level:", err);
+      return false;
     }
   },
 
@@ -202,10 +208,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!res.ok) {
         get().fetchReports();
         console.error("Failed to save report status");
+        return false;
       }
+      return true;
     } catch (err) {
       get().fetchReports();
       console.error("Failed to save report status:", err);
+      return false;
     }
   },
   updateReportFields: async (id, fields) => {
@@ -224,10 +233,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!res.ok) {
         get().fetchReports();
         console.error("Failed to save report fields");
+        return false;
       }
+      return true;
     } catch (err) {
       get().fetchReports();
       console.error("Failed to save report fields:", err);
+      return false;
     }
   },
 
@@ -313,10 +325,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!res.ok) {
         get().fetchCooperations();
         console.error("Failed to save cooperation status");
+        return false;
       }
+      return true;
     } catch (err) {
       get().fetchCooperations();
       console.error("Failed to save cooperation status:", err);
+      return false;
     }
   },
   updateCooperationFields: async (id, fields) => {
@@ -335,10 +350,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!res.ok) {
         get().fetchCooperations();
         console.error("Failed to save cooperation fields");
+        return false;
       }
+      return true;
     } catch (err) {
       get().fetchCooperations();
       console.error("Failed to save cooperation fields:", err);
+      return false;
     }
   },
 }));

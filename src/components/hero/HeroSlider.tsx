@@ -11,14 +11,7 @@ interface Slide {
   subtitleEn: string;
 }
 
-const SLIDES: Slide[] = [
-  {
-    img: "/images/hero-slide-1.jpg",
-    subtitleTh:
-      "874 ระบบกำลังเดินระบบใน 1,426 อปท ทั่วประเทศ ติดตามสถานะและความพร้อมใช้งานแบบเรียลไทม์",
-    subtitleEn:
-      "874 systems operational across 1,426 LAOs nationwide. Monitor status and readiness in real time.",
-  },
+const STATIC_SLIDES: Slide[] = [
   {
     img: "/images/hero-slide-2.jpg",
     subtitleTh:
@@ -54,10 +47,23 @@ const INTERVAL_MS = 5000;
 interface HeroSliderProps {
   locale: string;
   isThai: boolean;
+  totalLaos: number;
+  connectedFacilities: number;
 }
 
-export default function HeroSlider({ locale, isThai }: HeroSliderProps) {
+export default function HeroSlider({ locale, isThai, totalLaos, connectedFacilities }: HeroSliderProps) {
   const [current, setCurrent] = useState(0);
+
+  // First slide is generated from real platform data so it never drifts out of
+  // sync with the actual LAO/facility counts shown elsewhere on the dashboard.
+  const SLIDES: Slide[] = [
+    {
+      img: "/images/hero-slide-1.jpg",
+      subtitleTh: `${connectedFacilities.toLocaleString()} ระบบบำบัดที่เชื่อมต่อข้อมูลแล้ว จาก อปท. ทั้งหมด ${totalLaos.toLocaleString()} แห่งทั่วประเทศ ติดตามสถานะและความพร้อมใช้งานแบบเรียลไทม์`,
+      subtitleEn: `${connectedFacilities.toLocaleString()} treatment systems connected and monitored, out of ${totalLaos.toLocaleString()} LAOs nationwide. Track status and readiness in real time.`,
+    },
+    ...STATIC_SLIDES,
+  ];
 
   const goTo = useCallback((next: number) => {
     setCurrent(next);

@@ -54,10 +54,12 @@ export default function ReportPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<CommunityReport>>({});
   const [savingEdit, setSavingEdit] = useState(false);
+  const [editSaveError, setEditSaveError] = useState(false);
 
   // Status List state
   const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
   const [statusSaved, setStatusSaved] = useState<string | null>(null);
+  const [statusSaveError, setStatusSaveError] = useState<string | null>(null);
   const [pendingStatuses, setPendingStatuses] = useState<Record<string, CommunityReport["status"]>>({});
 
   // Filtered reports: Admins see all, Public users see their email reports, Officers see their LAO reports
@@ -184,25 +186,38 @@ export default function ReportPage() {
   const handleSaveEdit = async () => {
     if (!editingId) return;
     setSavingEdit(true);
-    await updateReportFields(editingId, editValues);
+    setEditSaveError(false);
+    const success = await updateReportFields(editingId, editValues);
     setSavingEdit(false);
-    setEditingId(null);
+    if (success) {
+      setEditingId(null);
+    } else {
+      setEditSaveError(true);
+      setTimeout(() => setEditSaveError(false), 4000);
+    }
   };
 
   const handleStatusChange = (reportId: string, status: CommunityReport["status"]) => {
     setPendingStatuses((prev) => ({ ...prev, [reportId]: status }));
     setStatusSaved(null);
+    setStatusSaveError(null);
   };
 
   const handleStatusSave = async (reportId: string) => {
     const newStatus = pendingStatuses[reportId];
     if (!newStatus) return;
     setStatusUpdating(reportId);
-    await updateReportStatus(reportId, newStatus);
-    setPendingStatuses((prev) => { const n = { ...prev }; delete n[reportId]; return n; });
+    setStatusSaveError(null);
+    const success = await updateReportStatus(reportId, newStatus);
     setStatusUpdating(null);
-    setStatusSaved(reportId);
-    setTimeout(() => setStatusSaved(null), 2000);
+    if (success) {
+      setPendingStatuses((prev) => { const n = { ...prev }; delete n[reportId]; return n; });
+      setStatusSaved(reportId);
+      setTimeout(() => setStatusSaved(null), 2000);
+    } else {
+      setStatusSaveError(reportId);
+      setTimeout(() => setStatusSaveError(null), 4000);
+    }
   };
 
   if (!mounted) {
@@ -588,6 +603,11 @@ export default function ReportPage() {
                     {/* Editing Controls */}
                     {isEditing && (
                       <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+                        {editSaveError && (
+                          <span className="text-xs font-semibold text-red-600 mr-1">
+                            ⚠️ บันทึกไม่สำเร็จ กรุณาลองใหม่
+                          </span>
+                        )}
                         <button
                           onClick={() => setEditingId(null)}
                           disabled={savingEdit}
@@ -646,6 +666,11 @@ export default function ReportPage() {
                         )}
                         {statusSaved === report.id && (
                           <span className="text-sm border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full inline-flex items-center">✅</span>
+                        )}
+                        {statusSaveError === report.id && (
+                          <span className="text-xs font-semibold border border-red-200 bg-red-50 text-red-600 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                            ⚠️ บันทึกไม่สำเร็จ
+                          </span>
                         )}
                       </div>
                     )}

@@ -68,16 +68,19 @@ export default function MapClient({ layers, selectedProvince }: Props) {
   const [pendingFacilityStatus, setPendingFacilityStatus] = useState<SystemStatus | null>(null);
   const [savingFacility, setSavingFacility] = useState(false);
   const [savedFacility, setSavedFacility] = useState(false);
+  const [saveFailedFacility, setSaveFailedFacility] = useState(false);
 
   // Sensor level update state
   const [pendingSensorLevel, setPendingSensorLevel] = useState<WaterQualityLevel | null>(null);
   const [savingSensor, setSavingSensor] = useState(false);
   const [savedSensor, setSavedSensor] = useState(false);
+  const [saveFailedSensor, setSaveFailedSensor] = useState(false);
 
   // Report status update state
   const [pendingStatus, setPendingStatus] = useState<CommunityReport["status"] | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveFailedReport, setSaveFailedReport] = useState(false);
 
   const [mapReady, setMapReady] = useState(false);
   const [legendOpen, setLegendOpen] = useState({ facilities: true, waterQuality: true, reports: true });
@@ -434,12 +437,18 @@ export default function MapClient({ layers, selectedProvince }: Props) {
                     onClick={async () => {
                       setSavingFacility(true);
                       setSavedFacility(false);
-                      await updateFacilityStatus(selectedFacility.id, pendingFacilityStatus);
-                      setSelectedFacility({ ...selectedFacility, status: pendingFacilityStatus });
+                      setSaveFailedFacility(false);
+                      const success = await updateFacilityStatus(selectedFacility.id, pendingFacilityStatus);
                       setSavingFacility(false);
-                      setSavedFacility(true);
-                      setPendingFacilityStatus(null);
-                      setTimeout(() => setSavedFacility(false), 2500);
+                      if (success) {
+                        setSelectedFacility({ ...selectedFacility, status: pendingFacilityStatus });
+                        setSavedFacility(true);
+                        setPendingFacilityStatus(null);
+                        setTimeout(() => setSavedFacility(false), 2500);
+                      } else {
+                        setSaveFailedFacility(true);
+                        setTimeout(() => setSaveFailedFacility(false), 4000);
+                      }
                     }}
                     disabled={savingFacility}
                     className={cn(
@@ -463,6 +472,11 @@ export default function MapClient({ layers, selectedProvince }: Props) {
                 {savedFacility && (
                   <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-quality-excellent animate-fade-up">
                     ✅ {locale === "th" ? "บันทึกเรียบร้อยแล้ว" : "Saved successfully"}
+                  </div>
+                )}
+                {saveFailedFacility && (
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-red-600 animate-fade-up">
+                    ⚠️ {locale === "th" ? "บันทึกไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อและลองใหม่" : "Failed to save. Check your connection and try again."}
                   </div>
                 )}
                 <div className="text-[10px] text-text-secondary">
@@ -551,12 +565,18 @@ export default function MapClient({ layers, selectedProvince }: Props) {
                     onClick={async () => {
                       setSavingSensor(true);
                       setSavedSensor(false);
-                      await updateSensorLevel(selectedSensor.id, pendingSensorLevel);
-                      setSelectedSensor({ ...selectedSensor, level: pendingSensorLevel });
+                      setSaveFailedSensor(false);
+                      const success = await updateSensorLevel(selectedSensor.id, pendingSensorLevel);
                       setSavingSensor(false);
-                      setSavedSensor(true);
-                      setPendingSensorLevel(null);
-                      setTimeout(() => setSavedSensor(false), 2500);
+                      if (success) {
+                        setSelectedSensor({ ...selectedSensor, level: pendingSensorLevel });
+                        setSavedSensor(true);
+                        setPendingSensorLevel(null);
+                        setTimeout(() => setSavedSensor(false), 2500);
+                      } else {
+                        setSaveFailedSensor(true);
+                        setTimeout(() => setSaveFailedSensor(false), 4000);
+                      }
                     }}
                     disabled={savingSensor}
                     className={cn(
@@ -580,6 +600,11 @@ export default function MapClient({ layers, selectedProvince }: Props) {
                 {savedSensor && (
                   <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-quality-excellent animate-fade-up">
                     ✅ {locale === "th" ? "บันทึกเรียบร้อยแล้ว" : "Saved successfully"}
+                  </div>
+                )}
+                {saveFailedSensor && (
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-red-600 animate-fade-up">
+                    ⚠️ {locale === "th" ? "บันทึกไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อและลองใหม่" : "Failed to save. Check your connection and try again."}
                   </div>
                 )}
                 <div className="text-[10px] text-text-secondary">
@@ -658,12 +683,18 @@ export default function MapClient({ layers, selectedProvince }: Props) {
                     onClick={async () => {
                       setSaving(true);
                       setSaved(false);
-                      await updateReportStatus(selectedReport.id, pendingStatus);
-                      setSelectedReport({ ...selectedReport, status: pendingStatus });
+                      setSaveFailedReport(false);
+                      const success = await updateReportStatus(selectedReport.id, pendingStatus);
                       setSaving(false);
-                      setSaved(true);
-                      setPendingStatus(null);
-                      setTimeout(() => setSaved(false), 2500);
+                      if (success) {
+                        setSelectedReport({ ...selectedReport, status: pendingStatus });
+                        setSaved(true);
+                        setPendingStatus(null);
+                        setTimeout(() => setSaved(false), 2500);
+                      } else {
+                        setSaveFailedReport(true);
+                        setTimeout(() => setSaveFailedReport(false), 4000);
+                      }
                     }}
                     disabled={saving}
                     className={cn(
@@ -685,6 +716,11 @@ export default function MapClient({ layers, selectedProvince }: Props) {
                 {saved && (
                   <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-quality-excellent animate-fade-up">
                     ✅ {locale === "th" ? "บันทึกเรียบร้อยแล้ว" : "Saved successfully"}
+                  </div>
+                )}
+                {saveFailedReport && (
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-red-600 animate-fade-up">
+                    ⚠️ {locale === "th" ? "บันทึกไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อและลองใหม่" : "Failed to save. Check your connection and try again."}
                   </div>
                 )}
                 <div className="text-[10px] text-text-secondary">
