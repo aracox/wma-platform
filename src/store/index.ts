@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { 
   TreatmentFacility, WaterQualitySensor, CommunityReport, 
-  SystemStatus, WaterQualityLevel, AnnouncementItem, CooperationRequest 
+  SystemStatus, WaterQualityLevel, AnnouncementItem, CooperationRequest,
+  User
 } from "@/types";
-import { User } from "@/data/users";
 import { INITIAL_ANNOUNCEMENTS } from "@/data/announcements";
 
 interface AppState {
@@ -92,6 +92,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         console.error("Failed to clear user from localStorage", e);
       }
     }
+    // Call server to clear HttpOnly cookie
+    fetch("/api/auth/logout", { method: "POST" }).catch((err) => {
+      console.error("Failed to clear session on server", err);
+    });
   },
 
   // Facilities

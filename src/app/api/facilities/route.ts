@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import initialData from "@/data/facilities.json";
+import { requireAuth } from "@/lib/auth/session.server";
 
 let facilitiesCache: any[] = [...initialData];
 
@@ -20,10 +21,13 @@ export async function GET() {
   }
 }
 
-// PATCH /api/facilities — update status
+// PATCH /api/facilities — update status (Admin only)
 // Body: { id: string, status: "operational" | "non_operational" | "construction" | "cancelled" }
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await requireAuth(request, ["admin", "official"]);
+    if (auth.error) return auth.error;
+
     const body = await request.json();
     const { id, status } = body;
 

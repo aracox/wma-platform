@@ -8,6 +8,19 @@ export type ReportType = "community" | "facility" | "water_quality";
 
 export type UserRole = "official" | "admin" | "user";
 
+export interface User {
+  id: string;
+  username: string;
+  name: string;
+  nameEn: string;
+  role: UserRole;
+  email: string;
+  laoId?: string;
+  laoName?: string;
+  province?: string;
+  provinceEn?: string;
+}
+
 export interface TreatmentFacility {
   id: string;
   name: string;

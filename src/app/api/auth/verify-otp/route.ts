@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isOTPConfigurationError, verifyOTP } from "@/lib/otpStore";
+import { attachSessionCookie } from "@/lib/auth/session.server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,11 +41,13 @@ export async function POST(request: NextRequest) {
       role: "user" as const,
     };
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: userSession,
       message: "เข้าสู่ระบบสำเร็จ",
     });
+
+    return attachSessionCookie(response, userSession);
   } catch (err) {
     console.error("Failed to verify OTP:", err);
     return NextResponse.json(

@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Shield, Lock, User, AlertTriangle, LogIn } from "lucide-react";
+import { Shield, Lock, User, AlertTriangle, LogIn, Loader2 } from "lucide-react";
 import { useAppStore } from "@/store";
-import { USERS } from "@/data/users";
 import Link from "next/link";
 
 export default function AdminLoginPage() {
@@ -15,6 +14,7 @@ export default function AdminLoginPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Already logged in — redirect
@@ -42,23 +42,51 @@ export default function AdminLoginPage() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const user = USERS.find(
-      (u) => u.username === username && u.password === password && u.role === "admin"
-    );
-
-    if (user) {
-      login(user);
-      router.push(`/${locale}`);
-    } else {
+    if (!username.trim() || !password) {
       setError(
         locale === "th"
-          ? "ชื่อผู้ใช้หรือรหัสผ่าน Admin ไม่ถูกต้อง"
-          : "Invalid admin username or password"
+          ? "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน"
+          : "Please enter username and password"
       );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username.trim(), password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(
+          data.error ||
+            (locale === "th"
+              ? "ชื่อผู้ใช้หรือรหัสผ่าน Admin ไม่ถูกต้อง"
+              : "Invalid admin username or password")
+        );
+        return;
+      }
+
+      if (data.user) {
+        login(data.user);
+        router.push(`/${locale}`);
+      }
+    } catch {
+      setError(
+        locale === "th"
+          ? "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์"
+          : "Server connection error"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,10 +147,20 @@ export default function AdminLoginPage() {
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 py-3 bg-primary-800 text-white font-semibold rounded-xl hover:bg-primary-900 transition-colors cursor-pointer shadow-sm"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-primary-800 text-white font-semibold rounded-xl hover:bg-primary-900 transition-colors cursor-pointer shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <LogIn className="h-5 w-5" />
-            {locale === "th" ? "เข้าสู่ระบบ Admin" : "Sign In as Admin"}
+            {loading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                {locale === "th" ? "กำลังตรวจสอบข้อมูล..." : "Verifying..."}
+              </>
+            ) : (
+              <>
+                <LogIn className="h-5 w-5" />
+                {locale === "th" ? "เข้าสู่ระบบ Admin" : "Sign In as Admin"}
+              </>
+            )}
           </button>
         </form>
 

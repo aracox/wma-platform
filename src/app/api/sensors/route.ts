@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import initialData from "@/data/sensors.json";
+import { requireAuth } from "@/lib/auth/session.server";
 
 let sensorsCache: any[] = [...initialData];
 
@@ -20,10 +21,13 @@ export async function GET() {
   }
 }
 
-// PATCH /api/sensors — update quality level
+// PATCH /api/sensors — update quality level (Admin & Official only)
 // Body: { id: string, level: "excellent" | "good" | "fair" | "poor" | "critical" }
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await requireAuth(request, ["admin", "official"]);
+    if (auth.error) return auth.error;
+
     const body = await request.json();
     const { id, level } = body;
 

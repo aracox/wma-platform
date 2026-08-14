@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireAuth } from "@/lib/auth/session.server";
 
 const dataFile = path.join(process.cwd(), "src/data/cooperation.json");
 
@@ -27,9 +28,12 @@ export async function GET() {
   }
 }
 
-// PATCH /api/cooperation — update a cooperation request's fields
+// PATCH /api/cooperation — update a cooperation request's fields (Admin & Official only)
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await requireAuth(request, ["admin", "official"]);
+    if (auth.error) return auth.error;
+
     const body = await request.json();
     const { id, status, subject, details, localPlan, expectedOutcome } = body;
 
