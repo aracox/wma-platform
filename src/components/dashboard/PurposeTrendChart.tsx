@@ -40,8 +40,8 @@ export default function PurposeTrendChart({ isThai, data }: PurposeTrendChartPro
             <YAxis stroke="#475569" />
             <Tooltip />
             <Legend />
-            <Bar name={isThai ? "ระบบบำบัด อปท" : "LAO Systems"} dataKey="system" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
-            <Bar name={isThai ? "กิจกรรมของ อปท" : "LAO Activities"} dataKey="lao" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
+            <Bar name={isThai ? "ระบบบำบัด อปท." : "LAO Systems"} dataKey="system" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
+            <Bar name={isThai ? "กิจกรรมของ อปท." : "LAO Activities"} dataKey="lao" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
             <Bar name={isThai ? "กิจกรรมชุมชน" : "Community"} dataKey="community" fill="#059669" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

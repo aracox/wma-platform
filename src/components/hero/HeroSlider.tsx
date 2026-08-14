@@ -15,7 +15,7 @@ const STATIC_SLIDES: Slide[] = [
   {
     img: "/images/hero-slide-2.jpg",
     subtitleTh:
-      "เจ้าหน้าที่ อปท ตรวจสอบโครงสร้างพื้นฐานระบบบำบัดน้ำเสียเพื่อรับรองมาตรฐานคุณภาพน้ำชุมชน",
+      "เจ้าหน้าที่ อปท. ตรวจสอบโครงสร้างพื้นฐานระบบบำบัดน้ำเสียเพื่อรับรองมาตรฐานคุณภาพน้ำชุมชน",
     subtitleEn:
       "LAO officers inspect wastewater infrastructure to maintain community water quality standards.",
   },
@@ -29,7 +29,7 @@ const STATIC_SLIDES: Slide[] = [
   {
     img: "/images/hero-slide-4.jpg",
     subtitleTh:
-      "แพลตฟอร์มดิจิทัลรวมข้อมูลเชิงพื้นที่ เชื่อมโยงผู้บริหาร อปท และประชาชนในวงจรนโยบายเดียว",
+      "แพลตฟอร์มดิจิทัลรวมข้อมูลเชิงพื้นที่ เชื่อมโยงผู้บริหาร อปท. และประชาชนในวงจรนโยบายเดียว",
     subtitleEn:
       "A digital platform unifying spatial data — connecting LAO administrators and citizens in one policy loop.",
   },
@@ -163,7 +163,7 @@ export default function HeroSlider({
             href={`/${locale}/lao-map`}
             className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-primary-900 transition hover:bg-sky-100"
           >
-            {isThai ? "ดูข้อมูล อปท บนแผนที่" : "Explore LAO Map"}
+            {isThai ? "ดูข้อมูล อปท. บนแผนที่" : "Explore LAO Map"}
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link

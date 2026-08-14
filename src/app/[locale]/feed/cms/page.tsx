@@ -13,8 +13,8 @@ import { useAppStore } from "@/store";
 import { AnnouncementItem } from "@/types";
 
 const CATEGORIES = [
-  { id: "system", labelTh: "ระบบบำบัดของ อปท", labelEn: "LAO Systems", icon: Building2, color: "text-primary-600 bg-primary-50 border-primary-100" },
-  { id: "lao", labelTh: "กิจกรรมของ อปท", labelEn: "LAO Activities", icon: CalendarDays, color: "text-chula-700 bg-chula-50 border-chula-100" },
+  { id: "system", labelTh: "ระบบบำบัดของ อปท.", labelEn: "LAO Systems", icon: Building2, color: "text-primary-600 bg-primary-50 border-primary-100" },
+  { id: "lao", labelTh: "กิจกรรมของ อปท.", labelEn: "LAO Activities", icon: CalendarDays, color: "text-chula-700 bg-chula-50 border-chula-100" },
 ] as const;
 
 const PROVINCES_THAI = [

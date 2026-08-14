@@ -28,7 +28,7 @@ const MISSION_PILLARS: MissionPillar[] = [
     image: "/images/mission-thai-1.png",
     labelTh: "ข้อมูลระบบ",
     labelEn: "SYSTEMS",
-    titleTh: "ข้อมูลระบบบำบัดน้ำเสียของ อปท",
+    titleTh: "ข้อมูลระบบบำบัดน้ำเสียของ อปท.",
     titleEn: "Wastewater Treatment Systems",
     descriptionTh: "ติดตามสถานะระบบบำบัด ความจุ และความพร้อมใช้งานของแต่ละพื้นที่",
     descriptionEn: "Track treatment status, capacity, and operational readiness by area.",
@@ -40,9 +40,9 @@ const MISSION_PILLARS: MissionPillar[] = [
     image: "/images/mission-thai-2.png",
     labelTh: "แผนและการดำเนินการ",
     labelEn: "MANAGEMENT",
-    titleTh: "กิจกรรมของ อปท ในการจัดการน้ำเสีย",
+    titleTh: "กิจกรรมของ อปท. ในการจัดการน้ำเสีย",
     titleEn: "LAO Wastewater Management Activities",
-    descriptionTh: "ดูแผนงาน การดำเนินงาน และผลลัพธ์ของกิจกรรมที่ อปท ดำเนินการ",
+    descriptionTh: "ดูแผนงาน การดำเนินงาน และผลลัพธ์ของกิจกรรมที่ อปท. ดำเนินการ",
     descriptionEn: "View plans, execution, and outcomes of local wastewater activities.",
     href: "/lao-map",
     icon: CalendarCheck2,
@@ -50,7 +50,7 @@ const MISSION_PILLARS: MissionPillar[] = [
   {
     id: "community",
     image: "/images/mission-thai-3.png",
-    labelTh: "เครือข่ายเปิด",
+    labelTh: "เครือข่ายชุมชน",
     labelEn: "COMMUNITY",
     titleTh: "กิจกรรมการมีส่วนร่วมของชุมชน",
     titleEn: "Community Participation Activities",
@@ -220,7 +220,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                     <span>{isThai ? pillar.labelTh : pillar.labelEn}</span>
                   </div>
                   <h3 className="mb-3 text-xl font-bold leading-tight text-slate-900">
-                    {isThai ? pillar.titleTh : pillar.titleEn}
+                    {pillar.id === "system" && isThai ? (
+                      <>
+                        {"ข้อมูลระบบบำบัดน้ำเสียของ "}
+                        <abbr title="องค์กรปกครองส่วนท้องถิ่น" className="cursor-help underline decoration-dotted decoration-slate-400">อปท.</abbr>
+                      </>
+                    ) : (
+                      isThai ? pillar.titleTh : pillar.titleEn
+                    )}
                   </h3>
                   <p className="flex-1 text-base leading-relaxed text-slate-600">
                     {isThai ? pillar.descriptionTh : pillar.descriptionEn}

@@ -4,7 +4,7 @@ export const INITIAL_ANNOUNCEMENTS: AnnouncementItem[] = [
   {
     id: "a001",
     type: "system",
-    titleTh: "อปท เมืองสุพรรณบุรีอัปเกรดบ่อเติมอากาศเฟส 2",
+    titleTh: "อปท. เมืองสุพรรณบุรีอัปเกรดบ่อเติมอากาศเฟส 2",
     titleEn: "Suphan Buri LAO upgraded aeration basin phase 2",
     summaryTh: "เพิ่มความสามารถรองรับน้ำเสียจาก 6,500 เป็น 8,000 ลบ.ม./วัน พร้อมติดตั้งระบบตรวจวัดออนไลน์",
     summaryEn: "Capacity increased from 6,500 to 8,000 m3/day with online monitoring installed.",
@@ -30,7 +30,7 @@ export const INITIAL_ANNOUNCEMENTS: AnnouncementItem[] = [
   {
     id: "a003",
     type: "community",
-    titleTh: "ชุมชนคลองเปรมประชากรจัดกิจกรรมเก็บตัวอย่างน้ำร่วมกับ อปท",
+    titleTh: "ชุมชนคลองเปรมประชากรจัดกิจกรรมเก็บตัวอย่างน้ำร่วมกับ อปท.",
     titleEn: "Khlong Prem Prachakorn community held joint water sampling with LAO",
     summaryTh: "มีผู้เข้าร่วม 73 คน พร้อมบันทึกค่าตรวจเบื้องต้นเข้าสู่ระบบแจ้งข่าวสาร",
     summaryEn: "73 participants joined and uploaded initial readings to the announcement system.",
@@ -43,7 +43,7 @@ export const INITIAL_ANNOUNCEMENTS: AnnouncementItem[] = [
   {
     id: "a004",
     type: "system",
-    titleTh: "อปท บ้านฉางตรวจประเมินประสิทธิภาพระบบบำบัดไตรมาส 1",
+    titleTh: "อปท. บ้านฉางตรวจประเมินประสิทธิภาพระบบบำบัดไตรมาส 1",
     titleEn: "Ban Chang LAO completed Q1 treatment performance assessment",
     summaryTh: "ค่า BOD หลังบำบัดเฉลี่ย 13 mg/L ผ่านเกณฑ์ และเตรียมแผนอัปเกรดระบบควบคุมกลิ่น",
     summaryEn: "Average treated BOD at 13 mg/L passed standards, with odor control upgrade planned.",
