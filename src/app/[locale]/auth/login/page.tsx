@@ -124,17 +124,6 @@ export default function AdminLoginPage() {
             <LogIn className="h-5 w-5" />
             {locale === "th" ? "เข้าสู่ระบบ Admin" : "Sign In as Admin"}
           </button>
-
-          {/* Admin Test account hint */}
-          <div className="bg-slate-50 rounded-xl p-3 text-xs text-text-secondary border border-slate-200">
-            <div className="font-semibold text-primary-800 mb-1">
-              {locale === "th" ? "บัญชีทดสอบสำหรับ Admin" : "Admin Test Account"}:
-            </div>
-            <div className="space-y-1 font-mono">
-              <div className="text-chula-600 font-semibold text-[10px] uppercase tracking-wide">System Admin</div>
-              <div>admin / <span className="text-primary-700 font-bold">admin1234</span></div>
-            </div>
-          </div>
         </form>
 
         <p className="text-center text-sm text-text-secondary mt-5">
