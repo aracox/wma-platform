@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomInt, timingSafeEqual } from "crypto";
+import { createHmac, randomInt, timingSafeEqual } from "crypto";
 
 const OTP_TTL_SECONDS = 5 * 60;
 

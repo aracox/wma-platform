@@ -93,14 +93,3 @@ export const getLaoById = (id: string): LaoDetail | undefined => {
   };
 };
 
-export const searchLaos = (query: string, limit = 50): LaoItem[] => {
-  if (!query) return LAOS_DATA.slice(0, limit);
-  const loQuery = query.toLowerCase();
-  
-  return LAOS_DATA.filter(l => 
-    l.name.toLowerCase().includes(loQuery) ||
-    l.province.toLowerCase().includes(loQuery) ||
-    l.district.toLowerCase().includes(loQuery) ||
-    l.id.includes(loQuery)
-  ).slice(0, limit);
-};

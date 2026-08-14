@@ -1,5 +1,3 @@
-export type Locale = "th";
-
 export type SystemStatus =
   | "operational"
   | "non_operational"
@@ -79,72 +77,6 @@ export interface CommunityReport {
   reportedBy?: string;
   reportedByEmail?: string;
   attachments?: { name: string; url: string; size?: string; type?: string }[];
-}
-
-export interface FeedItem {
-  id: string;
-  type: "news" | "report" | "research" | "alert";
-  title: string;
-  titleEn: string;
-  summary: string;
-  summaryEn: string;
-  imageUrl?: string;
-  publishedAt: string;
-  source: "wma" | "chula" | "community" | "government";
-}
-
-export interface KPIStat {
-  id: string;
-  labelKey: string;
-  unitKey: string;
-  value: number;
-  trend?: number; // percentage change
-  icon: string;
-  color: string;
-}
-
-export interface LocalOrg {
-  id: string;
-  name: string;
-  nameEn: string;
-  province: string;
-  provinceEn: string;
-  district: string;
-  subdistrict: string;
-  type: "ทน." | "ทม." | "ทต." | "อบต." | "เมืองพัทยา" | "กทม.";
-  lat: number;
-  lng: number;
-  wastewaterSystemIds: string[]; // refer to TreatmentFacility.id
-  contact: {
-    tel: string;
-    website: string;
-    address: string;
-  };
-}
-
-export interface LocalActivity {
-  id: string;
-  laoId: string;
-  title: string;
-  titleEn: string;
-  description: string;
-  descriptionEn: string;
-  date: string;
-  status: "planned" | "in_progress" | "completed";
-  budget?: number;
-}
-
-export interface CommunityEvent {
-  id: string;
-  laoId: string;
-  title: string;
-  titleEn: string;
-  date: string;
-  location: string;
-  participants: number;
-  description: string;
-  descriptionEn: string;
-  photoUrl?: string;
 }
 
 export interface AnnouncementItem {

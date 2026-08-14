@@ -44,6 +44,7 @@ const DEFAULT_USERS: ServerUser[] = [
  * Remove sensitive server fields like passwordHash before returning to client
  */
 export function sanitizeUser(user: ServerUser): User {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordHash: _, ...safeUser } = user;
   return safeUser;
 }
