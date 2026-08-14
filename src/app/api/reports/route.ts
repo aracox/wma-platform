@@ -1,29 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth/session.server";
 
-const dataFile = path.join(process.cwd(), "src/data/reports.json");
-
-function readReports() {
-  try {
-    const file = fs.readFileSync(dataFile, "utf-8");
-    return JSON.parse(file);
-  } catch (err) {
-    return [];
-  }
-}
-
-function writeReports(reports: any[]) {
-  fs.writeFileSync(dataFile, JSON.stringify(reports, null, 2), "utf-8");
+function serialize({ seq, attachments, ...report }: { seq: number; attachments: string } & Record<string, unknown>) {
+  return { ...report, attachments: JSON.parse(attachments) };
 }
 
 // GET /api/reports — return all reports
 export async function GET() {
   try {
-    const reports = readReports();
-    return NextResponse.json(reports);
-  } catch (err) {
+    const reports = await prisma.report.findMany({ orderBy: { seq: "asc" } });
+    return NextResponse.json(reports.map(serialize));
+  } catch {
     return NextResponse.json({ error: "Failed to read reports" }, { status: 500 });
   }
 }
@@ -41,32 +30,27 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
-    const reports = readReports();
-    const index = reports.findIndex((r: any) => r.id === id);
-
-    if (index === -1) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
-    }
-
-    // Update only the provided fields
     if (status) {
       const validStatuses = ["pending", "reviewing", "resolved"];
       if (!validStatuses.includes(status)) {
         return NextResponse.json({ error: "Invalid status" }, { status: 400 });
       }
-      reports[index].status = status;
     }
-    
-    if (systemInfo !== undefined) reports[index].systemInfo = systemInfo;
-    if (identifiedIssues !== undefined) reports[index].identifiedIssues = identifiedIssues;
-    if (laoActivities !== undefined) reports[index].laoActivities = laoActivities;
-    if (communityParticipation !== undefined) reports[index].communityParticipation = communityParticipation;
 
-    reports[index].updatedAt = new Date().toISOString();
-    writeReports(reports);
+    const data: Prisma.ReportUpdateInput = { updatedAt: new Date().toISOString() };
+    if (status) data.status = status;
+    if (systemInfo !== undefined) data.systemInfo = systemInfo;
+    if (identifiedIssues !== undefined) data.identifiedIssues = identifiedIssues;
+    if (laoActivities !== undefined) data.laoActivities = laoActivities;
+    if (communityParticipation !== undefined) data.communityParticipation = communityParticipation;
 
-    return NextResponse.json(reports[index]);
+    const report = await prisma.report.update({ where: { id }, data });
+
+    return NextResponse.json(serialize(report));
   } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
     return NextResponse.json({ error: "Failed to update report" }, { status: 500 });
   }
 }

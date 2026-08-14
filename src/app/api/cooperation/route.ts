@@ -1,29 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth/session.server";
 
-const dataFile = path.join(process.cwd(), "src/data/cooperation.json");
-
-function readCooperations() {
-  try {
-    const file = fs.readFileSync(dataFile, "utf-8");
-    return JSON.parse(file);
-  } catch (err) {
-    return [];
-  }
-}
-
-function writeCooperations(cooperations: any[]) {
-  fs.writeFileSync(dataFile, JSON.stringify(cooperations, null, 2), "utf-8");
+function serialize({ seq, attachments, ...cooperation }: { seq: number; attachments: string } & Record<string, unknown>) {
+  return { ...cooperation, attachments: JSON.parse(attachments) };
 }
 
 // GET /api/cooperation — return all cooperation requests
 export async function GET() {
   try {
-    const cooperations = readCooperations();
-    return NextResponse.json(cooperations);
-  } catch (err) {
+    const cooperations = await prisma.cooperation.findMany({ orderBy: { seq: "asc" } });
+    return NextResponse.json(cooperations.map(serialize));
+  } catch {
     return NextResponse.json({ error: "Failed to read cooperations" }, { status: 500 });
   }
 }
@@ -41,32 +30,27 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
-    const cooperations = readCooperations();
-    const index = cooperations.findIndex((c: any) => c.id === id);
-
-    if (index === -1) {
-      return NextResponse.json({ error: "Cooperation request not found" }, { status: 404 });
-    }
-
-    // Update only the provided fields
     if (status) {
       const validStatuses = ["coordination", "agreement", "land_acquisition", "construction", "management"];
       if (!validStatuses.includes(status)) {
         return NextResponse.json({ error: "Invalid status" }, { status: 400 });
       }
-      cooperations[index].status = status;
     }
-    
-    if (subject !== undefined) cooperations[index].subject = subject;
-    if (details !== undefined) cooperations[index].details = details;
-    if (localPlan !== undefined) cooperations[index].localPlan = localPlan;
-    if (expectedOutcome !== undefined) cooperations[index].expectedOutcome = expectedOutcome;
 
-    cooperations[index].updatedAt = new Date().toISOString();
-    writeCooperations(cooperations);
+    const data: Prisma.CooperationUpdateInput = { updatedAt: new Date().toISOString() };
+    if (status) data.status = status;
+    if (subject !== undefined) data.subject = subject;
+    if (details !== undefined) data.details = details;
+    if (localPlan !== undefined) data.localPlan = localPlan;
+    if (expectedOutcome !== undefined) data.expectedOutcome = expectedOutcome;
 
-    return NextResponse.json(cooperations[index]);
+    const cooperation = await prisma.cooperation.update({ where: { id }, data });
+
+    return NextResponse.json(serialize(cooperation));
   } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Cooperation request not found" }, { status: 404 });
+    }
     return NextResponse.json({ error: "Failed to update cooperation request" }, { status: 500 });
   }
 }

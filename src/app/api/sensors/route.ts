@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import initialData from "@/data/sensors.json";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth/session.server";
 
-let sensorsCache: any[] = [...initialData];
-
-function readSensors() {
-  return sensorsCache;
-}
-
-function writeSensors(data: any[]) {
-  sensorsCache = data;
+function serialize({ seq, ...sensor }: { seq: number } & Record<string, unknown>) {
+  return sensor;
 }
 
 // GET /api/sensors
 export async function GET() {
   try {
-    return NextResponse.json(readSensors());
+    const sensors = await prisma.sensor.findMany({ orderBy: { seq: "asc" } });
+    return NextResponse.json(sensors.map(serialize));
   } catch {
     return NextResponse.json({ error: "Failed to read sensors" }, { status: 500 });
   }
@@ -40,19 +36,16 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Invalid level" }, { status: 400 });
     }
 
-    const sensors = readSensors();
-    const index = sensors.findIndex((s: any) => s.id === id);
+    const sensor = await prisma.sensor.update({
+      where: { id },
+      data: { level, timestamp: new Date().toISOString() },
+    });
 
-    if (index === -1) {
+    return NextResponse.json(serialize(sensor));
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return NextResponse.json({ error: "Sensor not found" }, { status: 404 });
     }
-
-    sensors[index].level = level;
-    sensors[index].timestamp = new Date().toISOString();
-    writeSensors(sensors);
-
-    return NextResponse.json(sensors[index]);
-  } catch {
     return NextResponse.json({ error: "Failed to update sensor" }, { status: 500 });
   }
 }

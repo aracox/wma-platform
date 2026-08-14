@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import initialData from "@/data/facilities.json";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth/session.server";
 
-let facilitiesCache: any[] = [...initialData];
-
-function readFacilities() {
-  return facilitiesCache;
-}
-
-function writeFacilities(data: any[]) {
-  facilitiesCache = data;
+function serialize({ seq, ...facility }: { seq: number } & Record<string, unknown>) {
+  return facility;
 }
 
 // GET /api/facilities
 export async function GET() {
   try {
-    return NextResponse.json(readFacilities());
+    const facilities = await prisma.facility.findMany({ orderBy: { seq: "asc" } });
+    return NextResponse.json(facilities.map(serialize));
   } catch {
     return NextResponse.json({ error: "Failed to read facilities" }, { status: 500 });
   }
@@ -40,19 +36,16 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
-    const facilities = readFacilities();
-    const index = facilities.findIndex((f: any) => f.id === id);
+    const facility = await prisma.facility.update({
+      where: { id },
+      data: { status, lastUpdated: new Date().toISOString().split("T")[0] },
+    });
 
-    if (index === -1) {
+    return NextResponse.json(serialize(facility));
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return NextResponse.json({ error: "Facility not found" }, { status: 404 });
     }
-
-    facilities[index].status = status;
-    facilities[index].lastUpdated = new Date().toISOString().split("T")[0];
-    writeFacilities(facilities);
-
-    return NextResponse.json(facilities[index]);
-  } catch {
     return NextResponse.json({ error: "Failed to update facility" }, { status: 500 });
   }
 }

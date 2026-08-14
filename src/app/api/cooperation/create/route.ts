@@ -1,22 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth/session.server";
-
-const dataFile = path.join(process.cwd(), "src/data/cooperation.json");
-
-function readCooperations() {
-  try {
-    const file = fs.readFileSync(dataFile, "utf-8");
-    return JSON.parse(file);
-  } catch (err) {
-    return [];
-  }
-}
-
-function writeCooperations(cooperations: any[]) {
-  fs.writeFileSync(dataFile, JSON.stringify(cooperations, null, 2), "utf-8");
-}
 
 // POST /api/cooperation/create — add a new cooperation request
 export async function POST(request: NextRequest) {
@@ -25,9 +9,9 @@ export async function POST(request: NextRequest) {
     if (auth.error) return auth.error;
 
     const body = await request.json();
-    const { 
-      subject, details, localPlan, expectedOutcome, 
-      laoId, laoName, lat, lng, province, reportedBy 
+    const {
+      subject, details, localPlan, expectedOutcome,
+      laoId, laoName, lat, lng, province, reportedBy,
     } = body;
 
     // Validate the fields
@@ -35,30 +19,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const cooperations = readCooperations();
-    const seq = cooperations.length + 1;
-    const newCooperation = {
-      id: `c${String(seq).padStart(3, "0")}_${Date.now()}`,
-      subject,
-      details,
-      localPlan: localPlan || details,
-      expectedOutcome,
-      laoId,
-      laoName,
-      lat,
-      lng,
-      province: province || "ไม่ระบุ",
-      status: "coordination",
-      createdAt: new Date().toISOString(),
-      ...(reportedBy && { reportedBy }),
-      attachments: body.attachments || [],
-    };
+    const seq = (await prisma.cooperation.count()) + 1;
+    const attachments = body.attachments || [];
 
-    cooperations.push(newCooperation);
-    writeCooperations(cooperations);
+    const cooperation = await prisma.cooperation.create({
+      data: {
+        id: `c${String(seq).padStart(3, "0")}_${Date.now()}`,
+        subject,
+        details,
+        localPlan: localPlan || details,
+        expectedOutcome,
+        laoId,
+        laoName,
+        lat,
+        lng,
+        province: province || "ไม่ระบุ",
+        status: "coordination",
+        createdAt: new Date().toISOString(),
+        ...(reportedBy && { reportedBy }),
+        attachments: JSON.stringify(attachments),
+      },
+    });
 
-    return NextResponse.json(newCooperation, { status: 201 });
-  } catch (err) {
+    const { seq: _seq, attachments: _raw, ...rest } = cooperation;
+    return NextResponse.json({ ...rest, attachments }, { status: 201 });
+  } catch {
     return NextResponse.json({ error: "Failed to create cooperation request" }, { status: 500 });
   }
 }

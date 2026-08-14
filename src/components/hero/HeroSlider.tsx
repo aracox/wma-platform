@@ -51,16 +51,24 @@ interface HeroSliderProps {
   connectedFacilities: number;
 }
 
-export default function HeroSlider({ locale, isThai, totalLaos, connectedFacilities }: HeroSliderProps) {
+export default function HeroSlider({ 
+  locale, 
+  isThai, 
+  totalLaos = 0, 
+  connectedFacilities = 0 
+}: HeroSliderProps) {
   const [current, setCurrent] = useState(0);
+
+  const safeFacilities = (connectedFacilities ?? 0).toLocaleString();
+  const safeTotalLaos = (totalLaos ?? 0).toLocaleString();
 
   // First slide is generated from real platform data so it never drifts out of
   // sync with the actual LAO/facility counts shown elsewhere on the dashboard.
   const SLIDES: Slide[] = [
     {
       img: "/images/hero-slide-1.jpg",
-      subtitleTh: `${connectedFacilities.toLocaleString()} ระบบบำบัดที่เชื่อมต่อข้อมูลแล้ว จาก อปท. ทั้งหมด ${totalLaos.toLocaleString()} แห่งทั่วประเทศ ติดตามสถานะและความพร้อมใช้งานแบบเรียลไทม์`,
-      subtitleEn: `${connectedFacilities.toLocaleString()} treatment systems connected and monitored, out of ${totalLaos.toLocaleString()} LAOs nationwide. Track status and readiness in real time.`,
+      subtitleTh: `${safeFacilities} ระบบบำบัดที่เชื่อมต่อข้อมูลแล้ว จาก อปท. ทั้งหมด ${safeTotalLaos} แห่งทั่วประเทศ ติดตามสถานะและความพร้อมใช้งานแบบเรียลไทม์`,
+      subtitleEn: `${safeFacilities} treatment systems connected and monitored, out of ${safeTotalLaos} LAOs nationwide. Track status and readiness in real time.`,
     },
     ...STATIC_SLIDES,
   ];

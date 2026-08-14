@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Facility {
+  seq         Int    @id @default(autoincrement())
+  id          String @unique
+  name        String
+  nameEn      String
+  province    String
+  provinceEn  String
+  lat         Float
+  lng         Float
+  status      String
+  capacity    Int
+  currentLoad Int
+  operator    String
+  lastUpdated String
+}
+
+model Sensor {
+  seq       Int    @id @default(autoincrement())
+  id        String @unique
+  name      String
+  lat       Float
+  lng       Float
+  province  String
+  level     String
+  bod       Float
+  cod       Float
+  ph        Float
+  tss       Float
+  timestamp String
+}
+
+model Report {
+  seq                     Int     @id @default(autoincrement())
+  id                      String  @unique
+  systemInfo              String
+  identifiedIssues        String
+  laoActivities           String
+  communityParticipation  String
+  laoId                   String
+  laoName                 String
+  province                String
+  lat                     Float
+  lng                     Float
+  status                  String
+  createdAt               String
+  updatedAt               String?
+  reportedBy              String?
+  reportedByEmail         String?
+  attachments             String  @default("[]")
+}
+
+model Cooperation {
+  seq            Int     @id @default(autoincrement())
+  id             String  @unique
+  subject        String
+  details        String
+  localPlan      String
+  expectedOutcome String
+  laoId          String
+  laoName        String
+  province       String
+  lat            Float
+  lng            Float
+  status         String
+  createdAt      String
+  updatedAt      String?
+  reportedBy     String?
+  attachments    String  @default("[]")
+}

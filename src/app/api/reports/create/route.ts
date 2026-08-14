@@ -1,22 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth/session.server";
-
-const dataFile = path.join(process.cwd(), "src/data/reports.json");
-
-function readReports() {
-  try {
-    const file = fs.readFileSync(dataFile, "utf-8");
-    return JSON.parse(file);
-  } catch (err) {
-    return [];
-  }
-}
-
-function writeReports(reports: any[]) {
-  fs.writeFileSync(dataFile, JSON.stringify(reports, null, 2), "utf-8");
-}
 
 // POST /api/reports/create — add a new report
 export async function POST(request: NextRequest) {
@@ -25,9 +9,9 @@ export async function POST(request: NextRequest) {
     if (auth.error) return auth.error;
 
     const body = await request.json();
-    const { 
-      systemInfo, identifiedIssues, laoActivities, communityParticipation, 
-      laoId, laoName, lat, lng, province, reportedBy 
+    const {
+      systemInfo, identifiedIssues, laoActivities, communityParticipation,
+      laoId, laoName, lat, lng, province, reportedBy,
     } = body;
 
     // Validate mandatory fields and coordinates
@@ -35,31 +19,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const reports = readReports();
-    const seq = reports.length + 1;
-    const newReport = {
-      id: `r${String(seq).padStart(3, "0")}_${Date.now()}`,
-      systemInfo,
-      identifiedIssues,
-      laoActivities: laoActivities || "-",
-      communityParticipation: communityParticipation || "-",
-      laoId,
-      laoName,
-      lat,
-      lng,
-      province: province || "ไม่ระบุ",
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      reportedBy: reportedBy || body.reportedByEmail || "ไม่ระบุ",
-      reportedByEmail: body.reportedByEmail || (reportedBy && reportedBy.includes("@") ? reportedBy : undefined),
-      attachments: body.attachments || [],
-    };
+    const seq = (await prisma.report.count()) + 1;
+    const reportedByEmail = body.reportedByEmail || (reportedBy && reportedBy.includes("@") ? reportedBy : undefined);
+    const attachments = body.attachments || [];
 
-    reports.push(newReport);
-    writeReports(reports);
+    const report = await prisma.report.create({
+      data: {
+        id: `r${String(seq).padStart(3, "0")}_${Date.now()}`,
+        systemInfo,
+        identifiedIssues,
+        laoActivities: laoActivities || "-",
+        communityParticipation: communityParticipation || "-",
+        laoId,
+        laoName,
+        lat,
+        lng,
+        province: province || "ไม่ระบุ",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        reportedBy: reportedBy || body.reportedByEmail || "ไม่ระบุ",
+        reportedByEmail,
+        attachments: JSON.stringify(attachments),
+      },
+    });
 
-    return NextResponse.json(newReport, { status: 201 });
-  } catch (err) {
+    const { seq: _seq, attachments: _raw, ...rest } = report;
+    return NextResponse.json({ ...rest, attachments }, { status: 201 });
+  } catch {
     return NextResponse.json({ error: "Failed to create report" }, { status: 500 });
   }
 }

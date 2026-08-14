@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma (local sqlite db file - migrations are still committed)
+/prisma/*.db
+/prisma/*.db-journal

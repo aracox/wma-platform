@@ -1,9 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import fs from "fs";
-import path from "path";
 import { ArrowRight, Building2, CalendarCheck2, MessageCircleHeart, ShieldAlert } from "lucide-react";
 import { getLaos } from "@/data/lao";
+import { prisma } from "@/lib/prisma";
 import { formatDateBE } from "@/lib/utils";
 import PurposeTrendChart from "@/components/dashboard/PurposeTrendChart";
 import HeroSlider from "@/components/hero/HeroSlider";
@@ -80,26 +79,15 @@ const REPORT_STATUS_LABELS: Record<string, { th: string; en: string; className: 
   }
 };
 
-function readJSONData<T>(filename: string): T[] {
-  try {
-    const filePath = path.join(process.cwd(), "src/data", filename);
-    const content = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(content);
-  } catch (err) {
-    console.error(`Failed to read data file ${filename}:`, err);
-    return [];
-  }
-}
-
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const isThai = locale === "th";
 
-  // Load actual data from file databases
+  // Load actual data from the database
   const laos = getLaos();
-  const facilities = readJSONData<any>("facilities.json");
-  const cooperations = readJSONData<any>("cooperation.json");
-  const reports = readJSONData<any>("reports.json");
+  const facilities = await prisma.facility.findMany();
+  const cooperations = await prisma.cooperation.findMany();
+  const reports = await prisma.report.findMany();
 
   // Calculate real metrics
   const totalLaos = laos.length;
