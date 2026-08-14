@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { routing } from "@/i18n/routing";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -22,8 +23,6 @@ export const metadata: Metadata = {
   },
 };
 
-const locales = ["th", "en"];
-
 export default async function LocaleLayout({
   children,
   params,
@@ -32,7 +31,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!locales.includes(locale)) notFound();
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) notFound();
   const messages = (await import(`../../../messages/${locale}.json`)).default;
   return (
     <html lang={locale} className={inter.variable} suppressHydrationWarning>
