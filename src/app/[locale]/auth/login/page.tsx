@@ -100,7 +100,9 @@ export default function AdminLoginPage() {
           <h1 className="text-2xl font-bold text-primary-900">
             {locale === "th" ? "เข้าสู่ระบบผู้ดูแลระบบ (Admin)" : "Admin Sign In"}
           </h1>
-          <p className="text-text-secondary text-sm mt-1">WMA Platform - Admin Portal</p>
+          <p className="text-text-secondary text-sm mt-1">
+            {locale === "th" ? "WMA Platform - ระบบผู้ดูแลระบบ" : "WMA Platform - Admin Portal"}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
