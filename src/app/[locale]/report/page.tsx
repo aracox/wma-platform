@@ -95,9 +95,13 @@ export default function ReportPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const selectedFiles = Array.from(e.target.files).slice(0, Math.max(0, MAX_ATTACHMENTS - attachments.length));
+    const chosenFiles = Array.from(e.target.files);
+    const imageFiles = chosenFiles.filter((file) => file.type.startsWith("image/"));
+    const selectedFiles = imageFiles.slice(0, Math.max(0, MAX_ATTACHMENTS - attachments.length));
 
-    if (e.target.files.length > selectedFiles.length) {
+    if (imageFiles.length < chosenFiles.length) {
+      setSubmitError("รองรับไฟล์รูปภาพเท่านั้น");
+    } else if (imageFiles.length > selectedFiles.length) {
       setSubmitError(`แนบไฟล์ได้สูงสุด ${MAX_ATTACHMENTS} ไฟล์`);
     }
     e.target.value = "";
@@ -361,7 +365,7 @@ export default function ReportPage() {
               {/* Field 3: Additional Info & Attachments */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-bold text-primary-800 mb-2">
-                  3. ข้อมูลเพิ่มเติม <span className="text-slate-400 font-normal text-xs">(ไม่บังคับ)</span>
+                  3. เบอร์ติดต่อ <span className="text-slate-400 font-normal text-xs">(ไม่บังคับ)</span>
                 </label>
                 <textarea
                   value={communityParticipation}
@@ -369,7 +373,7 @@ export default function ReportPage() {
                   disabled={!targetLaoId}
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none disabled:bg-slate-50 disabled:cursor-not-allowed"
-                  placeholder="ระบุข้อมูลเพิ่มเติม (ถ้ามี)"
+                  placeholder="ระบุเบอร์ติดต่อ (ถ้ามี)"
                 />
 
                 {/* File Attachments Control */}
@@ -377,23 +381,23 @@ export default function ReportPage() {
                   <div className="flex items-center gap-3">
                     <label className={cn(
                       "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border shadow-sm",
-                      targetLaoId 
+                      targetLaoId
                         ? "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300"
                         : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
                     )}>
                       <Paperclip className="h-4 w-4 text-primary-600" />
-                      <span>แนบไฟล์เอกสาร / รูปภาพ...</span>
+                      <span>แนบไฟล์รูปภาพ...</span>
                       <input
                         type="file"
                         multiple
                         disabled={!targetLaoId || attachments.length >= MAX_ATTACHMENTS}
-                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                        accept="image/*"
                         onChange={handleFileChange}
                         className="hidden"
                       />
                     </label>
                     <span className="text-xs text-slate-400">
-                      รองรับไฟล์รูปภาพ, PDF, Word, Excel (สูงสุด {MAX_ATTACHMENTS} ไฟล์)
+                      รองรับไฟล์รูปภาพเท่านั้น (สูงสุด {MAX_ATTACHMENTS} ไฟล์)
                     </span>
                   </div>
 
@@ -568,7 +572,7 @@ export default function ReportPage() {
                       
                       {/* Column 3: Additional Info & Attachments */}
                       <div className="md:col-span-2 space-y-1">
-                        <h4 className="font-bold text-green-700 text-xs uppercase tracking-wide">3. ข้อมูลเพิ่มเติม</h4>
+                        <h4 className="font-bold text-green-700 text-xs uppercase tracking-wide">3. เบอร์ติดต่อ</h4>
                         {isEditing ? (
                           <textarea
                             value={editValues.communityParticipation || ""}
