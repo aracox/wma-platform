@@ -6,7 +6,6 @@ import { Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, Building2, Ch
 import { cn, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CooperationRequest } from "@/types";
-import { getLaos } from "@/data/lao";
 
 const STATUS_LABELS: Record<string, { th: string; color: string; desc: string }> = {
   coordination: {
@@ -58,9 +57,8 @@ export default function CooperationPage() {
   const isAdmin = currentUser?.role === "admin";
   const isOfficer = currentUser?.role === "official";
 
-  // Data for Admin LAO dropdown
-  const allLaos = useMemo(() => getLaos(), []);
-  const [adminSelectedLaoId, setAdminSelectedLaoId] = useState("");
+  // Free-text location for Admin (no LAO lookup required)
+  const [locationText, setLocationText] = useState("");
 
   // Create Form state
   const [subject, setSubject] = useState("");
@@ -146,13 +144,9 @@ export default function CooperationPage() {
   }, [baseCooperations, statusFilter]);
 
   // Form derived state
-  const targetLaoId = isSelectingLao ? adminSelectedLaoId : currentUser?.laoId;
-  const selectedLao = useMemo(() => {
-    return allLaos.find((l) => l.id === targetLaoId);
-  }, [allLaos, targetLaoId]);
-
-  const targetLaoName = isSelectingLao ? (selectedLao?.name || "") : currentUser?.laoName;
-  const targetProvince = isSelectingLao ? (selectedLao?.province || "ไม่ระบุ") : (currentUser?.province || "ไม่ระบุ");
+  const targetLaoId = isSelectingLao ? locationText.trim() : currentUser?.laoId;
+  const targetLaoName = isSelectingLao ? locationText.trim() : currentUser?.laoName;
+  const targetProvince = isSelectingLao ? "ไม่ระบุ" : (currentUser?.province || "ไม่ระบุ");
   
   const canSubmit = !!(
     targetLaoId &&
@@ -165,9 +159,6 @@ export default function CooperationPage() {
     if (!canSubmit || !currentUser) return;
     setSubmitting(true);
 
-    const lat = selectedLao?.lat || 13.75;
-    const lng = selectedLao?.lng || 100.5;
-
     const body = {
       subject,
       details,
@@ -175,8 +166,8 @@ export default function CooperationPage() {
       expectedOutcome,
       laoId: targetLaoId,
       laoName: targetLaoName || "ไม่ระบุ อปท.",
-      lat,
-      lng,
+      lat: 13.75,
+      lng: 100.5,
       province: targetProvince,
       reportedBy: currentUser.id,
       attachments,
@@ -195,7 +186,7 @@ export default function CooperationPage() {
         setLocalPlan("");
         setExpectedOutcome("");
         setAttachments([]);
-        if (isAdmin) setAdminSelectedLaoId("");
+        if (isSelectingLao) setLocationText("");
         await fetchCooperations();
         setActiveTab("history");
       }
@@ -365,26 +356,20 @@ export default function CooperationPage() {
                 </div>
               )}
 
-              {/* LAO Selector (Admin or User without assigned LAO) */}
+              {/* Location (Admin or User without assigned LAO) */}
               {isSelectingLao && (
                 <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
                   <label className="block text-sm font-bold text-primary-800 mb-2">
-                    เลือก อปท. ที่ต้องการยื่นข้อเสนอโครงการร่วมมือกับ อจน. <span className="text-rose-500 ml-1">*</span>
+                    สถานที่ <span className="text-rose-500 ml-1">*</span>
                   </label>
-                  <div className="relative max-w-md">
-                    <select
-                      value={adminSelectedLaoId}
-                      onChange={(e) => setAdminSelectedLaoId(e.target.value)}
-                      className="w-full appearance-none pl-4 pr-10 py-2.5 rounded-xl border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
-                    >
-                      <option value="">-- ค้นหาและเลือก อปท. --</option>
-                      {allLaos.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.name} จ.{l.province}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  <div className="max-w-md">
+                    <input
+                      type="text"
+                      value={locationText}
+                      onChange={(e) => setLocationText(e.target.value)}
+                      placeholder="ระบุสถานที่ที่ต้องการยื่นข้อเสนอโครงการร่วมมือกับ อจน."
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
+                    />
                   </div>
                 </div>
               )}
@@ -498,7 +483,7 @@ export default function CooperationPage() {
                     ผู้แจ้ง: {currentUser.name}
                   </span>
                   <span className="truncate max-w-[200px]">
-                    อปท: {targetLaoName || "ยังไม่เลือก อปท."}
+                    สถานที่: {targetLaoName || "ยังไม่ระบุสถานที่"}
                   </span>
                 </div>
                 
