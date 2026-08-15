@@ -300,7 +300,7 @@ export default function ReportPage() {
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-6">
                 <label className="block text-sm font-bold text-primary-800 mb-2">
                   <Building2 className="h-4 w-4 inline-block mr-1.5 text-primary-600" />
-                  เลือก อปท. / พื้นที่ที่ต้องการรายงาน <span className="text-red-500">*</span>
+                  เลือก อปท. / สถานที่ที่ต้องการรายงาน <span className="text-red-500">*</span>
                 </label>
                 <div className="relative max-w-md">
                   <select
