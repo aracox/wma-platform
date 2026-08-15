@@ -75,9 +75,15 @@ export default function CooperationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const MAX_ATTACHMENTS = 10;
+  const [attachmentError, setAttachmentError] = useState("");
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const selectedFiles = Array.from(e.target.files);
+    const selectedFiles = Array.from(e.target.files).slice(0, Math.max(0, MAX_ATTACHMENTS - attachments.length));
+
+    setAttachmentError(e.target.files.length > selectedFiles.length ? `แนบไฟล์ได้สูงสุด ${MAX_ATTACHMENTS} ไฟล์` : "");
+    e.target.value = "";
 
     selectedFiles.forEach((file) => {
       const reader = new FileReader();
@@ -434,7 +440,7 @@ export default function CooperationPage() {
                     แนบไฟล์เอกสาร / รูปภาพเพิ่มเติม <span className="text-xs text-slate-400 font-normal">(ไม่บังคับ)</span>
                   </label>
                   <span className="text-xs text-slate-400">
-                    รองรับไฟล์รูปภาพ, PDF, Word, Excel (แนบได้หลายไฟล์)
+                    รองรับไฟล์รูปภาพ, PDF, Word, Excel (สูงสุด {MAX_ATTACHMENTS} ไฟล์)
                   </span>
                 </div>
 
@@ -447,10 +453,14 @@ export default function CooperationPage() {
                       multiple
                       accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
                       onChange={handleFileChange}
+                      disabled={attachments.length >= MAX_ATTACHMENTS}
                       className="hidden"
                     />
                   </label>
                 </div>
+                {attachmentError && (
+                  <p className="text-xs font-semibold text-red-600">{attachmentError}</p>
+                )}
 
                 {/* Attachments preview list */}
                 {attachments.length > 0 && (
