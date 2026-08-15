@@ -9,7 +9,6 @@ import {
 import { cn, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CommunityReport } from "@/types";
-import { getLaos } from "@/data/lao";
 
 const STATUS_LABELS: Record<string, { th: string; color: string }> = {
   pending:   { th: "รอดำเนินการ",    color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
@@ -36,9 +35,8 @@ export default function ReportPage() {
   const isOfficer = currentUser?.role === "official";
   const isUser = currentUser?.role === "user" || (!isAdmin && !isOfficer);
 
-  // Data for Admin / Public User LAO dropdown
-  const allLaos = useMemo(() => getLaos(), []);
-  const [selectedLaoId, setSelectedLaoId] = useState("");
+  // Free-text location for Admin / Public User (no LAO lookup required)
+  const [locationText, setLocationText] = useState("");
 
   // Create Form state
   const [systemInfo, setSystemInfo] = useState("");
@@ -80,10 +78,9 @@ export default function ReportPage() {
 
   // Form derived state
   const isSelectingLao = isAdmin || isUser || !currentUser?.laoId;
-  const targetLaoId = isSelectingLao ? selectedLaoId : currentUser?.laoId;
-  const selectedLao = isSelectingLao ? allLaos.find((l) => l.id === selectedLaoId) : null;
-  const targetLaoName = isSelectingLao ? (selectedLao?.name || "") : currentUser?.laoName;
-  const targetProvince = isSelectingLao ? (selectedLao?.province || "ไม่ระบุ") : (currentUser?.province || "ไม่ระบุ");
+  const targetLaoId = isSelectingLao ? locationText.trim() : currentUser?.laoId;
+  const targetLaoName = isSelectingLao ? locationText.trim() : currentUser?.laoName;
+  const targetProvince = isSelectingLao ? "ไม่ระบุ" : (currentUser?.province || "ไม่ระบุ");
   
   const canSubmit = !!(
     targetLaoId &&
@@ -139,9 +136,6 @@ export default function ReportPage() {
     setSubmitting(true);
     setSubmitError("");
 
-    const lat = isSelectingLao ? (selectedLao?.lat || 13.75) : 13.75;
-    const lng = isSelectingLao ? (selectedLao?.lng || 100.5) : 100.5;
-
     const body = {
       systemInfo,
       identifiedIssues,
@@ -150,8 +144,8 @@ export default function ReportPage() {
       attachments,
       laoId: targetLaoId,
       laoName: targetLaoName || "ไม่ระบุ อปท.",
-      lat,
-      lng,
+      lat: 13.75,
+      lng: 100.5,
       province: targetProvince,
       reportedBy: currentUser.email || currentUser.id,
       reportedByEmail: currentUser.email,
@@ -170,7 +164,7 @@ export default function ReportPage() {
         setLaoActivities("");
         setCommunityParticipation("");
         setAttachments([]);
-        if (isSelectingLao) setSelectedLaoId("");
+        if (isSelectingLao) setLocationText("");
         await fetchReports();
       } else {
         const data = await res.json();
@@ -311,22 +305,16 @@ export default function ReportPage() {
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-6">
                 <label className="block text-sm font-bold text-primary-800 mb-2">
                   <Building2 className="h-4 w-4 inline-block mr-1.5 text-primary-600" />
-                  เลือก อปท. / สถานที่ที่ต้องการรายงาน <span className="text-red-500">*</span>
+                  สถานที่ <span className="text-red-500">*</span>
                 </label>
-                <div className="relative max-w-md">
-                  <select
-                    value={selectedLaoId}
-                    onChange={(e) => setSelectedLaoId(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium"
-                  >
-                    <option value="">-- ค้นหาและเลือก อปท. --</option>
-                    {allLaos.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.name} จ.{l.province}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
+                <div className="max-w-md">
+                  <input
+                    type="text"
+                    value={locationText}
+                    onChange={(e) => setLocationText(e.target.value)}
+                    placeholder="ระบุสถานที่ที่ต้องการรายงาน"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium"
+                  />
                 </div>
               </div>
             )}
@@ -439,7 +427,7 @@ export default function ReportPage() {
                   ผู้รายงาน: {currentUser.name}
                 </span>
                 <span className="truncate max-w-[200px]">
-                  อปท: {targetLaoName || "ยังไม่เลือก อปท."}
+                  สถานที่: {targetLaoName || "ยังไม่ระบุสถานที่"}
                 </span>
               </div>
               
