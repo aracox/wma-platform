@@ -323,7 +323,7 @@ export default function ReportPage() {
               {/* Field 1: Details (merged system info + identified issues) */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-bold text-primary-800 mb-2">
-                  1. รายละเอียด <span className="text-red-500">*</span>
+                  1. ปัญหาที่พบ <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={details}
@@ -515,7 +515,7 @@ export default function ReportPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                       {/* Column 1: Details (merged system info + identified issues) */}
                       <div className="md:col-span-2 space-y-1">
-                        <h4 className="font-bold text-slate-700 text-xs uppercase tracking-wide">1. รายละเอียด</h4>
+                        <h4 className="font-bold text-slate-700 text-xs uppercase tracking-wide">1. ปัญหาที่พบ</h4>
                         {isEditing ? (
                           <textarea
                             value={editValues.systemInfo || ""}
