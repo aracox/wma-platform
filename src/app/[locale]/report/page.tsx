@@ -39,8 +39,7 @@ export default function ReportPage() {
   const [locationText, setLocationText] = useState("");
 
   // Create Form state
-  const [systemInfo, setSystemInfo] = useState("");
-  const [identifiedIssues, setIdentifiedIssues] = useState("");
+  const [details, setDetails] = useState("");
   const [laoActivities, setLaoActivities] = useState("");
   const [communityParticipation, setCommunityParticipation] = useState("");
   const [attachments, setAttachments] = useState<{ name: string; url: string; size?: string; type?: string }[]>([]);
@@ -84,8 +83,7 @@ export default function ReportPage() {
   
   const canSubmit = !!(
     targetLaoId &&
-    systemInfo.trim() && 
-    identifiedIssues.trim()
+    details.trim()
   );
 
   const MAX_ATTACHMENTS = 10;
@@ -137,8 +135,8 @@ export default function ReportPage() {
     setSubmitError("");
 
     const body = {
-      systemInfo,
-      identifiedIssues,
+      systemInfo: details,
+      identifiedIssues: details,
       laoActivities: laoActivities.trim() || "-",
       communityParticipation: communityParticipation.trim() || "-",
       attachments,
@@ -159,8 +157,7 @@ export default function ReportPage() {
       });
       if (res.ok) {
         setSubmitted(true);
-        setSystemInfo("");
-        setIdentifiedIssues("");
+        setDetails("");
         setLaoActivities("");
         setCommunityParticipation("");
         setAttachments([]);
@@ -180,9 +177,12 @@ export default function ReportPage() {
 
   const startEdit = (report: CommunityReport) => {
     setEditingId(report.id);
+    const mergedDetails = report.systemInfo === report.identifiedIssues
+      ? report.systemInfo
+      : [report.systemInfo, report.identifiedIssues].filter(Boolean).join("\n");
     setEditValues({
-      systemInfo: report.systemInfo,
-      identifiedIssues: report.identifiedIssues,
+      systemInfo: mergedDetails,
+      identifiedIssues: mergedDetails,
       communityParticipation: report.communityParticipation,
       attachments: report.attachments || [],
     });
@@ -320,40 +320,25 @@ export default function ReportPage() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Field 1: System Info */}
-              <div>
+              {/* Field 1: Details (merged system info + identified issues) */}
+              <div className="md:col-span-2">
                 <label className="block text-sm font-bold text-primary-800 mb-2">
-                  1. ข้อมูลระบบบำบัดน้ำเสีย <span className="text-red-500">*</span>
+                  1. รายละเอียด <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  value={systemInfo}
-                  onChange={(e) => setSystemInfo(e.target.value)}
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
                   disabled={!targetLaoId}
                   rows={4}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none disabled:bg-slate-50 disabled:cursor-not-allowed"
-                  placeholder="เช่น ระบบบำบัดน้ำเสียแบบ Aerated lagoon สามารถรองรับน้ำเสียได้สูงสุด 1,500 ลบ.ม. ต่อวัน..."
+                  placeholder="เช่น ระบบบำบัดน้ำเสียแบบ Aerated lagoon สามารถรองรับน้ำเสียได้สูงสุด 1,500 ลบ.ม. ต่อวัน คุณภาพน้ำในแหล่งน้ำเสื่อมโทรม ตรวจพบการลักลอบปล่อยน้ำเสีย..."
                 />
               </div>
 
-              {/* Field 2: Identified Issues */}
-              <div>
-                <label className="block text-sm font-bold text-primary-800 mb-2">
-                  2. ปัญหาที่พบ <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={identifiedIssues}
-                  onChange={(e) => setIdentifiedIssues(e.target.value)}
-                  disabled={!targetLaoId}
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm resize-none disabled:bg-slate-50 disabled:cursor-not-allowed bg-orange-50/30"
-                  placeholder="เช่น คุณภาพน้ำในแหล่งน้ำเสื่อมโทรม, ขาดอุปกรณ์เร่งด่วน, ตรวจพบการลักลอบปล่อยน้ำเสีย..."
-                />
-              </div>
-
-              {/* Field 3: Additional Info & Attachments */}
+              {/* Field 2: Additional Info & Attachments */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-bold text-primary-800 mb-2">
-                  3. เบอร์ติดต่อ <span className="text-slate-400 font-normal text-xs">(ไม่บังคับ)</span>
+                  2. เบอร์ติดต่อ <span className="text-slate-400 font-normal text-xs">(ไม่บังคับ)</span>
                 </label>
                 <textarea
                   value={communityParticipation}
@@ -526,41 +511,30 @@ export default function ReportPage() {
                       </div>
                     </div>
 
-                    {/* 3-Column Data Grid */}
+                    {/* Data Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-                      {/* Column 1 */}
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-slate-700 text-xs uppercase tracking-wide">1. ข้อมูลระบบบำบัดน้ำเสีย</h4>
+                      {/* Column 1: Details (merged system info + identified issues) */}
+                      <div className="md:col-span-2 space-y-1">
+                        <h4 className="font-bold text-slate-700 text-xs uppercase tracking-wide">1. รายละเอียด</h4>
                         {isEditing ? (
                           <textarea
                             value={editValues.systemInfo || ""}
-                            onChange={(e) => setEditValues({ ...editValues, systemInfo: e.target.value })}
+                            onChange={(e) => setEditValues({ ...editValues, systemInfo: e.target.value, identifiedIssues: e.target.value })}
                             rows={3}
                             className="w-full text-xs p-2.5 bg-white border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-100 outline-none resize-none"
                           />
                         ) : (
-                          <p className="text-slate-600 leading-relaxed bg-slate-50/50 p-2.5 rounded-lg border border-transparent">{report.systemInfo}</p>
+                          <p className="text-slate-600 leading-relaxed bg-slate-50/50 p-2.5 rounded-lg border border-transparent whitespace-pre-line">
+                            {report.systemInfo === report.identifiedIssues
+                              ? report.systemInfo
+                              : [report.systemInfo, report.identifiedIssues].filter(Boolean).join("\n")}
+                          </p>
                         )}
                       </div>
-                      
-                      {/* Column 2 */}
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-orange-700 text-xs uppercase tracking-wide">2. ปัญหาที่พบ</h4>
-                        {isEditing ? (
-                          <textarea
-                            value={editValues.identifiedIssues || ""}
-                            onChange={(e) => setEditValues({ ...editValues, identifiedIssues: e.target.value })}
-                            rows={3}
-                            className="w-full text-xs p-2.5 bg-orange-50/30 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-100 outline-none resize-none"
-                          />
-                        ) : (
-                          <p className="text-slate-800 leading-relaxed bg-orange-50/50 p-2.5 rounded-lg border border-transparent">{report.identifiedIssues}</p>
-                        )}
-                      </div>
-                      
-                      {/* Column 3: Additional Info & Attachments */}
+
+                      {/* Column 2: Additional Info & Attachments */}
                       <div className="md:col-span-2 space-y-1">
-                        <h4 className="font-bold text-green-700 text-xs uppercase tracking-wide">3. เบอร์ติดต่อ</h4>
+                        <h4 className="font-bold text-green-700 text-xs uppercase tracking-wide">2. เบอร์ติดต่อ</h4>
                         {isEditing ? (
                           <textarea
                             value={editValues.communityParticipation || ""}
