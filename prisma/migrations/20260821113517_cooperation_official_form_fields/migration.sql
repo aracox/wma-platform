@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "Cooperation" ADD COLUMN     "hasLandReady" TEXT,
+ADD COLUMN     "informantAgencyAddress" TEXT,
+ADD COLUMN     "informantEmail" TEXT,
+ADD COLUMN     "informantFax" TEXT,
+ADD COLUMN     "informantMobile" TEXT,
+ADD COLUMN     "informantName" TEXT,
+ADD COLUMN     "informantPhone" TEXT,
+ADD COLUMN     "informantPosition" TEXT,
+ADD COLUMN     "notParticipatingReason" TEXT,
+ADD COLUMN     "willingToParticipate" TEXT,
+ALTER COLUMN "subject" DROP NOT NULL,
+ALTER COLUMN "details" DROP NOT NULL,
+ALTER COLUMN "localPlan" DROP NOT NULL,
+ALTER COLUMN "expectedOutcome" DROP NOT NULL;

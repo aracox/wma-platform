@@ -39,7 +39,12 @@ export async function PATCH(request: NextRequest) {
     if (auth.error) return auth.error;
 
     const body = await request.json();
-    const { id, status, subject, details, localPlan, expectedOutcome } = body;
+    const {
+      id, status, subject, details, localPlan, expectedOutcome,
+      willingToParticipate, notParticipatingReason, hasLandReady,
+      informantName, informantPosition, informantAgencyAddress,
+      informantPhone, informantMobile, informantFax, informantEmail,
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
@@ -68,6 +73,16 @@ export async function PATCH(request: NextRequest) {
     if (details !== undefined) data.details = details;
     if (localPlan !== undefined) data.localPlan = localPlan;
     if (expectedOutcome !== undefined) data.expectedOutcome = expectedOutcome;
+    if (willingToParticipate !== undefined) data.willingToParticipate = willingToParticipate;
+    if (notParticipatingReason !== undefined) data.notParticipatingReason = notParticipatingReason;
+    if (hasLandReady !== undefined) data.hasLandReady = hasLandReady;
+    if (informantName !== undefined) data.informantName = informantName;
+    if (informantPosition !== undefined) data.informantPosition = informantPosition;
+    if (informantAgencyAddress !== undefined) data.informantAgencyAddress = informantAgencyAddress;
+    if (informantPhone !== undefined) data.informantPhone = informantPhone;
+    if (informantMobile !== undefined) data.informantMobile = informantMobile;
+    if (informantFax !== undefined) data.informantFax = informantFax;
+    if (informantEmail !== undefined) data.informantEmail = informantEmail;
 
     const cooperation = await prisma.cooperation.update({ where: { id }, data });
 

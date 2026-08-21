@@ -58,15 +58,22 @@ export default function CooperationPage() {
   const isAdmin = currentUser?.role === "admin";
   const isOfficer = currentUser?.role === "official";
 
-  // Free-text location for Admin (no LAO lookup required)
-  const [locationText, setLocationText] = useState("");
+  // Free-text org name / province for Admin (no LAO lookup required)
+  const [orgName, setOrgName] = useState("");
+  const [provinceInput, setProvinceInput] = useState("");
 
-  // Create Form state
+  // Create Form state (aligned to the official แบบตอบรับเข้าร่วมโครงการฯ form)
   const [asOfDate, setAsOfDate] = useState("");
-  const [subject, setSubject] = useState("");
-  const [details, setDetails] = useState("");
-  const [localPlan, setLocalPlan] = useState("");
-  const [expectedOutcome, setExpectedOutcome] = useState("");
+  const [willingToParticipate, setWillingToParticipate] = useState<"" | "yes" | "no">("");
+  const [notParticipatingReason, setNotParticipatingReason] = useState("");
+  const [hasLandReady, setHasLandReady] = useState<"" | "yes" | "no">("");
+  const [informantName, setInformantName] = useState("");
+  const [informantPosition, setInformantPosition] = useState("");
+  const [informantAgencyAddress, setInformantAgencyAddress] = useState("");
+  const [informantPhone, setInformantPhone] = useState("");
+  const [informantMobile, setInformantMobile] = useState("");
+  const [informantFax, setInformantFax] = useState("");
+  const [informantEmail, setInformantEmail] = useState("");
   const [attachments, setAttachments] = useState<{ name: string; url: string; size?: string; type?: string }[]>([]);
   
   // UX Tab state: "history" | "create"
@@ -146,16 +153,21 @@ export default function CooperationPage() {
   }, [baseCooperations, statusFilter]);
 
   // Form derived state
-  const targetLaoId = isSelectingLao ? locationText.trim() : currentUser?.laoId;
-  const targetLaoName = isSelectingLao ? locationText.trim() : currentUser?.laoName;
-  const targetProvince = isSelectingLao ? "ไม่ระบุ" : (currentUser?.province || "ไม่ระบุ");
-  
+  const targetLaoId = isSelectingLao ? orgName.trim() : currentUser?.laoId;
+  const targetLaoName = isSelectingLao ? orgName.trim() : currentUser?.laoName;
+  const targetProvince = isSelectingLao ? provinceInput.trim() : (currentUser?.province || "ไม่ระบุ");
+
   const canSubmit = !!(
     asOfDate &&
     targetLaoId &&
-    subject.trim() &&
-    details.trim() &&
-    expectedOutcome.trim()
+    targetProvince &&
+    willingToParticipate &&
+    (willingToParticipate === "yes" || notParticipatingReason.trim()) &&
+    hasLandReady &&
+    informantName.trim() &&
+    informantPosition.trim() &&
+    informantEmail.trim() &&
+    (informantPhone.trim() || informantMobile.trim())
   );
 
   const handleSubmit = async () => {
@@ -164,16 +176,21 @@ export default function CooperationPage() {
 
     const body = {
       asOfDate,
-      subject,
-      details,
-      localPlan: details,
-      expectedOutcome,
+      willingToParticipate,
+      notParticipatingReason: willingToParticipate === "no" ? notParticipatingReason : undefined,
+      hasLandReady,
+      informantName,
+      informantPosition,
+      informantAgencyAddress,
+      informantPhone,
+      informantMobile,
+      informantFax,
+      informantEmail,
       laoId: targetLaoId,
       laoName: targetLaoName || "ไม่ระบุ อปท.",
       lat: 13.75,
       lng: 100.5,
       province: targetProvince,
-      reportedBy: currentUser.id,
       attachments,
     };
 
@@ -186,12 +203,18 @@ export default function CooperationPage() {
       if (res.ok) {
         setSubmitted(true);
         setAsOfDate("");
-        setSubject("");
-        setDetails("");
-        setLocalPlan("");
-        setExpectedOutcome("");
+        setWillingToParticipate("");
+        setNotParticipatingReason("");
+        setHasLandReady("");
+        setInformantName("");
+        setInformantPosition("");
+        setInformantAgencyAddress("");
+        setInformantPhone("");
+        setInformantMobile("");
+        setInformantFax("");
+        setInformantEmail("");
         setAttachments([]);
-        if (isSelectingLao) setLocationText("");
+        if (isSelectingLao) { setOrgName(""); setProvinceInput(""); }
         await fetchCooperations();
         setActiveTab("history");
       }
@@ -204,12 +227,27 @@ export default function CooperationPage() {
 
   const startEdit = (req: CooperationRequest) => {
     setEditingId(req.id);
-    setEditValues({
-      subject: req.subject,
-      details: req.details,
-      localPlan: req.localPlan,
-      expectedOutcome: req.expectedOutcome,
-    });
+    setEditValues(
+      req.willingToParticipate
+        ? {
+            willingToParticipate: req.willingToParticipate,
+            notParticipatingReason: req.notParticipatingReason,
+            hasLandReady: req.hasLandReady,
+            informantName: req.informantName,
+            informantPosition: req.informantPosition,
+            informantAgencyAddress: req.informantAgencyAddress,
+            informantPhone: req.informantPhone,
+            informantMobile: req.informantMobile,
+            informantFax: req.informantFax,
+            informantEmail: req.informantEmail,
+          }
+        : {
+            subject: req.subject,
+            details: req.details,
+            localPlan: req.localPlan,
+            expectedOutcome: req.expectedOutcome,
+          }
+    );
   };
 
   const handleSaveEdit = async () => {
@@ -377,66 +415,158 @@ export default function CooperationPage() {
                 />
               </div>
 
-              {/* Location (Admin or User without assigned LAO) */}
+              {/* Field 1: ชื่อ อปท. + จังหวัด (Admin or User without assigned LAO) */}
               {isSelectingLao && (
                 <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
                   <label className="block text-sm font-bold text-primary-800 mb-2">
-                    สถานที่ <span className="text-rose-500 ml-1">*</span>
+                    1. ชื่อ (องค์กรปกครองส่วนท้องถิ่น) <span className="text-rose-500 ml-1">*</span>
                   </label>
-                  <div className="max-w-md">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
                     <input
                       type="text"
-                      value={locationText}
-                      onChange={(e) => setLocationText(e.target.value)}
-                      placeholder="ระบุสถานที่ที่ต้องการยื่นข้อเสนอโครงการร่วมมือกับ อจน."
+                      value={orgName}
+                      onChange={(e) => setOrgName(e.target.value)}
+                      placeholder="ชื่อ อปท."
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
+                    />
+                    <input
+                      type="text"
+                      value={provinceInput}
+                      onChange={(e) => setProvinceInput(e.target.value)}
+                      placeholder="จังหวัด"
                       className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Field 1: Subject / Objective */}
-                <div>
-                  <label className="block text-sm font-bold text-primary-800 mb-2">
-                    1. วัตถุประสงค์ / ความต้องการหลัก <span className="text-rose-500 ml-1">*</span>
+              {/* Field 2: ความประสงค์ในการเข้าร่วมโครงการ */}
+              <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
+                <label className="block text-sm font-bold text-primary-800 mb-3">
+                  2. อปท. แจ้งความประสงค์ในการเข้าร่วมโครงการก่อสร้างศูนย์บริหารจัดการคุณภาพน้ำ <span className="text-rose-500 ml-1">*</span>
+                </label>
+                <div className="space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="willingToParticipate"
+                      checked={willingToParticipate === "yes"}
+                      onChange={() => setWillingToParticipate("yes")}
+                      className="mt-1"
+                    />
+                    <div className="text-sm text-slate-700">
+                      <div className="font-semibold">อปท. มีความประสงค์เข้าร่วมโครงการก่อสร้างศูนย์บริหารจัดการคุณภาพน้ำ</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        (อจน. จัดสรรงบประมาณในการก่อสร้างศูนย์บริหารจัดการคุณภาพน้ำ) และ อปท. พร้อมลงนามในเอกสาร ดังนี้
+                        <ul className="list-disc list-inside mt-1 space-y-0.5">
+                          <li>บันทึกความร่วมมือการจัดให้มีระบบบำบัดน้ำเสียรวม (Memorandum of Understanding : MOU)</li>
+                          <li>ข้อตกลงร่วมการจัดให้มีระบบบำบัดน้ำเสียรวมและการบริหารจัดการระบบบำบัดน้ำเสียรวม (Memorandum of Agreement : MOA)</li>
+                        </ul>
+                      </div>
+                    </div>
                   </label>
-                  <textarea
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none"
-                    placeholder="ระบุวัตถุประสงค์ในการสร้างศูนย์ เช่น พัฒนาระบบบำบัดน้ำเสียหลักสำหรับเขตเทศบาล เพื่อแก้ไขปัญหาสิ่งแวดล้อมอย่างยั่งยืน..."
-                  />
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="willingToParticipate"
+                      checked={willingToParticipate === "no"}
+                      onChange={() => setWillingToParticipate("no")}
+                      className="mt-1"
+                    />
+                    <div className="text-sm font-semibold text-slate-700">
+                      ไม่พร้อมเข้าร่วมโครงการก่อสร้างศูนย์บริหารจัดการคุณภาพน้ำ เนื่องจาก
+                    </div>
+                  </label>
+                  {willingToParticipate === "no" && (
+                    <textarea
+                      value={notParticipatingReason}
+                      onChange={(e) => setNotParticipatingReason(e.target.value)}
+                      rows={2}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm resize-none ml-7"
+                      placeholder="ระบุเหตุผล"
+                    />
+                  )}
                 </div>
+              </div>
 
-                {/* Field 2: Site Readiness */}
-                <div>
-                  <label className="block text-sm font-bold text-primary-800 mb-2">
-                    2. ความพร้อมเรื่องพื้นที่สำหรับก่อสร้าง <span className="text-rose-500 ml-1">*</span>
+              {/* Field 3: ความพร้อมเรื่องพื้นที่ */}
+              <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
+                <label className="block text-sm font-bold text-primary-800 mb-1">
+                  3. อปท. มีความพร้อมในเรื่องพื้นที่ในการก่อสร้างศูนย์บริหารจัดการคุณภาพน้ำ <span className="text-rose-500 ml-1">*</span>
+                </label>
+                <p className="text-xs text-slate-500 mb-3">
+                  โดยศูนย์บริหารจัดการคุณภาพน้ำมีส่วนการบำบัดน้ำเสียอยู่ใต้ดิน และใช้พื้นที่ด้านบนสำหรับใช้ประโยชน์ให้กับชุมชน
+                </p>
+                <div className="space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="hasLandReady"
+                      checked={hasLandReady === "yes"}
+                      onChange={() => setHasLandReady("yes")}
+                      className="mt-1"
+                    />
+                    <div className="text-sm text-slate-700">
+                      อปท. มีพื้นที่สาธารณะประโยชน์ และสามารถจัดเตรียมพื้นที่สำหรับใช้ในการก่อสร้างศูนย์บริหารจัดการคุณภาพน้ำได้ อย่างน้อย 1-2 ไร่
+                      (สำหรับประชากรประมาณ 5,000-15,000 คน หรือปริมาณน้ำเสีย 1,000-3,000 ลูกบาศก์เมตรต่อวัน)
+                    </div>
                   </label>
-                  <textarea
-                    value={details}
-                    onChange={(e) => setDetails(e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 outline-none transition-all text-sm resize-none"
-                    placeholder="อธิบายรายละเอียดพื้นที่, สภาพปัญหาปัจจุบัน, และความพร้อมของ อปท. ในการจัดเตรียมพื้นที่สร้างศูนย์..."
-                  />
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="hasLandReady"
+                      checked={hasLandReady === "no"}
+                      onChange={() => setHasLandReady("no")}
+                      className="mt-1"
+                    />
+                    <div className="text-sm text-slate-700">อปท. ไม่มีพื้นที่สาธารณะประโยชน์สำหรับก่อสร้าง</div>
+                  </label>
                 </div>
+              </div>
 
-                {/* Field 3: Expected Outcome */}
-                <div>
-                  <label className="block text-sm font-bold text-primary-800 mb-2">
-                    3. ผลลัพธ์ที่คาดว่าจะได้รับ <span className="text-rose-500 ml-1">*</span>
-                  </label>
-                  <textarea
-                    value={expectedOutcome}
-                    onChange={(e) => setExpectedOutcome(e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none"
-                    placeholder="เช่น รองรับปริมาณน้ำเสียชุมชน 2,500 ลบ.ม./วัน, ลดค่าความสกปรกของน้ำทิ้งก่อนปล่อยลงแม่น้ำสำคัญ..."
-                  />
+              {/* Field 4: ผู้ให้ข้อมูล */}
+              <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
+                <label className="block text-sm font-bold text-primary-800 mb-3">
+                  4. ผู้ให้ข้อมูล <span className="text-rose-500 ml-1">*</span>
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">ชื่อ-สกุล *</label>
+                    <input type="text" value={informantName} onChange={(e) => setInformantName(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">ตำแหน่ง *</label>
+                    <input type="text" value={informantPosition} onChange={(e) => setInformantPosition(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">ที่ตั้งหน่วยงาน</label>
+                    <input type="text" value={informantAgencyAddress} onChange={(e) => setInformantAgencyAddress(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">โทรศัพท์</label>
+                    <input type="text" value={informantPhone} onChange={(e) => setInformantPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">มือถือ</label>
+                    <input type="text" value={informantMobile} onChange={(e) => setInformantMobile(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">โทรสาร</label>
+                    <input type="text" value={informantFax} onChange={(e) => setInformantFax(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">E-Mail *</label>
+                    <input type="email" value={informantEmail} onChange={(e) => setInformantEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white" />
+                  </div>
                 </div>
+                <p className="text-xs text-slate-400 mt-2">* ต้องระบุอย่างน้อยหนึ่งใน โทรศัพท์ หรือ มือถือ</p>
               </div>
 
               {/* File Attachments Control */}
@@ -702,53 +832,178 @@ export default function CooperationPage() {
                       </div>
                     </div>
 
-                    {/* 3-Column Data Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                      {/* Column 1 */}
-                      <div>
-                        <label className="block text-sm font-bold text-primary-800 mb-2">1. วัตถุประสงค์ / ความต้องการหลัก</label>
-                        {isEditing ? (
-                          <textarea
-                            value={editValues.subject || ""}
-                            onChange={(e) => setEditValues({ ...editValues, subject: e.target.value })}
-                            rows={4}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none bg-white font-medium"
-                          />
-                        ) : (
-                          <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.subject}</p>
-                        )}
+                    {req.willingToParticipate ? (
+                      /* Official-form-aligned summary (records created after the form realignment) */
+                      <div className="space-y-4 text-sm">
+                        <div>
+                          <label className="block text-sm font-bold text-primary-800 mb-1">
+                            2. ความประสงค์เข้าร่วมโครงการ
+                          </label>
+                          {isEditing ? (
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-4">
+                                <label className="flex items-center gap-2 text-sm font-medium">
+                                  <input
+                                    type="radio"
+                                    name={`edit-willingToParticipate-${req.id}`}
+                                    checked={editValues.willingToParticipate === "yes"}
+                                    onChange={() => setEditValues({ ...editValues, willingToParticipate: "yes" })}
+                                  />
+                                  มีความประสงค์เข้าร่วมโครงการ
+                                </label>
+                                <label className="flex items-center gap-2 text-sm font-medium">
+                                  <input
+                                    type="radio"
+                                    name={`edit-willingToParticipate-${req.id}`}
+                                    checked={editValues.willingToParticipate === "no"}
+                                    onChange={() => setEditValues({ ...editValues, willingToParticipate: "no" })}
+                                  />
+                                  ไม่พร้อมเข้าร่วมโครงการ
+                                </label>
+                              </div>
+                              {editValues.willingToParticipate === "no" && (
+                                <textarea
+                                  value={editValues.notParticipatingReason || ""}
+                                  onChange={(e) => setEditValues({ ...editValues, notParticipatingReason: e.target.value })}
+                                  placeholder="เหตุผลที่ไม่พร้อมเข้าร่วม"
+                                  rows={2}
+                                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none bg-white font-medium"
+                                />
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-slate-800 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 font-medium">
+                              {req.willingToParticipate === "yes"
+                                ? "มีความประสงค์เข้าร่วมโครงการก่อสร้างศูนย์บริหารจัดการคุณภาพน้ำ"
+                                : `ไม่พร้อมเข้าร่วมโครงการ เนื่องจาก ${req.notParticipatingReason || "-"}`}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-primary-800 mb-1">
+                            3. ความพร้อมเรื่องพื้นที่
+                          </label>
+                          {isEditing ? (
+                            <div className="flex flex-wrap gap-4">
+                              <label className="flex items-center gap-2 text-sm font-medium">
+                                <input
+                                  type="radio"
+                                  name={`edit-hasLandReady-${req.id}`}
+                                  checked={editValues.hasLandReady === "yes"}
+                                  onChange={() => setEditValues({ ...editValues, hasLandReady: "yes" })}
+                                />
+                                มีพื้นที่พร้อมสำหรับก่อสร้าง
+                              </label>
+                              <label className="flex items-center gap-2 text-sm font-medium">
+                                <input
+                                  type="radio"
+                                  name={`edit-hasLandReady-${req.id}`}
+                                  checked={editValues.hasLandReady === "no"}
+                                  onChange={() => setEditValues({ ...editValues, hasLandReady: "no" })}
+                                />
+                                ไม่มีพื้นที่สำหรับก่อสร้าง
+                              </label>
+                            </div>
+                          ) : (
+                            <p className="text-slate-800 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 font-medium">
+                              {req.hasLandReady === "yes"
+                                ? "มีพื้นที่สาธารณะประโยชน์พร้อมสำหรับก่อสร้างศูนย์ฯ"
+                                : "ไม่มีพื้นที่สาธารณะประโยชน์สำหรับก่อสร้าง"}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-primary-800 mb-1">4. ผู้ให้ข้อมูล</label>
+                          {isEditing ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <input type="text" value={editValues.informantName || ""}
+                                onChange={(e) => setEditValues({ ...editValues, informantName: e.target.value })}
+                                placeholder="ชื่อ-สกุล"
+                                className="px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium" />
+                              <input type="text" value={editValues.informantPosition || ""}
+                                onChange={(e) => setEditValues({ ...editValues, informantPosition: e.target.value })}
+                                placeholder="ตำแหน่ง"
+                                className="px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium" />
+                              <input type="text" value={editValues.informantAgencyAddress || ""}
+                                onChange={(e) => setEditValues({ ...editValues, informantAgencyAddress: e.target.value })}
+                                placeholder="ที่ตั้งหน่วยงาน"
+                                className="sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium" />
+                              <input type="text" value={editValues.informantPhone || ""}
+                                onChange={(e) => setEditValues({ ...editValues, informantPhone: e.target.value })}
+                                placeholder="โทรศัพท์"
+                                className="px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium" />
+                              <input type="text" value={editValues.informantMobile || ""}
+                                onChange={(e) => setEditValues({ ...editValues, informantMobile: e.target.value })}
+                                placeholder="มือถือ"
+                                className="px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium" />
+                              <input type="text" value={editValues.informantFax || ""}
+                                onChange={(e) => setEditValues({ ...editValues, informantFax: e.target.value })}
+                                placeholder="โทรสาร"
+                                className="px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium" />
+                              <input type="email" value={editValues.informantEmail || ""}
+                                onChange={(e) => setEditValues({ ...editValues, informantEmail: e.target.value })}
+                                placeholder="E-Mail"
+                                className="px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium" />
+                            </div>
+                          ) : (
+                            <div className="text-slate-800 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 font-medium grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                              <div>ชื่อ-สกุล: {req.informantName || "-"}</div>
+                              <div>ตำแหน่ง: {req.informantPosition || "-"}</div>
+                              {req.informantAgencyAddress && <div className="sm:col-span-2">ที่ตั้งหน่วยงาน: {req.informantAgencyAddress}</div>}
+                              {req.informantPhone && <div>โทรศัพท์: {req.informantPhone}</div>}
+                              {req.informantMobile && <div>มือถือ: {req.informantMobile}</div>}
+                              {req.informantFax && <div>โทรสาร: {req.informantFax}</div>}
+                              <div>E-Mail: {req.informantEmail || "-"}</div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      
-                      {/* Column 2 */}
-                      <div>
-                        <label className="block text-sm font-bold text-primary-800 mb-2">2. ความพร้อมเรื่องพื้นที่สำหรับก่อสร้าง</label>
-                        {isEditing ? (
-                          <textarea
-                            value={editValues.details || ""}
-                            onChange={(e) => setEditValues({ ...editValues, details: e.target.value })}
-                            rows={4}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 outline-none transition-all text-sm resize-none bg-white font-medium"
-                          />
-                        ) : (
-                          <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.details || req.localPlan}</p>
-                        )}
+                    ) : (
+                      /* Legacy 3-column display (records created before the form realignment) */
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                        <div>
+                          <label className="block text-sm font-bold text-primary-800 mb-2">1. วัตถุประสงค์ / ความต้องการหลัก</label>
+                          {isEditing ? (
+                            <textarea
+                              value={editValues.subject || ""}
+                              onChange={(e) => setEditValues({ ...editValues, subject: e.target.value })}
+                              rows={4}
+                              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-sm resize-none bg-white font-medium"
+                            />
+                          ) : (
+                            <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.subject}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-primary-800 mb-2">2. ความพร้อมเรื่องพื้นที่สำหรับก่อสร้าง</label>
+                          {isEditing ? (
+                            <textarea
+                              value={editValues.details || ""}
+                              onChange={(e) => setEditValues({ ...editValues, details: e.target.value })}
+                              rows={4}
+                              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 outline-none transition-all text-sm resize-none bg-white font-medium"
+                            />
+                          ) : (
+                            <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.details || req.localPlan}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-primary-800 mb-2">3. ผลลัพธ์ที่คาดว่าจะได้รับ</label>
+                          {isEditing ? (
+                            <textarea
+                              value={editValues.expectedOutcome || ""}
+                              onChange={(e) => setEditValues({ ...editValues, expectedOutcome: e.target.value })}
+                              rows={4}
+                              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none bg-white font-medium"
+                            />
+                          ) : (
+                            <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.expectedOutcome}</p>
+                          )}
+                        </div>
                       </div>
-                      
-                      {/* Column 3 */}
-                      <div>
-                        <label className="block text-sm font-bold text-primary-800 mb-2">3. ผลลัพธ์ที่คาดว่าจะได้รับ</label>
-                        {isEditing ? (
-                          <textarea
-                            value={editValues.expectedOutcome || ""}
-                            onChange={(e) => setEditValues({ ...editValues, expectedOutcome: e.target.value })}
-                            rows={4}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm resize-none bg-white font-medium"
-                          />
-                        ) : (
-                          <p className="text-sm text-slate-800 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 whitespace-pre-wrap font-medium">{req.expectedOutcome}</p>
-                        )}
-                      </div>
-                    </div>
+                    )}
 
                     {/* Display Attached Files if any */}
                     {req.attachments && req.attachments.length > 0 && (

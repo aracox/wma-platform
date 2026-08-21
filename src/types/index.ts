@@ -101,10 +101,22 @@ export type CooperationStatus = "coordination" | "agreement" | "land_acquisition
 export interface CooperationRequest {
   id: string;
   asOfDate?: string;
-  subject: string;
-  details: string;
-  localPlan: string;
-  expectedOutcome: string;
+  // Legacy free-text fields (pre official-form alignment)
+  subject?: string;
+  details?: string;
+  localPlan?: string;
+  expectedOutcome?: string;
+  // Official-form-aligned fields
+  willingToParticipate?: "yes" | "no";
+  notParticipatingReason?: string;
+  hasLandReady?: "yes" | "no";
+  informantName?: string;
+  informantPosition?: string;
+  informantAgencyAddress?: string;
+  informantPhone?: string;
+  informantMobile?: string;
+  informantFax?: string;
+  informantEmail?: string;
   laoId: string;
   laoName: string;
   lat: number;

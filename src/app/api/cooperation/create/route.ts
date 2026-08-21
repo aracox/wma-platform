@@ -10,12 +10,23 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      asOfDate, subject, details, localPlan, expectedOutcome,
+      asOfDate,
+      willingToParticipate, notParticipatingReason, hasLandReady,
+      informantName, informantPosition, informantAgencyAddress,
+      informantPhone, informantMobile, informantFax, informantEmail,
       laoId, laoName, lat, lng, province,
     } = body;
 
-    // Validate the fields
-    if (!asOfDate || !subject || !details || !expectedOutcome || lat === undefined || lng === undefined) {
+    // Validate the fields (mirrors the official แบบตอบรับ form)
+    if (
+      !asOfDate || !laoId || !laoName || !province ||
+      lat === undefined || lng === undefined ||
+      (willingToParticipate !== "yes" && willingToParticipate !== "no") ||
+      (willingToParticipate === "no" && !notParticipatingReason) ||
+      (hasLandReady !== "yes" && hasLandReady !== "no") ||
+      !informantName || !informantPosition || !informantEmail ||
+      (!informantPhone && !informantMobile)
+    ) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -28,15 +39,21 @@ export async function POST(request: NextRequest) {
       data: {
         id: `c${String(seq).padStart(3, "0")}_${Date.now()}`,
         asOfDate,
-        subject,
-        details,
-        localPlan: localPlan || details,
-        expectedOutcome,
+        willingToParticipate,
+        notParticipatingReason: willingToParticipate === "no" ? notParticipatingReason : null,
+        hasLandReady,
+        informantName,
+        informantPosition,
+        informantAgencyAddress: informantAgencyAddress || null,
+        informantPhone: informantPhone || null,
+        informantMobile: informantMobile || null,
+        informantFax: informantFax || null,
+        informantEmail,
         laoId,
         laoName,
         lat,
         lng,
-        province: province || "ไม่ระบุ",
+        province,
         status: "coordination",
         createdAt: new Date().toISOString(),
         reportedBy,

@@ -60,21 +60,34 @@ model Report {
 }
 
 model Cooperation {
-  seq            Int     @id @default(autoincrement())
-  id             String  @unique
-  asOfDate       String?
-  subject        String
-  details        String
-  localPlan      String
-  expectedOutcome String
-  laoId          String
-  laoName        String
-  province       String
-  lat            Float
-  lng            Float
-  status         String
-  createdAt      String
-  updatedAt      String?
-  reportedBy     String?
-  attachments    String  @default("[]")
+  seq                    Int     @id @default(autoincrement())
+  id                     String  @unique
+  asOfDate               String?
+  // Legacy free-text fields (pre official-form alignment) - kept for
+  // existing records, no longer written by the create form.
+  subject                String?
+  details                String?
+  localPlan              String?
+  expectedOutcome        String?
+  // Official-form-aligned fields
+  willingToParticipate   String? // "yes" | "no"
+  notParticipatingReason String?
+  hasLandReady           String? // "yes" | "no"
+  informantName          String?
+  informantPosition      String?
+  informantAgencyAddress String?
+  informantPhone         String?
+  informantMobile        String?
+  informantFax           String?
+  informantEmail         String?
+  laoId                  String
+  laoName                String
+  province               String
+  lat                    Float
+  lng                    Float
+  status                 String
+  createdAt              String
+  updatedAt              String?
+  reportedBy             String?
+  attachments            String  @default("[]")
 }
