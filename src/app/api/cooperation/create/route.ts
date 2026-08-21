@@ -10,12 +10,12 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      subject, details, localPlan, expectedOutcome,
+      asOfDate, subject, details, localPlan, expectedOutcome,
       laoId, laoName, lat, lng, province,
     } = body;
 
     // Validate the fields
-    if (!subject || !details || !expectedOutcome || lat === undefined || lng === undefined) {
+    if (!asOfDate || !subject || !details || !expectedOutcome || lat === undefined || lng === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     const cooperation = await prisma.cooperation.create({
       data: {
         id: `c${String(seq).padStart(3, "0")}_${Date.now()}`,
+        asOfDate,
         subject,
         details,
         localPlan: localPlan || details,

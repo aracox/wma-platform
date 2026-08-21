@@ -100,6 +100,7 @@ export type CooperationStatus = "coordination" | "agreement" | "land_acquisition
 
 export interface CooperationRequest {
   id: string;
+  asOfDate?: string;
   subject: string;
   details: string;
   localPlan: string;

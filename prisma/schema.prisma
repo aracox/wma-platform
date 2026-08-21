@@ -62,6 +62,7 @@ model Report {
 model Cooperation {
   seq            Int     @id @default(autoincrement())
   id             String  @unique
+  asOfDate       String?
   subject        String
   details        String
   localPlan      String

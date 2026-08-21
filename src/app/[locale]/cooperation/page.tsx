@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, Building2, ChevronDown, Check, Paperclip, ExternalLink } from "lucide-react";
-import { cn, formatDateTimeBE } from "@/lib/utils";
+import { cn, formatDateBE, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CooperationRequest } from "@/types";
 
@@ -61,6 +61,7 @@ export default function CooperationPage() {
   const [locationText, setLocationText] = useState("");
 
   // Create Form state
+  const [asOfDate, setAsOfDate] = useState("");
   const [subject, setSubject] = useState("");
   const [details, setDetails] = useState("");
   const [localPlan, setLocalPlan] = useState("");
@@ -149,9 +150,10 @@ export default function CooperationPage() {
   const targetProvince = isSelectingLao ? "ไม่ระบุ" : (currentUser?.province || "ไม่ระบุ");
   
   const canSubmit = !!(
+    asOfDate &&
     targetLaoId &&
-    subject.trim() && 
-    details.trim() && 
+    subject.trim() &&
+    details.trim() &&
     expectedOutcome.trim()
   );
 
@@ -160,6 +162,7 @@ export default function CooperationPage() {
     setSubmitting(true);
 
     const body = {
+      asOfDate,
       subject,
       details,
       localPlan: details,
@@ -181,6 +184,7 @@ export default function CooperationPage() {
       });
       if (res.ok) {
         setSubmitted(true);
+        setAsOfDate("");
         setSubject("");
         setDetails("");
         setLocalPlan("");
@@ -359,6 +363,19 @@ export default function CooperationPage() {
                   <button onClick={() => setSubmitted(false)} className="ml-auto"><X className="h-4 w-4" /></button>
                 </div>
               )}
+
+              {/* Field 0: As-of Date */}
+              <div className="p-4 bg-gray-50 border border-border rounded-xl mb-6">
+                <label className="block text-sm font-bold text-primary-800 mb-2">
+                  ข้อมูล ณ วันที่ <span className="text-rose-500 ml-1">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={asOfDate}
+                  onChange={(e) => setAsOfDate(e.target.value)}
+                  className="w-full max-w-xs px-4 py-2.5 rounded-xl border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
+                />
+              </div>
 
               {/* Location (Admin or User without assigned LAO) */}
               {isSelectingLao && (
@@ -609,6 +626,7 @@ export default function CooperationPage() {
                           </div>
                           <div className="text-xs text-text-secondary mt-0.5">
                             {formatDateTimeBE(req.createdAt, locale)} · จังหวัด{req.province}
+                            {req.asOfDate && <> · ข้อมูล ณ วันที่ {formatDateBE(req.asOfDate, locale)}</>}
                             {req.updatedAt && <span className="text-primary-500 font-medium ml-1">(แก้ไขแล้ว)</span>}
                           </div>
                         </div>
