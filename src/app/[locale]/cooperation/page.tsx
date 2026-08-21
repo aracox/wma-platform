@@ -330,8 +330,12 @@ export default function CooperationPage() {
                   : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-white/70"
               )}
             >
-              <Building2 className="h-4 w-4" />
-              <span>แบบเสนอความประสงค์สร้างศูนย์ฯ</span>
+              <Building2 className="h-4 w-4 flex-shrink-0" />
+              <span className="text-left leading-tight">
+                แบบตอบรับเข้าร่วมโครงการก่อสร้างศูนย์บริหารจัดการคุณภาพน้ำ
+                <br />
+                <span className="font-normal text-slate-400 text-xs">โดย องค์การจัดการน้ำเสีย กระทรวงมหาดไทย</span>
+              </span>
             </button>
           </div>
 
