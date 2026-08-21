@@ -6,6 +6,7 @@ import { Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, Building2, Ch
 import { cn, formatDateBE, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CooperationRequest } from "@/types";
+import ThaiDatePicker from "@/components/ui/ThaiDatePicker";
 
 const STATUS_LABELS: Record<string, { th: string; color: string; desc: string }> = {
   coordination: {
@@ -369,11 +370,10 @@ export default function CooperationPage() {
                 <label className="block text-sm font-bold text-primary-800 mb-2">
                   ข้อมูล ณ วันที่ <span className="text-rose-500 ml-1">*</span>
                 </label>
-                <input
-                  type="date"
+                <ThaiDatePicker
                   value={asOfDate}
-                  onChange={(e) => setAsOfDate(e.target.value)}
-                  className="w-full max-w-xs px-4 py-2.5 rounded-xl border border-border focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
+                  onChange={setAsOfDate}
+                  className="w-full max-w-xs flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border hover:border-chula-300 focus:border-chula-400 focus:ring-2 focus:ring-chula-100 outline-none text-sm bg-white font-medium"
                 />
               </div>
 
