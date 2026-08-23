@@ -14,6 +14,7 @@ const navItems = [
   { key: "lao_map", href: "/lao-map" },
   { key: "feed", href: "/feed" },
   { key: "report", href: "/report" },
+  { key: "knowledge", href: "/knowledge" },
 ];
 
 // Temporarily disabled — set back to true to re-show the cooperation menu link.
