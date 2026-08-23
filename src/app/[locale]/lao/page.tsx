@@ -6,6 +6,11 @@ import Link from "next/link";
 import { Search, MapPin, Building2, ChevronRight, ChevronDown } from "lucide-react";
 import { LaoItem, getLaos } from "@/data/lao";
 
+// Sentinel value for the explicit "ทุกจังหวัด" / "ทุกอำเภอ" (show all) option,
+// kept distinct from "" (the "-- เลือก --" placeholder) so the <select> can
+// tell the two apart, even though both mean "don't filter".
+const ALL = "__ALL__";
+
 export default function LAODirectoryPage() {
   const t = useTranslations("lao");
   const locale = useLocale();
@@ -21,10 +26,13 @@ export default function LAODirectoryPage() {
     [allLaos]
   );
 
-  // Districts from dataset based on selected province (sorted, deduplicated)
+  // Districts from dataset based on selected province (sorted, deduplicated).
+  // "ทุกจังหวัด" (ALL) lists districts nationwide instead of none.
   const districts = useMemo(() => {
     if (!selectedProvince) return [];
-    const provinceLaos = allLaos.filter((l) => l.province === selectedProvince);
+    const provinceLaos = selectedProvince === ALL
+      ? allLaos
+      : allLaos.filter((l) => l.province === selectedProvince);
     return [...new Set(provinceLaos.map((l) => l.district))].sort();
   }, [allLaos, selectedProvince]);
 
@@ -44,16 +52,20 @@ export default function LAODirectoryPage() {
       );
     }
 
-    if (selectedProvince) {
+    if (selectedProvince && selectedProvince !== ALL) {
       filtered = filtered.filter((l) => l.province === selectedProvince);
     }
 
-    if (selectedDistrict) {
+    if (selectedDistrict && selectedDistrict !== ALL) {
       filtered = filtered.filter((l) => l.district === selectedDistrict);
     }
 
     return filtered.slice(0, 100);
   }, [allLaos, query, selectedProvince, selectedDistrict]);
+
+  // Only reveal the list once the user has actually searched or picked a filter —
+  // avoids dumping the entire nationwide dataset on page load.
+  const hasFilter = query.trim() !== "" || selectedProvince !== "" || selectedDistrict !== "";
 
   return (
     <div className="min-h-screen bg-slate-50 py-12">
@@ -97,7 +109,8 @@ export default function LAODirectoryPage() {
                   }}
                   className="appearance-none w-full pl-4 pr-10 py-3.5 border border-slate-200/10 rounded-xl leading-5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base transition-all duration-300 shadow-sm cursor-pointer font-medium"
                 >
-                  <option value="">ทุกจังหวัด</option>
+                  <option value="">-- เลือก --</option>
+                  <option value={ALL}>ทุกจังหวัด</option>
                   {provinces.map((p) => (
                     <option key={p} value={p}>
                       {p}
@@ -115,9 +128,10 @@ export default function LAODirectoryPage() {
                   value={selectedDistrict}
                   onChange={(e) => setSelectedDistrict(e.target.value)}
                   disabled={!selectedProvince}
-                  className="appearance-none w-full pl-4 pr-10 py-3.5 border border-slate-200/10 rounded-xl leading-5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base transition-all duration-300 shadow-sm disabled:bg-white/50 disabled:text-slate-400 disabled:cursor-not-allowed cursor-pointer font-medium"
+                  className="appearance-none w-full pl-4 pr-10 py-3.5 border border-slate-200/10 rounded-xl leading-5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base transition-all duration-300 shadow-sm disabled:bg-slate-100 disabled:text-slate-500 disabled:opacity-100 disabled:cursor-not-allowed cursor-pointer font-medium"
                 >
-                  <option value="">ทุกอำเภอ</option>
+                  <option value="">-- เลือก --</option>
+                  <option value={ALL}>ทุกอำเภอ</option>
                   {districts.map((d) => (
                     <option key={d} value={d}>
                       {d}
@@ -133,6 +147,7 @@ export default function LAODirectoryPage() {
         </div>
 
         {/* Results Grid */}
+        {hasFilter && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {results.map((lao: LaoItem) => (
             <Link
@@ -176,10 +191,11 @@ export default function LAODirectoryPage() {
             </div>
           )}
         </div>
-        
-        {results.length > 0 && (
+        )}
+
+        {hasFilter && results.length > 0 && (
           <div className="mt-12 text-center text-sm font-semibold text-slate-400">
-            {query === "" && selectedProvince === "" && selectedDistrict === ""
+            {query === "" && (selectedProvince === "" || selectedProvince === ALL) && (selectedDistrict === "" || selectedDistrict === ALL)
               ? `แสดง ${results.length} รายการแรกจากทั้งหมด`
               : `แสดงผลลัพธ์ ${results.length} รายการ`}
           </div>

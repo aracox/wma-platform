@@ -16,6 +16,10 @@ const STATUS_LABELS: Record<string, { th: string; color: string }> = {
   resolved:  { th: "แก้ไขแล้ว",      color: "bg-green-100 text-green-700 border-green-200" },
 };
 
+// Reachable via the "แจ้งปัญหา" button on the LAO detail page even though
+// the main-menu link to this page is hidden (see Navbar.tsx REPORT_PAGE_ENABLED).
+const PAGE_ENABLED = true;
+
 export default function ReportPage() {
   const locale = useLocale();
   const router = useRouter();
@@ -229,6 +233,17 @@ export default function ReportPage() {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4 py-12 animate-fade-up">
         <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!PAGE_ENABLED) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 p-8 shadow-xl text-center space-y-3">
+          <h2 className="text-xl font-black text-slate-900">หน้านี้ปิดใช้งานชั่วคราว</h2>
+          <p className="text-slate-500 text-sm leading-relaxed">ขออภัย หน้านี้ไม่พร้อมให้ใช้งานในขณะนี้</p>
+        </div>
       </div>
     );
   }

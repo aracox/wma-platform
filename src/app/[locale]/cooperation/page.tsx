@@ -38,6 +38,9 @@ const STATUS_LABELS: Record<string, { th: string; color: string; desc: string }>
 
 const statusOrder = ["coordination", "agreement", "land_acquisition", "construction", "management"] as const;
 
+// Temporarily disabled — set back to true to re-enable this page.
+const PAGE_ENABLED = false;
+
 export default function CooperationPage() {
   const locale = useLocale();
   const router = useRouter();
@@ -291,6 +294,17 @@ export default function CooperationPage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!PAGE_ENABLED) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 p-8 shadow-xl text-center space-y-3">
+          <h2 className="text-xl font-black text-slate-900">หน้านี้ปิดใช้งานชั่วคราว</h2>
+          <p className="text-slate-500 text-sm leading-relaxed">ขออภัย หน้านี้ไม่พร้อมให้ใช้งานในขณะนี้</p>
+        </div>
       </div>
     );
   }

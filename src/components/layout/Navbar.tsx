@@ -16,6 +16,11 @@ const navItems = [
   { key: "report", href: "/report" },
 ];
 
+// Temporarily disabled — set back to true to re-show the cooperation menu link.
+const COOPERATION_PAGE_ENABLED = false;
+// Temporarily disabled — set back to true to re-show the report ("แจ้งปัญหา") menu link.
+const REPORT_PAGE_ENABLED = false;
+
 const ROLE_LABELS: Record<string, { th: string; en: string; color: string }> = {
   admin:    { th: "ผู้ดูแลระบบ", en: "Admin",    color: "bg-chula-500" },
   official: { th: "เจ้าหน้าที่",  en: "Official", color: "bg-primary-500" },
@@ -82,7 +87,7 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
+            {navItems.filter((item) => item.key !== "report" || REPORT_PAGE_ENABLED).map((item) => (
               <Link
                 key={item.key}
                 href={`/${locale}${item.href}`}
@@ -91,12 +96,14 @@ export default function Navbar() {
                 {t(item.key)}
               </Link>
             ))}
-            <Link
-              href={`/${locale}/cooperation`}
-              className={cn(isActive("/cooperation") ? "nav-link-active" : "nav-link")}
-            >
-              {t("cooperation")}
-            </Link>
+            {COOPERATION_PAGE_ENABLED && (
+              <Link
+                href={`/${locale}/cooperation`}
+                className={cn(isActive("/cooperation") ? "nav-link-active" : "nav-link")}
+              >
+                {t("cooperation")}
+              </Link>
+            )}
             {user?.role === "admin" && (
               <Link
                 href={`/${locale}/feed/cms`}
@@ -182,7 +189,7 @@ export default function Navbar() {
         {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden pb-4 pt-2 border-t border-white/20 space-y-1">
-            {navItems.map((item) => (
+            {navItems.filter((item) => item.key !== "report" || REPORT_PAGE_ENABLED).map((item) => (
               <Link
                 key={item.key}
                 href={`/${locale}${item.href}`}
@@ -195,16 +202,18 @@ export default function Navbar() {
                 {t(item.key)}
               </Link>
             ))}
-            <Link
-              href={`/${locale}/cooperation`}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "block px-3 py-2 rounded-md text-sm font-medium",
-                isActive("/cooperation") ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
-              )}
-            >
-              {t("cooperation")}
-            </Link>
+            {COOPERATION_PAGE_ENABLED && (
+              <Link
+                href={`/${locale}/cooperation`}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "block px-3 py-2 rounded-md text-sm font-medium",
+                  isActive("/cooperation") ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
+                )}
+              >
+                {t("cooperation")}
+              </Link>
+            )}
             {user?.role === "admin" && (
               <Link
                 href={`/${locale}/feed/cms`}
