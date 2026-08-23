@@ -15,12 +15,16 @@ const navItems = [
   { key: "feed", href: "/feed" },
   { key: "report", href: "/report" },
   { key: "knowledge", href: "/knowledge" },
+  { key: "announcements", href: "/announcements" },
+  { key: "join_wma", href: "/join" },
 ];
 
 // Temporarily disabled — set back to true to re-show the cooperation menu link.
 const COOPERATION_PAGE_ENABLED = false;
 // Temporarily disabled — set back to true to re-show the report ("แจ้งปัญหา") menu link.
 const REPORT_PAGE_ENABLED = false;
+// Temporarily disabled — set back to true to re-show the feed ("ข่าวและกิจกรรม อปท.") menu link.
+const FEED_PAGE_ENABLED = false;
 
 const ROLE_LABELS: Record<string, { th: string; en: string; color: string }> = {
   admin:    { th: "ผู้ดูแลระบบ", en: "Admin",    color: "bg-chula-500" },
@@ -88,7 +92,7 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navItems.filter((item) => item.key !== "report" || REPORT_PAGE_ENABLED).map((item) => (
+            {navItems.filter((item) => (item.key !== "report" || REPORT_PAGE_ENABLED) && (item.key !== "feed" || FEED_PAGE_ENABLED)).map((item) => (
               <Link
                 key={item.key}
                 href={`/${locale}${item.href}`}
@@ -190,7 +194,7 @@ export default function Navbar() {
         {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden pb-4 pt-2 border-t border-white/20 space-y-1">
-            {navItems.filter((item) => item.key !== "report" || REPORT_PAGE_ENABLED).map((item) => (
+            {navItems.filter((item) => (item.key !== "report" || REPORT_PAGE_ENABLED) && (item.key !== "feed" || FEED_PAGE_ENABLED)).map((item) => (
               <Link
                 key={item.key}
                 href={`/${locale}${item.href}`}

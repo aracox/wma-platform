@@ -1,8 +1,10 @@
 "use client";
+// Backup snapshot of /lao-map taken before revising the original — kept
+// unmodified as a reference/rollback copy.
 import { Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import WastewaterFacilityMapView from "@/components/map/WastewaterFacilityMapView";
+import LaoDirectoryMapView from "@/components/map/LaoDirectoryMapView";
 import TreatmentMapView from "@/components/map/TreatmentMapView";
 
 const TABS = [
@@ -49,7 +51,7 @@ function LaoMapPageInner() {
       </div>
 
       <div className="flex-1 relative overflow-hidden">
-        {activeTab === "lao" ? <WastewaterFacilityMapView /> : <TreatmentMapView />}
+        {activeTab === "lao" ? <LaoDirectoryMapView /> : <TreatmentMapView />}
       </div>
     </div>
   );

@@ -7,6 +7,9 @@ import { ChevronDown, ChevronUp, Megaphone, Settings } from "lucide-react";
 import { formatDateBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 
+// Temporarily disabled — set back to true to re-enable this page.
+const PAGE_ENABLED = false;
+
 export default function FeedPage() {
   const locale = useLocale();
   const isThai = locale === "th";
@@ -23,6 +26,17 @@ export default function FeedPage() {
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  if (!PAGE_ENABLED) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 p-8 shadow-xl text-center space-y-3">
+          <h2 className="text-xl font-black text-slate-900">หน้านี้ปิดใช้งานชั่วคราว</h2>
+          <p className="text-slate-500 text-sm leading-relaxed">ขออภัย หน้านี้ไม่พร้อมให้ใช้งานในขณะนี้</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-12">
