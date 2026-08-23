@@ -1,26 +1,46 @@
-import rawFacilities from "./wastewaterFacilities.json";
+import rawWma from "./wmaFacilities.json";
+import rawDspot from "./dspotFacilities.json";
 
-export interface WastewaterFacility {
+// Snapshot pulled once from the live WMA dashboard (164.115.22.99) and saved
+// locally — not re-fetched on every load. Re-run the pull manually if the
+// source data changes.
+
+export interface WmaFacility {
   id: string;
-  name: string;
+  title: string;
   orgName: string;
-  subdistrict: string;
-  district: string;
   province: string;
-  population: number | null;
-  treatmentType: string | null;
-  capacityCubicMetersPerDay: number | null;
-  projectType: string | null;
-  constructionYear: number | null;
-  wmaOperationYear: number | null;
+  wastewaterVolumeToday: number | null;
   lat: number;
   lng: number;
 }
 
-const facilities = rawFacilities as WastewaterFacility[];
+export interface DspotFacility {
+  id: string;
+  title: string;
+  wastewaterVolume: number | null;
+  reportYear: number | null;
+  region: string;
+  zone: string;
+  basin: string;
+  location: string;
+  plantType: string | null;
+  manageType: string | null;
+  operatingUnit: string | null;
+  status: string | null;
+  lat: number;
+  lng: number;
+}
 
-export function getWastewaterFacilities(): WastewaterFacility[] {
-  return facilities;
+const wmaFacilities = rawWma as WmaFacility[];
+const dspotFacilities = rawDspot as DspotFacility[];
+
+export function getWmaFacilities(): WmaFacility[] {
+  return wmaFacilities;
+}
+
+export function getDspotFacilities(): DspotFacility[] {
+  return dspotFacilities;
 }
 
 // Sentinel value for the explicit "ทุกจังหวัด" / "ทุกอำเภอ" (show all) option,
@@ -33,4 +53,5 @@ export const TREATMENT_TYPE_LABELS: Record<string, string> = {
   AS: "Activated Sludge",
   AL: "Aerated Lagoon",
   OD: "Oxidation Ditch",
+  SBR: "Sequencing Batch Reactor",
 };
