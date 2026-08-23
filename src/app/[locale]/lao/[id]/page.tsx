@@ -57,7 +57,7 @@ export default function LAODetailPage() {
             </button>
 
             <button
-              onClick={() => router.push(`/${locale}/report`)}
+              onClick={() => router.push(`/${locale}/report-issue?location=${encodeURIComponent(lao.name)}`)}
               className="flex items-center text-white font-bold text-sm bg-red-500/90 hover:bg-red-500 px-4 py-2 rounded-full w-fit shadow-md transition-colors"
             >
               <AlertTriangle className="w-4 h-4 mr-2" />

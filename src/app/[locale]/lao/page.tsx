@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { Search, MapPin, Building2, ChevronRight, ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, MapPin, Building2, ChevronRight, ChevronDown, AlertTriangle } from "lucide-react";
 import { LaoItem, getLaos } from "@/data/lao";
 
 // Sentinel value for the explicit "ทุกจังหวัด" / "ทุกอำเภอ" (show all) option,
@@ -14,6 +15,7 @@ const ALL = "__ALL__";
 export default function LAODirectoryPage() {
   const t = useTranslations("lao");
   const locale = useLocale();
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
@@ -187,7 +189,14 @@ export default function LAODirectoryPage() {
                 <Search className="w-8 h-8 text-slate-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-1">ไม่พบข้อมูล</h3>
-              <p className="text-slate-500">ลองใช้คำค้นหาอื่น หรือตรวจสอบตัวสะกดอีกครั้ง</p>
+              <p className="text-slate-500 mb-6">ลองใช้คำค้นหาอื่น หรือตรวจสอบตัวสะกดอีกครั้ง</p>
+              <button
+                onClick={() => router.push(`/${locale}/report-issue${query.trim() ? `?location=${encodeURIComponent(query.trim())}` : ""}`)}
+                className="inline-flex items-center text-white font-bold text-sm bg-red-500/90 hover:bg-red-500 px-5 py-2.5 rounded-full shadow-md transition-colors cursor-pointer"
+              >
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                {query.trim() ? `แจ้งปัญหา-${query.trim()}` : "แจ้งปัญหา"}
+              </button>
             </div>
           )}
         </div>

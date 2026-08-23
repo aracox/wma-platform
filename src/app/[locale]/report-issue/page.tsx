@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, 
   Building2, ChevronDown, Paperclip, FileImage, Trash2, ExternalLink 
@@ -16,14 +16,15 @@ const STATUS_LABELS: Record<string, { th: string; color: string }> = {
   resolved:  { th: "แก้ไขแล้ว",      color: "bg-green-100 text-green-700 border-green-200" },
 };
 
-// Kept as the original, untouched version — superseded by /report-issue,
-// which now the "แจ้งปัญหา" button links to (and where revisions happen).
-// Set back to true to re-enable this page.
-const PAGE_ENABLED = false;
+// Copy of /report, reachable via the "แจ้งปัญหา" button on the LAO detail
+// page. The main-menu link to /report is hidden (see Navbar.tsx
+// REPORT_PAGE_ENABLED); this page is where /report's flow is being revised.
+const PAGE_ENABLED = true;
 
-export default function ReportPage() {
+function ReportIssuePageInner() {
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [mounted, setMounted] = useState(false);
   const currentUser = useAppStore((s) => s.currentUser);
@@ -40,8 +41,10 @@ export default function ReportPage() {
   const isOfficer = currentUser?.role === "official";
   const isUser = currentUser?.role === "user" || (!isAdmin && !isOfficer);
 
-  // Free-text location for Admin / Public User (no LAO lookup required)
-  const [locationText, setLocationText] = useState("");
+  // Free-text location for Admin / Public User (no LAO lookup required).
+  // Pre-filled from ?location=... when arriving via the "แจ้งปัญหา" button
+  // on a LAO's detail page.
+  const [locationText, setLocationText] = useState(() => searchParams.get("location") || "");
 
   // Create Form state
   const [details, setDetails] = useState("");
@@ -264,7 +267,11 @@ export default function ReportPage() {
           </div>
           <div className="pt-2">
             <button
-              onClick={() => router.push(`/${locale}/auth/login/user?callbackUrl=/${locale}/report`)}
+              onClick={() => {
+                const locationParam = searchParams.get("location");
+                const callbackUrl = `/${locale}/report-issue${locationParam ? `?location=${encodeURIComponent(locationParam)}` : ""}`;
+                router.push(`/${locale}/auth/login/user?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+              }}
               className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg text-sm cursor-pointer"
             >
               เข้าสู่ระบบเพื่อแจ้งปัญหา
@@ -679,5 +686,13 @@ export default function ReportPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ReportIssuePage() {
+  return (
+    <Suspense>
+      <ReportIssuePageInner />
+    </Suspense>
   );
 }
