@@ -19,8 +19,8 @@ const WastewaterFacilityMapClient = dynamic(() => import("@/components/map/Waste
 export default function WastewaterFacilityMapView() {
   const [selectedProvince, setSelectedProvince] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showWma, setShowWma] = useState(true);
-  const [showDspot, setShowDspot] = useState(true);
+  const [showWma, setShowWma] = useState(false);
+  const [showDspot, setShowDspot] = useState(false);
 
   const allWma = useMemo(() => getWmaFacilities(), []);
   const allDspot = useMemo(() => getDspotFacilities(), []);

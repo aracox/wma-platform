@@ -8,7 +8,7 @@ export default function JoinWmaPage() {
         <div className="mb-10 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 rounded-3xl p-8 md:p-10 text-white border border-primary-900 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-12 -mr-12 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10">
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white mb-3">ร่วมงาน อจน.</h1>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white mb-3">ติดต่อ อจน.</h1>
             <p className="text-sm md:text-base text-blue-100/90 max-w-3xl leading-relaxed">
               องค์การจัดการน้ำเสีย (อจน.) กระทรวงมหาดไทย — ช่องทางติดต่อและข้อมูลองค์กร
             </p>

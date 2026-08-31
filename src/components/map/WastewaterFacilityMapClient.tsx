@@ -192,12 +192,6 @@ export default function WastewaterFacilityMapClient({
                   <span className="text-gray-400 w-20 flex-shrink-0">จังหวัด</span>
                   <span className="font-medium text-gray-800">{selected.data.province}</span>
                 </div>
-                {selected.data.wastewaterVolumeToday !== null && (
-                  <div className="flex gap-1">
-                    <span className="text-gray-400 w-20 flex-shrink-0">น้ำเสียวันนี้</span>
-                    <span className="font-medium text-gray-800">{selected.data.wastewaterVolumeToday.toLocaleString()} ลบ.ม.</span>
-                  </div>
-                )}
               </div>
               <div className="bg-gray-50 rounded-lg p-2 font-mono text-xs text-gray-500 flex justify-between items-center">
                 <span>{selected.data.lat.toFixed(5)}</span>
