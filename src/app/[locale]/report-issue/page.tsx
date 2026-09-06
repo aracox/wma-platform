@@ -4,11 +4,29 @@ import { useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, 
-  Building2, ChevronDown, Paperclip, FileImage, Trash2, ExternalLink 
+  Building2, ChevronDown, Paperclip, FileImage, Trash2, ExternalLink, MapPin 
 } from "lucide-react";
+import dynamic from "next/dynamic";
+import type { PickedLocation } from "@/components/map/LocationPickerMapClient";
 import { cn, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CommunityReport } from "@/types";
+
+// Map picker is client-only (maplibre touches window on import)
+const LocationPickerMapClient = dynamic(
+  () => import("@/components/map/LocationPickerMapClient"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full bg-primary-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-7 w-7 border-4 border-primary-600 border-t-transparent rounded-full mx-auto mb-2" />
+          <p className="text-primary-700 font-medium text-xs">กำลังโหลดแผนที่ ...</p>
+        </div>
+      </div>
+    ),
+  }
+);
 
 const STATUS_LABELS: Record<string, { th: string; color: string }> = {
   pending:   { th: "รอดำเนินการ",    color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
@@ -45,6 +63,11 @@ function ReportIssuePageInner() {
   // Pre-filled from ?location=... when arriving via the "แจ้งปัญหา" button
   // on a LAO's detail page.
   const [locationText, setLocationText] = useState(() => searchParams.get("location") || "");
+
+  // Optional map-picked coordinates. When unset the report is saved with the
+  // default Thailand centroid, same as before this field existed.
+  const [pickedLocation, setPickedLocation] = useState<PickedLocation | null>(null);
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   // Create Form state
   const [details, setDetails] = useState("");
@@ -150,8 +173,8 @@ function ReportIssuePageInner() {
       attachments,
       laoId: targetLaoId,
       laoName: targetLaoName || "ไม่ระบุ อปท.",
-      lat: 13.75,
-      lng: 100.5,
+      lat: pickedLocation ? pickedLocation.lat : 13.75,
+      lng: pickedLocation ? pickedLocation.lng : 100.5,
       province: targetProvince,
       reportedBy: currentUser.email || currentUser.id,
       reportedByEmail: currentUser.email,
@@ -169,6 +192,8 @@ function ReportIssuePageInner() {
         setLaoActivities("");
         setCommunityParticipation("");
         setAttachments([]);
+        setPickedLocation(null);
+        setShowMapPicker(false);
         if (isSelectingLao) setLocationText("");
         await fetchReports();
       } else {
@@ -341,6 +366,63 @@ function ReportIssuePageInner() {
                 </div>
               </div>
             )}
+
+            {/* Optional map location picker */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <label className="block text-sm font-bold text-primary-800">
+                  <MapPin className="h-4 w-4 inline-block mr-1.5 text-primary-600" />
+                  ตำแหน่งบนแผนที่ <span className="text-slate-400 font-normal text-xs">(ไม่บังคับ)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowMapPicker((v) => !v)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-xs font-bold text-primary-700 transition-all shadow-sm cursor-pointer"
+                >
+                  <MapPin className="h-3.5 w-3.5" />
+                  {showMapPicker ? "ซ่อนแผนที่" : pickedLocation ? "แก้ไขตำแหน่ง" : "เลือกตำแหน่งจากแผนที่"}
+                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showMapPicker && "rotate-180")} />
+                </button>
+              </div>
+
+              {pickedLocation && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-100 border border-primary-300 text-primary-800 font-bold">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {pickedLocation.lat.toFixed(6)}, {pickedLocation.lng.toFixed(6)}
+                  </span>
+                  <a
+                    href={`https://www.google.com/maps?q=${pickedLocation.lat},${pickedLocation.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-800 font-semibold"
+                  >
+                    ดูใน Google Maps
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setPickedLocation(null)}
+                    className="inline-flex items-center gap-1 text-slate-400 hover:text-rose-500 font-semibold transition-colors cursor-pointer"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    ล้างตำแหน่ง
+                  </button>
+                </div>
+              )}
+
+              {showMapPicker && (
+                <div className="mt-3 h-72 sm:h-80 rounded-xl overflow-hidden border border-slate-300">
+                  <LocationPickerMapClient value={pickedLocation} onChange={setPickedLocation} />
+                </div>
+              )}
+
+              {!pickedLocation && !showMapPicker && (
+                <p className="mt-2 text-xs text-slate-400">
+                  ระบุพิกัดเพื่อช่วยให้เจ้าหน้าที่หาตำแหน่งปัญหาได้แม่นยำขึ้น
+                </p>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Field 1: Details (merged system info + identified issues) */}
