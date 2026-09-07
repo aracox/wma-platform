@@ -2,8 +2,15 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { X, Droplets } from "lucide-react";
-import { WmaFacility, DspotFacility, ALL_LOCATIONS as ALL } from "@/data/wastewaterFacilities";
+import { X, Droplets, Lock } from "lucide-react";
+import {
+  WmaFacility,
+  DspotFacility,
+  ALL_LOCATIONS as ALL,
+  AMENITY_LABELS,
+  getWmaFacilityDetail,
+} from "@/data/wastewaterFacilities";
+import { useAppStore } from "@/store";
 
 const WMA_PIN_COLOR = "#007bff";
 const DSPOT_PIN_COLOR = "#28a745";
@@ -58,6 +65,12 @@ export default function WastewaterFacilityMapClient({
 
   const [mapReady, setMapReady] = useState(false);
   const [selected, setSelected] = useState<Selected | null>(null);
+
+  // Staff names, direct phone numbers and emails are shown to signed-in users
+  // only; everything else in the panel is public.
+  const currentUser = useAppStore((s) => s.currentUser);
+
+  const wmaDetail = selected?.type === "wma" ? getWmaFacilityDetail(selected.data.id) : null;
 
   const clearMarkers = useCallback(() => {
     wmaMarkers.current.forEach((m) => m.remove());
@@ -185,14 +198,86 @@ export default function WastewaterFacilityMapClient({
           </div>
 
           {selected.type === "wma" ? (
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
               <h3 className="font-bold text-gray-900 text-sm leading-snug">{selected.data.orgName || selected.data.title}</h3>
               <div className="space-y-1 text-xs text-gray-600">
                 <div className="flex gap-1">
                   <span className="text-gray-400 w-20 flex-shrink-0">จังหวัด</span>
                   <span className="font-medium text-gray-800">{selected.data.province}</span>
                 </div>
+                {wmaDetail?.system && (
+                  <div className="flex gap-1">
+                    <span className="text-gray-400 w-20 flex-shrink-0">ระบบบำบัด</span>
+                    <span className="font-medium text-gray-800">{wmaDetail.system}</span>
+                  </div>
+                )}
+                {wmaDetail?.capacity !== null && wmaDetail?.capacity !== undefined && (
+                  <div className="flex gap-1">
+                    <span className="text-gray-400 w-20 flex-shrink-0">ความสามารถ</span>
+                    <span className="font-medium text-gray-800">
+                      {wmaDetail.capacity.toLocaleString()} ลบ.ม./วัน
+                    </span>
+                  </div>
+                )}
+                {wmaDetail?.address && (
+                  <div className="flex gap-1">
+                    <span className="text-gray-400 w-20 flex-shrink-0">ที่ตั้ง</span>
+                    <span className="font-medium text-gray-800">{wmaDetail.address}</span>
+                  </div>
+                )}
               </div>
+
+              {/* Public co-use amenities on site */}
+              {wmaDetail?.amenities && wmaDetail.amenities.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-xs text-gray-400">การใช้พื้นที่ร่วม</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {wmaDetail.amenities.map((a) => (
+                      <span
+                        key={a}
+                        className="px-2 py-1 rounded-lg bg-primary-100 text-primary-800 text-[11px] font-bold border border-primary-300"
+                      >
+                        {AMENITY_LABELS[a] || a}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Contact block — signed-in users only */}
+              {currentUser ? (
+                (wmaDetail?.contactName || wmaDetail?.phones.length || wmaDetail?.email) && (
+                  <div className="space-y-1 text-xs text-gray-600 border-t border-gray-200 pt-2.5">
+                    <div className="text-gray-400">ผู้ประสานงาน</div>
+                    {wmaDetail.contactName && (
+                      <div className="font-medium text-gray-800">{wmaDetail.contactName}</div>
+                    )}
+                    {wmaDetail.phones.map((phone) => (
+                      <a
+                        key={phone}
+                        href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+                        className="block font-medium text-primary-700 hover:text-primary-900"
+                      >
+                        {phone}
+                      </a>
+                    ))}
+                    {wmaDetail.email && (
+                      <a
+                        href={`mailto:${wmaDetail.email}`}
+                        className="block font-medium text-primary-700 hover:text-primary-900 break-all"
+                      >
+                        {wmaDetail.email}
+                      </a>
+                    )}
+                  </div>
+                )
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 border-t border-gray-200 pt-2.5">
+                  <Lock className="h-3.5 w-3.5 flex-shrink-0" />
+                  เข้าสู่ระบบเพื่อดูข้อมูลผู้ประสานงาน
+                </div>
+              )}
+
               <div className="bg-gray-50 rounded-lg p-2 font-mono text-xs text-gray-500 flex justify-between items-center">
                 <span>{selected.data.lat.toFixed(5)}</span>
                 <span className="text-gray-300">|</span>

@@ -1,0 +1,911 @@
+{
+ "wma-001": {
+  "abbr": "ทม.พะเยา",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "โรงปรับปรุงคุณภาพน้ำ เทศบาลเมืองพะเยา ซ.ข้าง บริษัท สินธานี จำกัด ต.แม่ต๋ำ อ.เมือง จ.พะเยา 56000",
+  "capacity": 9700,
+  "capacityPcd": 9700,
+  "contactName": "นางสาว โรสรินทร์ อินทวงศ์",
+  "phones": [
+   "063-203-5764"
+  ],
+  "email": "rosesarin.i@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-002": {
+  "abbr": "ทน.ลำปาง",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "ศูนย์จัดการคุณภาพน้ำ หมู่ที่ 5 ต.ปงแสงทอง อ.เมืองลำปาง จ.ลำปาง 52100",
+  "capacity": 12300,
+  "capacityPcd": 12300,
+  "contactName": "นางสาว โรสรินทร์ อินทวงศ์",
+  "phones": [
+   "063-203-5764"
+  ],
+  "email": "rosesarin.i@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-003": {
+  "abbr": "ทม.มุกดาหาร",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "สำนักงานจัดการน้ำเสียสาขามุกดาหาร ซอยทองสุขอารีย์ ถนนชยางกูร ต.บางทรายใหญ่ อ.เมือง จ.มุกดาหาร 49000",
+  "capacity": 8500,
+  "capacityPcd": 8500,
+  "contactName": "นายไพรสาร เตตะมะ",
+  "phones": [
+   "063-203-5770",
+   "081-733-6418"
+  ],
+  "email": "phaisan.t@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-004": {
+  "abbr": "ทน.แม่สอด",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "สำนักงานจัดการน้ำเสียสาขาแม่สอด(เยื้องโลตัสเอ็กตร้า) ถนนสายเอเชีย อ.แม่สอด จ.ตาก 63110",
+  "capacity": 11000,
+  "capacityPcd": 11000,
+  "contactName": "ว่าที่ร.ต.หญิงอภันตรี เพ็ชร์โยธิน",
+  "phones": [
+   "063-203-5761",
+   "084-537-6502"
+  ],
+  "email": "apanthee.p@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-005": {
+  "abbr": "ทน.อุดรธานี",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "บ่อบำบัดน้ำเสียเทศบาลนครอุดรธานี ซอยทองหล่อ ถนนอุดร - สามพร้าว ตำบลสามพร้าว อำเภอเมือง จังหวัดอุดรธานี 41000",
+  "capacity": 45000,
+  "capacityPcd": 45000,
+  "contactName": "นายไพรสาร เตตะมะ",
+  "phones": [
+   "063-203-5770",
+   "081-733-6418"
+  ],
+  "email": "phaisan.t@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-006": {
+  "abbr": "ทม.กำแพงเพชร",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "สำนักงานจัดการน้ำเสียสาขา กำแพงเพชร ถนนทางหลวงแผ่นดิ 115 เลี่ยงเมืองพิจิตร - พิษณุโลก ซอยตรงข้ามปั๊มคาลเท๊ก(กิโล2) หมู่6 ต.เทพนคร อ.เมือง จ.กำแพงเพชร 62000",
+  "capacity": 13500,
+  "capacityPcd": 13500,
+  "contactName": "นายดุษฎี นัยจิตต์",
+  "phones": [
+   "092-717-8181"
+  ],
+  "email": "dusadee.n@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-007": {
+  "abbr": "ทม.อำนาจเจริญ",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "สำนักงานจัดการน้ำเสีย สาขาอำนาจเจริญ ซอยสำราญราชฏร์ ถนนอรุณประเสริฐ ตำบลบุ่ง อำเภอเมือง จังหวัด อำนาจเจริญ 37000",
+  "capacity": 12800,
+  "capacityPcd": 12800,
+  "contactName": "ว่าที่ร.ต.นิติกรณ์ ฝึกฝน",
+  "phones": [
+   "063-203-5773",
+   "089-920-1728"
+  ],
+  "email": "nitikorn.p@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-008": {
+  "abbr": "ทม.บ้านโป่ง",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "โครงการระบายน้ำและปรับปรุงคุณภาพน้ำ เทศบาลเมืองบ้านโป่ง หมูที่ 10 ซอยนครชุมม์ 47 ตำบลนครชุมม์ อำเภอบ้านโป่ง จังหวัดราชบุรี 70110",
+  "capacity": 5000,
+  "capacityPcd": 5000,
+  "contactName": "นายศิริเกียรติ เกษะสิริ",
+  "phones": [
+   "063-203-5776",
+   "081-626-3488"
+  ],
+  "email": "sirikiat.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-009": {
+  "abbr": "ทม.สิงห์บุรี",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อปรับเสถียร (Stabilization Pond)",
+  "address": "ระบบบำบัดน้ำเสียเทศบาลเมืองสิงห์บุรี (สำนักงานจัดการน้ำเสียสาขาสิงห์บุรี)ต.ม่วงหมู่ อ.เมือง จ.สิงห์บุรี 16000",
+  "capacity": 4500,
+  "capacityPcd": 4500,
+  "contactName": "น.ส.ศุทธวดี วีระพงษ์",
+  "phones": [
+   "063-203-5767",
+   "082-779-0163"
+  ],
+  "email": "suttawadee.w@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-010": {
+  "abbr": "ทต.บางเสร่",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "สถานีควบคุมปรับปรุงคุณภาพน้ำเสียเทศบาลตำบลบางเสร่หมู่ 5 ถนนเลียบคลองชลประทาน ตำบลบางเสร่อำเภอสัตหีบ จังหวัดชลบุรี 20250",
+  "capacity": 5400,
+  "capacityPcd": 5400,
+  "contactName": "นายรัฐวุฒิ ทับทอง",
+  "phones": [
+   "081-356-6691"
+  ],
+  "email": "rattawut.t@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-011": {
+  "abbr": "ทม.ประจวบคีรีขันธ์",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "สำนักงานจัดการน้ำเสียสาขาประจวบคีรีขันธ์ (บ่อบำบัดน้ำเสีย) ถ.สวนสน ต.ประจวบคีรีขันธ์ อ.เมือง จ.ประจวบคีรีขันธ์ 77000",
+  "capacity": 8000,
+  "capacityPcd": 8000,
+  "contactName": "น.ส.ณัฐกานต์ เกิดเอี่ยม",
+  "phones": [
+   "061-416-2444",
+   "081-888-2774"
+  ],
+  "email": "nuttakarn.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-012": {
+  "abbr": "ทน.สงขลา",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "โรงปรับปรุงคุณภาพน้ำเทศบาล นครสงขลา หมู่ที่ 8 ตำบล เกาะแต้ว อำเภอเมือง จังหวัดสงขลา 90000",
+  "capacity": 35000,
+  "capacityPcd": 35000,
+  "contactName": "นายอมรชัย หิรัญรัตน์",
+  "phones": [
+   "063-203-5780",
+   "081-793-8654"
+  ],
+  "email": "amornchai.h@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-013": {
+  "abbr": "ทม.กระบี่",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "สำนักงานจัดการน้ำเสียสาขากระบี่ โรงปรับปรุงคุณภาพน้ำ - เทศบาลเมืองกระบี่ ถ.มหาราช ต.ปากน้ำ อ.เมือง จ. กระบี่ 81000",
+  "capacity": 12000,
+  "capacityPcd": 12000,
+  "contactName": "นายอมรชัย หิรัญรัตน์",
+  "phones": [
+   "063-203-5780",
+   "081-793-8654"
+  ],
+  "email": "amornchai.h@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-014": {
+  "abbr": "ทน.เชียงใหม่",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "โรงงานปรับปรุงคุณภาพน้ำ เทศบาลนครเชียงใหม่ (สำนักงานจัดการน้ำเสียสาขาเชียงใหม่) ชั้น 2หมู่ 5 ซอย 4 (ซอยข้างวัดท่าใหม่อิ) ถนนป่าแดด ต.ป่าแดด อ.เมือง จ.เชียงใหม่ 50100",
+  "capacity": 55000,
+  "capacityPcd": 55000,
+  "contactName": "นางสาว โรสรินทร์ อินทวงศ์",
+  "phones": [
+   "063-203-5764"
+  ],
+  "email": "rosesarin.i@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-015": {
+  "abbr": "ทม.ปากช่อง",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "โรงปรับปรุงคุณภาพน้ำเทศบาลเมืองปากช่อง หมู่ที่ 13 บ้านท่างอย ต.จันทึก อ.ปากช่อง จ.นครราชสีมา 30130",
+  "capacity": 12000,
+  "capacityPcd": 12000,
+  "contactName": "นายไพรสาร เตตะมะ",
+  "phones": [
+   "063-203-5770",
+   "081-733-6418"
+  ],
+  "email": "phaisan.t@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-016": {
+  "abbr": "ทน.บุรีรัมย์",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "โรงปรับปรุงคุณภาพน้ำเทศบาลเมือง บุรีรัมย์ ม.3 ต.อิสาณ อ.เมือง จ.บุรีรัมย์ 31000",
+  "capacity": 13000,
+  "capacityPcd": 13000,
+  "contactName": "น.ส.ณัฏฐนันท์ สมบัติเชื้อนาค",
+  "phones": [
+   "063-203-5768"
+  ],
+  "email": "nattanun.s@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-017": {
+  "abbr": "ทม.กาฬสินธุ์",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "สำนักงานจัดการน้ำเสียสาขากาฬสินธุ์ (ชุมชนคุ้ม ห้วย) ต.กาฬสินธุ์ อ.เมือง จ.กาฬสินธุ์ 46000",
+  "capacity": 14000,
+  "capacityPcd": 14000,
+  "contactName": "น.ส.ณัฏฐนันท์ สมบัติเชื้อนาค",
+  "phones": [
+   "063-203-5768"
+  ],
+  "email": "nattanun.s@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-018": {
+  "abbr": "ทม.ชะอำ",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อเติมอากาศ (Aerated Lagoon หรือ AL)",
+  "address": "โรงปรับปรุงคุณภาพน้ำเทศบาลเมืองชะอำ ถนนคลองเทียน ต.ชะอำ อ.ชะอำ จ.เพชรบุรี 76120",
+  "capacity": 17000,
+  "capacityPcd": 17000,
+  "contactName": "น.ส.ณัฐกานต์ เกิดเอี่ยม",
+  "phones": [
+   "061-416-2444",
+   "081-888-2774"
+  ],
+  "email": "nuttakarn.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-019": {
+  "abbr": "ทต.บ้านเพ",
+  "system": "ระบบบำบัดน้ำเสียคลองวนเวียน (Oxidation Ditch)",
+  "address": "บ่อบำบัดน้ำเสียเทศบาลตำบลบ้านเพหมู่ 1 ซ.หนองยายอิน ถ.ในไร่ ต.บ้านเพ อ.เมือง จ.ระยอง 21160",
+  "capacity": 8000,
+  "capacityPcd": 8000,
+  "contactName": "นายสุรเชษฐ์ โนคำ",
+  "phones": [
+   "063-203-5766",
+   "080-445-6049"
+  ],
+  "email": "surachet.n@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-020": {
+  "abbr": "ทม.ศรีราชา",
+  "system": "ระบบบำบัดน้ำเสียคลองวนเวียน (Oxidation Ditch)",
+  "address": "โรงปรับปรุงคุณภาพน้ำเทศบาลเมืองศรีราชา92/1 ถ.ศรีราชานคร 3 อ.ศรีราชา จ.ชลบุรี 20110",
+  "capacity": 18000,
+  "capacityPcd": 18000,
+  "contactName": "นายรัฐวุฒิ ทับทอง",
+  "phones": [
+   "081-356-6691"
+  ],
+  "email": "rattawut.t@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-021": {
+  "abbr": "ทม.กาญจนบุรี",
+  "system": "ระบบบำบัดน้ำเสียคลองวนเวียน (Oxidation Ditch)",
+  "address": "สำนักงานจัดการน้ำเสียสาขากาญจนบุรี อาคารบ่อบำบัดน้ำเสียเทศบาลเมืองกาญจนบุรี ตำบลปากแพรก อำเภอเมือง จังหวัดกาญจนบุรี 71000",
+  "capacity": 24000,
+  "capacityPcd": 24000,
+  "contactName": "น.ส.ณัฐกานต์ เกิดเอี่ยม",
+  "phones": [
+   "061-416-2444",
+   "081-888-2774"
+  ],
+  "email": "nuttakarn.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-022": {
+  "abbr": "ทต.บางปลา",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "199/9 ม.4 ต.บ้านเกาะ อ.เมือง จ.สมุทรสาคร 74000",
+  "capacity": 400,
+  "capacityPcd": null,
+  "contactName": "จ.ส.อ.พงศ์พัฒน์ หนุนนาค",
+  "phones": [
+   "062-576-0588"
+  ],
+  "email": "pongpat.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-023": {
+  "abbr": "ทต.นครชัยศรี",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "ม.1 ต.นครชัยศรี อ.นครชัยศรี จ.นครปฐม 73120",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นายนพอนันต์ ทิพย์วรสิริ",
+  "phones": [
+   "063 203 5774",
+   "081-627-6996"
+  ],
+  "email": "nobanun.t@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.081
+ },
+ "wma-024": {
+  "abbr": "ทต.บางหญ้าแพรก",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "ม.4 ต.บางหญ้าแพรก อ.เมือง จ.สมุทสาคร 74000",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "จ.ส.อ.พงศ์พัฒน์ หนุนนาค",
+  "phones": [
+   "062-576-0588"
+  ],
+  "email": "pongpat.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-025": {
+  "abbr": "ทต.ท่าจีน",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "ม.7 ต.ท่าจีน อ.เมือง จ.สมุทรสาคร 74000",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "จ.ส.อ.พงศ์พัฒน์ หนุนนาค",
+  "phones": [
+   "062-576-0588"
+  ],
+  "email": "pongpat.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-026": {
+  "abbr": "ทม.ไร่ขิง",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบ SBR (Sequencing Batch Reactor)",
+  "address": "51/21 ม.2 ต.ไร่ขิง อ.สามพราน จ.นครปฐม 73210",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นายนพอนันต์ ทิพย์วรสิริ",
+  "phones": [
+   "063 203 5774",
+   "081-627-6996"
+  ],
+  "email": "nobanun.t@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-027": {
+  "abbr": "ทต.บางเลน",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบ SBR (Sequencing Batch Reactor)",
+  "address": "ม.8 ต.บางเลน อ.บางเลน จ.นครปฐม 73130",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นายนพอนันต์ ทิพย์วรสิริ",
+  "phones": [
+   "063 203 5774",
+   "081-627-6996"
+  ],
+  "email": "nobanun.t@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.028
+ },
+ "wma-028": {
+  "abbr": "ทม.สามควายเผือก",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบ SBR (Sequencing Batch Reactor)",
+  "address": "ม.3 ต.สามควายเผือก อ.เมือง จ.นครปฐม 73000",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นายนพอนันต์ ทิพย์วรสิริ",
+  "phones": [
+   "063 203 5774",
+   "081-627-6996"
+  ],
+  "email": "nobanun.t@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-029": {
+  "abbr": "ทต.วิชิต",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบ SBR (Sequencing Batch Reactor)",
+  "address": "ศุนย์เรียนรู้การบริหารจัดการคุณภาพน้ำ ทต.วิชิต หมู่บ้านจ้าฟ้า หมู่ที่ 2 ต.วิชิต อ.เมือง จ.ภูเก็ต 83000",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นายน้อย แก้วเศษ",
+  "phones": [
+   "063-203-5781",
+   "089-478-2625"
+  ],
+  "email": "noi.k@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "golf"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-030": {
+  "abbr": "ทต.ราไวย์",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบ SBR (Sequencing Batch Reactor)",
+  "address": "ศูนย์บริหารจัดการคุณภาพน้ำ ทต.ราไวย์ หมู่ที่ 1 บ้านในหาน ถ.วิเศษ ต.ราไวย์ อ.เมือง จ.ภูเก็ต 83000",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นายน้อย แก้วเศษ",
+  "phones": [
+   "063-203-5781",
+   "089-478-2625"
+  ],
+  "email": "noi.k@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-031": {
+  "abbr": "ทต.ปากน้ำปราณ",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบ SBR (Sequencing Batch Reactor)",
+  "address": "ระบบบำบัดน้ำเสียปากน้ำปราณ หมู่ที่ 2 ตำบล ปากน้ำปราณ จ.ประจวบคีรีขันธ์ 77220",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "น.ส.ณัฐกานต์ เกิดเอี่ยม",
+  "phones": [
+   "061-416-2444",
+   "081-888-2774"
+  ],
+  "email": "nuttakarn.k@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-032": {
+  "abbr": "ทต.พรหมโลก",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "ศูนย์บริหารจัดการคุณภาพน้ำ ทต.พรหมโลก 333 ถ.นอกท่า - ท่าแพ ตำบลพรหมโลก อำเภอพรหมคีรี จังหวัด นครศรีธรรมราช 80320",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "น.ส.ดวงใจ ขันธ์เครือ",
+  "phones": [
+   "063-203-5779",
+   "089-787-5488"
+  ],
+  "email": "duangjai.k@wma.mail.go.th",
+  "amenities": [
+   "underground"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-033": {
+  "abbr": "ทม.ใหม่บางบัวทอง",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบ SBR (Sequencing Batch Reactor)",
+  "address": "ม.11 ถ.บางกรวย-ไทรน้อย ต.บางบัวทอง อ.บางบัวทอง จ.นนทบุรี 11110",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นางสาวอรวรรณ จันทรา",
+  "phones": [
+   "063-203-5772",
+   "081-838-0967"
+  ],
+  "email": "orrawan.j@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-034": {
+  "abbr": "ทต.บางพลี",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "91/2 ศูนย์ราชการเทศบาลบางพลี หมู่ 11 ตำบลบางพลีใหญ่ อำเภอบางพลี จังหวัดสมุทรปราการ 10540",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "จ.ส.อ.พงศ์พัฒน์ หนุนนาค",
+  "phones": [
+   "062-576-0588"
+  ],
+  "email": "pongpat.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.022
+ },
+ "wma-035": {
+  "abbr": "ทน.ระยอง",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "ศูนย์บริหารจัดการคุณภาพน้ำ สาธารณะโขดศาลเจ้า ถนนราษฎร์บำรุง ตำบลเนินพระ อำเภอเมืองระยอง จังหวัดระยอง 21000",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นายสุรเชษฐ์ โนคำ",
+  "phones": [
+   "063-203-5766",
+   "080-445-6049"
+  ],
+  "email": "surachet.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "exerciseYard"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.097
+ },
+ "wma-036": {
+  "abbr": "อบต.กมลา",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "หมู่ 3 ถ.หน้าหาด ต.กมลา อ.กะทู้ จ.ภูเก็ต",
+  "capacity": 1000,
+  "capacityPcd": null,
+  "contactName": "นายน้อย แก้วเศษ",
+  "phones": [
+   "063-203-5781",
+   "089-478-2625"
+  ],
+  "email": "noi.k@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.017
+ },
+ "wma-037": {
+  "abbr": "ทต.ฉลอง",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "หมู่ 4 ต.ฉลอง อ.เมืองภูเก็ต จ.ภูเก็ต 83130",
+  "capacity": 1000,
+  "capacityPcd": null,
+  "contactName": "นายน้อย แก้วเศษ",
+  "phones": [
+   "063-203-5781",
+   "089-478-2625"
+  ],
+  "email": "noi.k@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 1.164
+ },
+ "wma-038": {
+  "abbr": "ทม.สามพราน",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "หมู่ 7 ตำบลคลองใหม่ อำเภอสามพราน จังหวัดนครปฐม",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "นายนพอนันต์ ทิพย์วรสิริ",
+  "phones": [
+   "063 203 5774",
+   "081-627-6996"
+  ],
+  "email": "nobanun.t@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "futsal"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.017
+ },
+ "wma-039": {
+  "abbr": "ทม.ปากพนัง บริเวณหลังเรือนจำ",
+  "system": "ระบบบำบัดน้ำเสียแบบเติมอากาศ (Activated Sludge : AS) + บึงประดิษฐ์",
+  "address": "หลังเรือนจำอำเภอปากพนัง หมู่ที่ 3 ถนนชายน้ำ ตำบลปากพนังฝั่งตะวันออก อำเภอปากพนัง จังหวัดนครศรีธรรมราช 80140",
+  "capacity": 40,
+  "capacityPcd": null,
+  "contactName": "น.ส.ดวงใจ ขันธ์เครือ",
+  "phones": [
+   "063-203-5779",
+   "089-787-5488"
+  ],
+  "email": "duangjai.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-040": {
+  "abbr": "ทม.ปากพนัง บริเวณวัดนาควารี",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "ถนนสุอนันต์ ตำบลปากพนังฝั่งตะวันตก อำเภอปากพนัง จังหวัดนครศรีธรรมราช 80370",
+  "capacity": 1000,
+  "capacityPcd": null,
+  "contactName": "น.ส.ดวงใจ ขันธ์เครือ",
+  "phones": [
+   "063-203-5779",
+   "089-787-5488"
+  ],
+  "email": "duangjai.k@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "exerciseYard"
+  ],
+  "matchedBy": "coord",
+  "matchDistanceKm": 0
+ },
+ "wma-041": {
+  "abbr": "ทต.หัวไทร บริเวณถนนสุขาภิบาล 1",
+  "system": "ระบบบำบัดน้ำเสียแบบบ่อกรองไร้อากาศ (AN) +บึงประดิษฐ์",
+  "address": "หมู่ 8 ถนนสุขาภิบาล 1 ตำบลหัวไทร อำเภอหัวไทร จังหวัดนครศรีธณรมราช 80170",
+  "capacity": 200,
+  "capacityPcd": null,
+  "contactName": "น.ส.ดวงใจ ขันธ์เครือ",
+  "phones": [
+   "063-203-5779",
+   "089-787-5488"
+  ],
+  "email": "duangjai.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "coord",
+  "matchDistanceKm": 0
+ },
+ "wma-042": {
+  "abbr": "ทต.หัวไทร บริเวณหลังตลาดสด ถนนบางแค",
+  "system": "ระบบบำบัดน้ำเสียแบบถังเติมอากาศ",
+  "address": "หมู่ที่ 1 ถนนบางแค ตำบลหัวไทร อำเภอหัวไทร จังหวัดนครศรีธรรมราช 80170",
+  "capacity": 200,
+  "capacityPcd": null,
+  "contactName": "น.ส.ดวงใจ ขันธ์เครือ",
+  "phones": [
+   "063-203-5779",
+   "089-787-5488"
+  ],
+  "email": "duangjai.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "coord",
+  "matchDistanceKm": 0
+ },
+ "wma-043": {
+  "abbr": "ทต.ชะอวด บริเวณวัดศรีมาประสิทธิ์",
+  "system": "ระบบบำบัดน้ำเสียแบบเติมอากาศ (Activated Sludge)",
+  "address": "หมู่ 1 ถนนรถไฟ สาย 3 ตำบลชะอวด อำเภอชะอวด จังหวัดนครศรีธณรมราช 80180",
+  "capacity": 200,
+  "capacityPcd": null,
+  "contactName": "น.ส.ดวงใจ ขันธ์เครือ",
+  "phones": [
+   "063-203-5779",
+   "089-787-5488"
+  ],
+  "email": "duangjai.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-044": {
+  "abbr": "อบต.หูล่อง บริเวณชุมชนหอยราก-ศรีสมบูรณ์",
+  "system": "ระบบบำบัดน้ำเสียแบบ บ่อกรองไร้อากาศ (AN)+ คูวนเวียน (AS) + บึงปรดิษฐ์ (CW)",
+  "address": "หมู่ที่ 1 ถนนอชิโต ตำบลหูล่อง อำเภอปากพนัง จังหวัดนครศรีธรรมราช 80370",
+  "capacity": 300,
+  "capacityPcd": null,
+  "contactName": "น.ส.ดวงใจ ขันธ์เครือ",
+  "phones": [
+   "063-203-5779",
+   "089-787-5488"
+  ],
+  "email": "duangjai.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-045": {
+  "abbr": "อุทยานสิ่งแวดล้อมนานาชาติสิรินธร",
+  "system": "Wetland บึงปรดิษฐ์ (CW)",
+  "address": "โรงปรับปรุงคุณภาพน้ำและศูนย์การเรียนรู้ พื้นที่ อุทธยานสิ่งแวดล้อมนานาชาติ สิรินธร จังหวัดเพชรบุรี ค่ายพระรามหก ถนน. เพชรเกษม ตำบลชะอำ อำเภอ ชะอำ จังหวัด เพชรบุรี 76120",
+  "capacity": 200,
+  "capacityPcd": null,
+  "contactName": "น.ส.ณัฐกานต์ เกิดเอี่ยม",
+  "phones": [
+   "061-416-2444",
+   "081-888-2774"
+  ],
+  "email": "nuttakarn.k@wma.mail.go.th",
+  "amenities": [],
+  "matchedBy": "name",
+  "matchDistanceKm": 0
+ },
+ "wma-046": {
+  "abbr": "ทต.บางปลา แห่งที่2",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "130/3 ม.4 ต.บ้านเกาะ อ.เมืองสมุทรสาคร จ.สมุทรสาคร",
+  "capacity": 1000,
+  "capacityPcd": null,
+  "contactName": "จ.ส.อ.พงศ์พัฒน์ หนุนนาค",
+  "phones": [
+   "062-576-0588"
+  ],
+  "email": "pongpat.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.024
+ },
+ "wma-047": {
+  "abbr": "ทม.แพรกษา",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "339/1 หมู่ 1 ตำบลแพรกษา อำเภอเมืองสมุทรปราการ จังหวัดสมุทรปราการ 10280",
+  "capacity": 1000,
+  "capacityPcd": null,
+  "contactName": "จ.ส.อ.พงศ์พัฒน์ หนุนนาค",
+  "phones": [
+   "062-576-0588"
+  ],
+  "email": "pongpat.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "futsal"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.009
+ },
+ "wma-048": {
+  "abbr": "ทม.ปู่เจ้าสมิงพราย",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "55/1 หมู่ 1 ซอยเทศบาลสำโรงใต้ 19 (กลับเจริญ) ถ.ปู่เจ้าสมิงพราย ต.บางหัวเสือ อ.พระประแดง จ.สมุทรปราการ 10130",
+  "capacity": 1000,
+  "capacityPcd": null,
+  "contactName": "จ.ส.อ.พงศ์พัฒน์ หนุนนาค",
+  "phones": [
+   "062-576-0588"
+  ],
+  "email": "pongpat.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 31.886
+ },
+ "wma-049": {
+  "abbr": "ทม.ลำโพ",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "หมู่ 8 ตำบลลำโพ อำเภอบางบัวทอง จังหวัดนนทบุรี",
+  "capacity": 1500,
+  "capacityPcd": null,
+  "contactName": "นางสาวอรวรรณ จันทรา",
+  "phones": [
+   "063-203-5772",
+   "081-838-0967"
+  ],
+  "email": "orrawan.j@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "aquarium"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 44.896
+ },
+ "wma-050": {
+  "abbr": "ทต.เกษตรกำแพงแสน",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "ม.12 ตำบล กำแพงแสน อำเภอกำแพงแสน จังหวัดนครปฐม",
+  "capacity": 1000,
+  "capacityPcd": null,
+  "contactName": "นายนพอนันต์ ทิพย์วรสิริ",
+  "phones": [
+   "063 203 5774",
+   "081-627-6996"
+  ],
+  "email": "nobanun.t@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 54.899
+ },
+ "wma-051": {
+  "abbr": "ทต.อ้อมใหญ่",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "หมู่ 4 ตำบลอ้อมใหญ่ อำเภอ สามพราน จังหวัดนครปฐม",
+  "capacity": 1000,
+  "capacityPcd": null,
+  "contactName": "นายนพอนันต์ ทิพย์วรสิริ",
+  "phones": [
+   "063 203 5774",
+   "081-627-6996"
+  ],
+  "email": "nobanun.t@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.01
+ },
+ "wma-052": {
+  "abbr": "ทต.เขาน้อย",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "200 ม.6 ต.เขาน้อย อ.ปราณบุรี จ.ประจวบคีรีขันธ์ 77120",
+  "capacity": 1500,
+  "capacityPcd": null,
+  "contactName": "น.ส.ณัฐกานต์ เกิดเอี่ยม",
+  "phones": [
+   "061-416-2444",
+   "081-888-2774"
+  ],
+  "email": "nuttakarn.k@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "futsal"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.047
+ },
+ "wma-053": {
+  "abbr": "ทต.บางพลี",
+  "system": "ระบบแอกทิเวเต็ดสลัดจ์แบบมีตัวกลางยึดเกาะ (Fixed FIlm)",
+  "address": "91/2 ศูนย์ราชการเทศบาลบางพลี หมู่ 11 ตำบลบางพลีใหญ่ อำเภอบางพลี จังหวัดสมุทรปราการ 10540",
+  "capacity": 600,
+  "capacityPcd": null,
+  "contactName": "จ.ส.อ.พงศ์พัฒน์ หนุนนาค",
+  "phones": [
+   "062-576-0588"
+  ],
+  "email": "pongpat.n@wma.mail.go.th",
+  "amenities": [
+   "underground",
+   "park"
+  ],
+  "matchedBy": "name",
+  "matchDistanceKm": 0.019
+ }
+}
