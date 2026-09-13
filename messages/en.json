@@ -5,7 +5,7 @@
     "lao_map": "LAO Map",
     "feed": "LAO News & Activities",
     "report": "Report Issue",
-    "lao": "LAO Directory",
+    "lao": "Report Issue",
     "knowledge": "Knowledge Base",
     "announcements": "News & Announcements",
     "join_wma": "Contact WMA",
@@ -15,7 +15,7 @@
     "logout": "Sign Out"
   },
   "lao": {
-    "title": "Local Administrative Organizations",
+    "title": "Report LAO Wastewater Issues",
     "search": "Search LAO",
     "search_placeholder": "Search by name, province, or code...",
     "details": {
