@@ -46,18 +46,11 @@ export default function SitemapPage() {
           titleTh: "แจ้งปัญหาน้ำเสียองค์การปกครองส่วนท้องถิ่น",
           titleEn: "LAO Directory & Issue Reporting",
           href: `/${locale}/lao`,
-          children: [
-            {
-              titleTh: "ค้นหาข้อมูล อปท. รายจังหวัดและอำเภอ",
-              titleEn: "Search LAO by Province & District",
-              href: `/${locale}/lao`,
-            },
-            {
-              titleTh: "ข้อมูลระบบบำบัดน้ำเสียราย อปท.",
-              titleEn: "LAO Wastewater Treatment Systems",
-              href: `/${locale}/lao`,
-            },
-          ],
+        },
+        {
+          titleTh: "รายงานปัญหาน้ำเสียทันที",
+          titleEn: "Report Wastewater Issue Now",
+          href: `/${locale}/report-issue`,
         },
       ],
     },

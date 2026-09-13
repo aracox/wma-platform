@@ -3,17 +3,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store";
 
 const navItems = [
   { key: "home", href: "/" },
-  { key: "lao", href: "/lao" },
+  { key: "lao", href: "/lao", children: [{ key: "report", href: "/report-issue" }] },
   { key: "lao_map", href: "/lao-map" },
   { key: "feed", href: "/feed" },
-  { key: "report", href: "/report" },
   { key: "knowledge", href: "/knowledge" },
   { key: "announcements", href: "/announcements" },
   { key: "join_wma", href: "/join" },
@@ -21,8 +20,6 @@ const navItems = [
 
 // Temporarily disabled — set back to true to re-show the cooperation menu link.
 const COOPERATION_PAGE_ENABLED = false;
-// Temporarily disabled — set back to true to re-show the report ("แจ้งปัญหา") menu link.
-const REPORT_PAGE_ENABLED = false;
 // Temporarily disabled — set back to true to re-show the feed ("ข่าวและกิจกรรม อปท.") menu link.
 const FEED_PAGE_ENABLED = false;
 
@@ -41,13 +38,19 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const currentUser = useAppStore((s) => s.currentUser);
   const logout = useAppStore((s) => s.logout);
+  const verifySession = useAppStore((s) => s.verifySession);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Reconcile the locally-remembered login against the real session
+    // cookie — localStorage alone can say "logged in" long after the
+    // server-side session has expired or been cleared.
+    verifySession();
+  }, [verifySession]);
 
   const isActive = (href: string) => {
     const fullHref = `/${locale}${href === "/" ? "" : href}`;
@@ -92,15 +95,61 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navItems.filter((item) => (item.key !== "report" || REPORT_PAGE_ENABLED) && (item.key !== "feed" || FEED_PAGE_ENABLED)).map((item) => (
-              <Link
-                key={item.key}
-                href={`/${locale}${item.href}`}
-                className={cn(isActive(item.href) ? "nav-link-active" : "nav-link")}
-              >
-                {t(item.key)}
-              </Link>
-            ))}
+            {navItems.filter((item) => item.key !== "feed" || FEED_PAGE_ENABLED).map((item) =>
+              item.children ? (
+                <div key={item.key} className="relative">
+                  <button
+                    onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
+                    className={cn(
+                      "flex items-center gap-1 cursor-pointer",
+                      isActive(item.href) ? "nav-link-active" : "nav-link"
+                    )}
+                  >
+                    {t(item.key)}
+                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", openDropdown === item.key && "rotate-180")} />
+                  </button>
+
+                  {openDropdown === item.key && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                      <div className="absolute left-0 top-full mt-2 w-64 bg-white rounded-xl border border-border shadow-xl z-50 overflow-hidden py-1">
+                        <Link
+                          href={`/${locale}${item.href}`}
+                          onClick={() => setOpenDropdown(null)}
+                          className={cn(
+                            "block px-4 py-2.5 text-sm font-semibold",
+                            isActive(item.href) ? "text-primary-700 bg-primary-50" : "text-text-primary hover:bg-slate-50"
+                          )}
+                        >
+                          {t(item.key)}
+                        </Link>
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.key}
+                            href={`/${locale}${child.href}`}
+                            onClick={() => setOpenDropdown(null)}
+                            className={cn(
+                              "block px-4 py-2.5 text-sm font-semibold",
+                              isActive(child.href) ? "text-primary-700 bg-primary-50" : "text-text-primary hover:bg-slate-50"
+                            )}
+                          >
+                            {t(child.key)}
+                          </Link>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  key={item.key}
+                  href={`/${locale}${item.href}`}
+                  className={cn(isActive(item.href) ? "nav-link-active" : "nav-link")}
+                >
+                  {t(item.key)}
+                </Link>
+              )
+            )}
             {COOPERATION_PAGE_ENABLED && (
               <Link
                 href={`/${locale}/cooperation`}
@@ -194,18 +243,36 @@ export default function Navbar() {
         {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden pb-4 pt-2 border-t border-white/20 space-y-1">
-            {navItems.filter((item) => (item.key !== "report" || REPORT_PAGE_ENABLED) && (item.key !== "feed" || FEED_PAGE_ENABLED)).map((item) => (
-              <Link
-                key={item.key}
-                href={`/${locale}${item.href}`}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "block px-3 py-2 rounded-md text-sm font-medium",
-                  isActive(item.href) ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
+            {navItems.filter((item) => item.key !== "feed" || FEED_PAGE_ENABLED).map((item) => (
+              <div key={item.key}>
+                <Link
+                  href={`/${locale}${item.href}`}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "block px-3 py-2 rounded-md text-sm font-medium",
+                    isActive(item.href) ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
+                  )}
+                >
+                  {t(item.key)}
+                </Link>
+                {item.children && (
+                  <div className="ml-3 pl-3 border-l-2 border-white/10 space-y-1 mt-1">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.key}
+                        href={`/${locale}${child.href}`}
+                        onClick={() => setMobileOpen(false)}
+                        className={cn(
+                          "block px-3 py-2 rounded-md text-sm font-medium",
+                          isActive(child.href) ? "bg-white/20 text-white" : "text-white/70 hover:text-white hover:bg-white/10"
+                        )}
+                      >
+                        {t(child.key)}
+                      </Link>
+                    ))}
+                  </div>
                 )}
-              >
-                {t(item.key)}
-              </Link>
+              </div>
             ))}
             {COOPERATION_PAGE_ENABLED && (
               <Link

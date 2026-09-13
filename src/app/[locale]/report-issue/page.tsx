@@ -1,16 +1,41 @@
 "use client";
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { 
-  Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save, 
-  Building2, ChevronDown, Paperclip, FileImage, Trash2, ExternalLink, MapPin 
+import {
+  Send, CheckCircle, Lock, Shield, FileText, X, Edit, Save,
+  Building2, ChevronDown, Paperclip, FileImage, Trash2, ExternalLink, MapPin
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { PickedLocation } from "@/components/map/LocationPickerMapClient";
 import { cn, formatDateTimeBE } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import { CommunityReport } from "@/types";
+
+// Turns coordinates into a readable place name via OpenStreetMap's Nominatim
+// (free, no API key — matches the MapLibre/OSM tiles the map picker already
+// uses). Returns null on any failure so the caller can fall back to raw
+// coordinates instead of leaving the field stuck loading.
+async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=th&zoom=16`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (typeof data?.display_name !== "string") return null;
+    // Nominatim's full display_name is verbose (down to postcode/country) —
+    // keep just the leading, most locally-relevant segments.
+    const parts = data.display_name.split(",").map((p: string) => p.trim()).filter(Boolean);
+    return parts.slice(0, 4).join(", ") || null;
+  } catch {
+    return null;
+  }
+}
 
 // Map picker is client-only (maplibre touches window on import)
 const LocationPickerMapClient = dynamic(
@@ -46,6 +71,7 @@ function ReportIssuePageInner() {
 
   const [mounted, setMounted] = useState(false);
   const currentUser = useAppStore((s) => s.currentUser);
+  const logout = useAppStore((s) => s.logout);
   const reports = useAppStore((s) => s.reports);
   const reportsLoaded = useAppStore((s) => s.reportsLoaded);
   const fetchReports = useAppStore((s) => s.fetchReports);
@@ -68,6 +94,34 @@ function ReportIssuePageInner() {
   // default Thailand centroid, same as before this field existed.
   const [pickedLocation, setPickedLocation] = useState<PickedLocation | null>(null);
   const [showMapPicker, setShowMapPicker] = useState(false);
+
+  // Auto-fill "สถานที่" from the browser's current location on first load, so
+  // Admin/Public User reporters don't have to type it by hand. Reverse-
+  // geocodes to a readable place name, falling back to raw coordinates if
+  // that lookup fails or times out.
+  const [detectingLocation, setDetectingLocation] = useState(false);
+  const [locationDetected, setLocationDetected] = useState(false);
+  const geoAttemptedRef = useRef(false);
+
+  const detectLocation = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setSubmitError("อุปกรณ์นี้ไม่รองรับการระบุตำแหน่งอัตโนมัติ");
+      return;
+    }
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setPickedLocation({ lat: latitude, lng: longitude });
+        const placeName = await reverseGeocode(latitude, longitude);
+        setLocationText(placeName || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+        setLocationDetected(true);
+        setDetectingLocation(false);
+      },
+      () => setDetectingLocation(false),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
 
   // Create Form state
   const [details, setDetails] = useState("");
@@ -116,6 +170,15 @@ function ReportIssuePageInner() {
     targetLaoId &&
     details.trim()
   );
+
+  // Try once, only when there's no explicit ?location= and nothing typed yet.
+  useEffect(() => {
+    if (!mounted || !currentUser || geoAttemptedRef.current) return;
+    if (!isSelectingLao || locationText.trim()) return;
+    geoAttemptedRef.current = true;
+    detectLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, currentUser, isSelectingLao, locationText]);
 
   const MAX_ATTACHMENTS = 10;
 
@@ -198,6 +261,12 @@ function ReportIssuePageInner() {
         await fetchReports();
       } else {
         const data = await res.json();
+        if (res.status === 401) {
+          // The session cookie expired/was cleared after this page loaded —
+          // drop the stale local login so the UI (and the login gate above)
+          // reflects that instead of leaving a filled-out form no one can submit.
+          logout();
+        }
         setSubmitError(data.error || "ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
       }
     } catch (err) {
@@ -313,7 +382,7 @@ function ReportIssuePageInner() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-slate-900">แจ้งปัญหา</h1>
+            <h1 className="text-3xl font-black text-slate-900">แจ้งปัญหาทันที</h1>
           </div>
           
           {/* User Context Badge */}
@@ -351,19 +420,40 @@ function ReportIssuePageInner() {
             {/* Admin or Public User LAO Selector */}
             {isSelectingLao && (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-6">
-                <label className="block text-sm font-bold text-primary-800 mb-2">
-                  <Building2 className="h-4 w-4 inline-block mr-1.5 text-primary-600" />
-                  สถานที่ <span className="text-red-500">*</span>
-                </label>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                  <label className="block text-sm font-bold text-primary-800">
+                    <Building2 className="h-4 w-4 inline-block mr-1.5 text-primary-600" />
+                    สถานที่ <span className="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={detectLocation}
+                    disabled={detectingLocation}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-xs font-bold text-primary-700 transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {detectingLocation ? (
+                      <div className="w-3.5 h-3.5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <MapPin className="h-3.5 w-3.5" />
+                    )}
+                    {detectingLocation ? "กำลังค้นหาตำแหน่ง..." : "ใช้ตำแหน่งปัจจุบัน"}
+                  </button>
+                </div>
                 <div className="max-w-md">
                   <input
                     type="text"
                     value={locationText}
-                    onChange={(e) => setLocationText(e.target.value)}
+                    onChange={(e) => { setLocationText(e.target.value); setLocationDetected(false); }}
                     placeholder="ระบุสถานที่ที่ต้องการรายงาน"
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white font-medium"
                   />
                 </div>
+                {locationDetected && (
+                  <p className="mt-2 text-xs text-primary-600 font-semibold flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    ตรวจพบจากตำแหน่งปัจจุบันของคุณ (ข้อมูล © OpenStreetMap) — แก้ไขได้หากไม่ถูกต้อง
+                  </p>
+                )}
               </div>
             )}
 

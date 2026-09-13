@@ -9,8 +9,10 @@ import { INITIAL_ANNOUNCEMENTS } from "@/data/announcements";
 interface AppState {
   // Auth
   currentUser: User | null;
+  sessionChecked: boolean;
   login: (user: User) => void;
   logout: () => void;
+  verifySession: () => Promise<void>;
 
   // Facilities (from API)
   facilities: TreatmentFacility[];
@@ -73,8 +75,15 @@ const getInitialUser = (): User | null => {
 export const useAppStore = create<AppState>((set, get) => ({
   // Auth
   currentUser: getInitialUser(),
+  // localStorage (read above) is only a cache of the last known login — the
+  // real source of truth is the HttpOnly session cookie the server checks.
+  // Until verifySession() reconciles the two, currentUser may be stale (e.g.
+  // the cookie expired or was cleared while localStorage survived), which
+  // used to let pages render as "logged in" right up until an API call
+  // failed with 401. sessionChecked flips true once that reconciliation ran.
+  sessionChecked: false,
   login: (user) => {
-    set({ currentUser: user });
+    set({ currentUser: user, sessionChecked: true });
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("wma_current_user", JSON.stringify(user));
@@ -84,7 +93,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
   logout: () => {
-    set({ currentUser: null });
+    set({ currentUser: null, sessionChecked: true });
     if (typeof window !== "undefined") {
       try {
         localStorage.removeItem("wma_current_user");
@@ -96,6 +105,40 @@ export const useAppStore = create<AppState>((set, get) => ({
     fetch("/api/auth/logout", { method: "POST" }).catch((err) => {
       console.error("Failed to clear session on server", err);
     });
+  },
+  verifySession: async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      const data = res.ok ? await res.json() : { authenticated: false, user: null };
+
+      if (data.authenticated && data.user) {
+        set({ currentUser: data.user, sessionChecked: true });
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("wma_current_user", JSON.stringify(data.user));
+          } catch (e) {
+            console.error("Failed to save user to localStorage", e);
+          }
+        }
+      } else if (get().currentUser) {
+        // localStorage claimed a logged-in user but the server disagrees
+        // (expired/cleared cookie) — drop the stale local state so pages
+        // stop rendering as if the user is authenticated.
+        set({ currentUser: null, sessionChecked: true });
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("wma_current_user");
+          } catch (e) {
+            console.error("Failed to clear user from localStorage", e);
+          }
+        }
+      } else {
+        set({ sessionChecked: true });
+      }
+    } catch (err) {
+      console.error("Failed to verify session:", err);
+      set({ sessionChecked: true });
+    }
   },
 
   // Facilities
