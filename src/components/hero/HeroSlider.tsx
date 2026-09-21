@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Siren, Waves } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Waves } from "lucide-react";
 
 interface Slide {
   img: string;
@@ -165,13 +165,6 @@ export default function HeroSlider({
           >
             {isThai ? "ดูข้อมูล อปท. บนแผนที่" : "Explore LAO Map"}
             <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href={`/${locale}/report`}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/50 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
-          >
-            <Siren className="h-4 w-4" />
-            {isThai ? "แจ้งเหตุ/แจ้งปัญหา" : "Report an Issue"}
           </Link>
         </div>
       </div>

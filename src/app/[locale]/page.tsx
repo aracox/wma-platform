@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Building2, CalendarCheck2, MessageCircleHeart } from "lucide-react";
+import { Building2, Megaphone, BookOpen } from "lucide-react";
 import { getLaos } from "@/data/lao";
 import { prisma } from "@/lib/prisma";
 import HeroSlider from "@/components/hero/HeroSlider";
@@ -24,38 +24,38 @@ const MISSION_PILLARS: MissionPillar[] = [
   {
     id: "system",
     image: "/images/mission-thai-1.png",
-    labelTh: "ข้อมูลระบบ",
-    labelEn: "SYSTEMS",
-    titleTh: "ข้อมูลระบบบำบัดน้ำเสียของ อปท.",
-    titleEn: "Wastewater Treatment Systems",
-    descriptionTh: "ติดตามสถานะระบบบำบัด ความจุ และความพร้อมใช้งานของแต่ละพื้นที่",
-    descriptionEn: "Track treatment status, capacity, and operational readiness by area.",
+    labelTh: "แจ้งปัญหาน้ำเสีย",
+    labelEn: "REPORT WASTEWATER ISSUES",
+    titleTh: "",
+    titleEn: "",
+    descriptionTh: "ค้นหาข้อมูล อปท. และแจ้งปัญหาเรื่องร้องเรียนน้ำเสียในพื้นที่ชุมชน",
+    descriptionEn: "Search local administrative organizations and report wastewater issues.",
     href: "/lao",
     icon: Building2,
   },
   {
-    id: "lao-activity",
+    id: "announcements",
     image: "/images/mission-thai-2.png",
-    labelTh: "แผนและการดำเนินการ",
-    labelEn: "MANAGEMENT",
-    titleTh: "กิจกรรมของ อปท. ในการจัดการน้ำเสีย",
-    titleEn: "LAO Wastewater Management Activities",
-    descriptionTh: "ดูแผนงาน การดำเนินงาน และผลลัพธ์ของกิจกรรมที่ อปท. ดำเนินการ",
-    descriptionEn: "View plans, execution, and outcomes of local wastewater activities.",
-    href: "/lao-map",
-    icon: CalendarCheck2,
+    labelTh: "ข่าวสารและประชาสัมพันธ์",
+    labelEn: "NEWS & ANNOUNCEMENTS",
+    titleTh: "",
+    titleEn: "",
+    descriptionTh: "ติดตามข่าวสาร กิจกรรม และการประชาสัมพันธ์ล่าสุดจากองค์การจัดการน้ำเสีย",
+    descriptionEn: "Follow the latest news, activities, and announcements from WMA.",
+    href: "/announcements",
+    icon: Megaphone,
   },
   {
-    id: "community",
+    id: "knowledge",
     image: "/images/mission-thai-3.png",
-    labelTh: "เครือข่ายชุมชน",
-    labelEn: "COMMUNITY",
-    titleTh: "กิจกรรมการมีส่วนร่วมของชุมชน",
-    titleEn: "Community Participation Activities",
-    descriptionTh: "รวบรวมกิจกรรมอาสา การเฝ้าระวังคุณภาพน้ำ และการมีส่วนร่วมจากประชาชน",
-    descriptionEn: "Collect volunteer programs, water monitoring, and citizen engagement updates.",
-    href: "/feed",
-    icon: MessageCircleHeart,
+    labelTh: "คลังความรู้",
+    labelEn: "KNOWLEDGE BASE",
+    titleTh: "",
+    titleEn: "",
+    descriptionTh: "บทความและสื่อความรู้เกี่ยวกับการจัดการน้ำเสีย คุณภาพน้ำ และผลกระทบต่อสิ่งแวดล้อมและสุขภาพ",
+    descriptionEn: "Articles and educational materials on wastewater management, water quality, and environmental impact.",
+    href: "/knowledge",
+    icon: BookOpen,
   },
 ];
 
@@ -102,7 +102,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 <div className="relative h-56 w-full overflow-hidden bg-slate-100">
                   <Image
                     src={pillar.image}
-                    alt={isThai ? pillar.titleTh : pillar.titleEn}
+                    alt={isThai ? (pillar.titleTh || pillar.labelTh) : (pillar.titleEn || pillar.labelEn)}
                     fill
                     className="object-cover transition duration-500 group-hover:scale-105"
                   />
@@ -112,16 +112,18 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                     <Icon className="h-5 w-5" />
                     <span>{isThai ? pillar.labelTh : pillar.labelEn}</span>
                   </div>
-                  <h3 className="mb-3 text-xl font-bold leading-tight text-slate-900">
-                    {pillar.id === "system" && isThai ? (
-                      <>
-                        {"ข้อมูลระบบบำบัดน้ำเสียของ "}
-                        <abbr title="องค์กรปกครองส่วนท้องถิ่น" className="cursor-help underline decoration-dotted decoration-slate-400">อปท.</abbr>
-                      </>
-                    ) : (
-                      isThai ? pillar.titleTh : pillar.titleEn
-                    )}
-                  </h3>
+                  {(isThai ? pillar.titleTh : pillar.titleEn) ? (
+                    <h3 className="mb-3 text-xl font-bold leading-tight text-slate-900">
+                      {pillar.id === "system" && isThai ? (
+                        <>
+                          {"ข้อมูลระบบบำบัดน้ำเสียของ "}
+                          <abbr title="องค์กรปกครองส่วนท้องถิ่น" className="cursor-help underline decoration-dotted decoration-slate-400">อปท.</abbr>
+                        </>
+                      ) : (
+                        isThai ? pillar.titleTh : pillar.titleEn
+                      )}
+                    </h3>
+                  ) : null}
                   <p className="flex-1 text-base leading-relaxed text-slate-600">
                     {isThai ? pillar.descriptionTh : pillar.descriptionEn}
                   </p>
