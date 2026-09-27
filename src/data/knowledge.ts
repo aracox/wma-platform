@@ -21,3 +21,7 @@ export function getKnowledgeArticleBySlug(slug: string): KnowledgeArticle | unde
 export function getKnowledgePdfUrl(article: KnowledgeArticle): string {
   return `/knowledge/${encodeURIComponent(article.filename)}`;
 }
+
+export function getKnowledgeImageUrl(article: KnowledgeArticle): string {
+  return `/knowledge/previews/${encodeURIComponent(article.slug)}.jpg`;
+}

@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useMemo } from "react";
 import { ArrowLeft, BookOpen, Download } from "lucide-react";
-import { getKnowledgeArticleBySlug, getKnowledgePdfUrl } from "@/data/knowledge";
+import { getKnowledgeArticleBySlug, getKnowledgePdfUrl, getKnowledgeImageUrl } from "@/data/knowledge";
 
 export default function KnowledgeDetailPage() {
   const params = useParams();
@@ -62,6 +62,15 @@ export default function KnowledgeDetailPage() {
       {/* Content */}
       <div className="container mx-auto px-4 max-w-4xl mt-6">
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+          {/* Infographic Preview Image */}
+          <div className="mb-8 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 flex justify-center p-2 sm:p-4 shadow-inner">
+            <img
+              src={getKnowledgeImageUrl(article)}
+              alt={article.title}
+              className="max-h-[800px] w-auto max-w-full object-contain rounded-xl shadow-md"
+            />
+          </div>
+
           <div className="space-y-4 text-slate-700 leading-relaxed text-[15px]">
             {article.content.map((paragraph, idx) => (
               <p key={idx}>{paragraph}</p>
@@ -75,7 +84,7 @@ export default function KnowledgeDetailPage() {
               className="inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-md hover:shadow-lg cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              ดาวน์โหลดไฟล์ PDF ฉบับเต็ม
+              ดาวน์โหลดไฟล์ PDF
             </a>
           </div>
         </div>

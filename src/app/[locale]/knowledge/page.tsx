@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { BookOpen, ChevronRight, Download } from "lucide-react";
-import { getKnowledgeArticles, getKnowledgePdfUrl } from "@/data/knowledge";
+import { getKnowledgeArticles, getKnowledgePdfUrl, getKnowledgeImageUrl } from "@/data/knowledge";
 
 export default function KnowledgePage() {
   const locale = useLocale();
@@ -40,11 +40,27 @@ export default function KnowledgePage() {
                 key={article.slug}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-200/70 overflow-hidden flex flex-col group"
               >
-                <div className="p-6 flex-grow">
+                {/* PDF Image Preview */}
+                <Link
+                  href={`/${locale}/knowledge/${article.slug}`}
+                  className="block relative aspect-[16/10] w-full overflow-hidden bg-slate-100 border-b border-slate-100 cursor-pointer"
+                >
+                  <img
+                    src={getKnowledgeImageUrl(article)}
+                    alt={article.title}
+                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+
+                <div className="p-6 flex-grow flex flex-col">
                   <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight group-hover:text-primary-600 transition-colors line-clamp-2">
-                    {article.title}
+                    <Link href={`/${locale}/knowledge/${article.slug}`}>
+                      {article.title}
+                    </Link>
                   </h3>
-                  <p className="text-sm text-slate-500 leading-relaxed line-clamp-4">
+                  <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 mb-2 flex-grow">
                     {article.summary}
                   </p>
                 </div>
