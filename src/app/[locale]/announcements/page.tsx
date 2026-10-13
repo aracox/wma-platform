@@ -32,10 +32,10 @@ export default function AnnouncementsPage() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/facebook/posts");
+      const res = await fetch("/api/facebook/posts?limit=9");
       const data = await res.json();
       if (data?.posts && Array.isArray(data.posts)) {
-        setPosts(data.posts);
+        setPosts(data.posts.slice(0, 9));
       } else {
         setPosts([]);
       }
@@ -197,6 +197,21 @@ export default function AnnouncementsPage() {
                 </div>
               </article>
             ))}
+          </div>
+        )}
+
+        {/* View More on Facebook Button */}
+        {posts.length > 0 && (
+          <div className="pt-4 text-center">
+            <a
+              href={FACEBOOK_PAGE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 bg-white hover:bg-primary-50 text-primary-900 border border-slate-200 hover:border-primary-300 px-6 py-3 rounded-2xl text-xs font-bold shadow-xs hover:shadow-md transition-all group"
+            >
+              <span>ดูโพสต์ทั้งหมดเพิ่มเติมบนเพจ Facebook @WMA38</span>
+              <ExternalLink className="w-3.5 h-3.5 text-primary-600 group-hover:translate-x-0.5 transition-transform" />
+            </a>
           </div>
         )}
       </div>
