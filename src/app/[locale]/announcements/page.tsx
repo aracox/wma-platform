@@ -10,6 +10,8 @@ import {
   Calendar,
   X,
   ChevronRight,
+  ChevronLeft,
+  Images,
 } from "lucide-react";
 import { formatDateBE } from "@/lib/utils";
 
@@ -20,6 +22,7 @@ interface SyncedPost {
   id: string;
   message?: string;
   picture?: string;
+  images?: string[];
   permalinkUrl?: string;
   createdTime?: string;
   syncedAt?: string;
@@ -29,7 +32,7 @@ export default function AnnouncementsPage() {
   const [posts, setPosts] = useState<SyncedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<SyncedPost | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -54,19 +57,12 @@ export default function AnnouncementsPage() {
 
   const openModal = (post: SyncedPost) => {
     setSelectedPost(post);
-    // Double rAF ensures the initial state is painted before animating
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setIsModalOpen(true);
-      });
-    });
+    setActiveImageIndex(0);
   };
 
   const closeModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => {
-      setSelectedPost(null);
-    }, 280);
+    setSelectedPost(null);
+    setActiveImageIndex(0);
   };
 
   // Lock body scroll when popup is open
@@ -81,16 +77,46 @@ export default function AnnouncementsPage() {
     };
   }, [selectedPost]);
 
-  // Handle ESC key to close modal
+  // Handle keyboard navigation (ESC to close, Left/Right for gallery)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         closeModal();
+      } else if (e.key === "ArrowLeft" && selectedPost) {
+        const total =
+          selectedPost.images && selectedPost.images.length > 0
+            ? selectedPost.images.length
+            : selectedPost.picture
+            ? 1
+            : 0;
+        if (total > 1) {
+          setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : total - 1));
+        }
+      } else if (e.key === "ArrowRight" && selectedPost) {
+        const total =
+          selectedPost.images && selectedPost.images.length > 0
+            ? selectedPost.images.length
+            : selectedPost.picture
+            ? 1
+            : 0;
+        if (total > 1) {
+          setActiveImageIndex((prev) => (prev < total - 1 ? prev + 1 : 0));
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [selectedPost]);
+
+  const currentImages = selectedPost
+    ? selectedPost.images && selectedPost.images.length > 0
+      ? selectedPost.images
+      : selectedPost.picture
+      ? [selectedPost.picture]
+      : []
+    : [];
+
+  const activeImage = currentImages[activeImageIndex] || currentImages[0] || selectedPost?.picture;
 
   return (
     <div className="min-h-screen bg-slate-50/70 pb-20 pt-8">
@@ -199,6 +225,12 @@ export default function AnnouncementsPage() {
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
+                    {post.images && post.images.length > 1 && (
+                      <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                        <Images className="w-3.5 h-3.5" />
+                        <span>{post.images.length} รูป</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -250,7 +282,7 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* ============================================================== */}
-      {/* OVERLAY POPUP MODAL (SMOOTH SPRING MOTION & FADE TRANSITION)   */}
+      {/* OVERLAY POPUP MODAL                                            */}
       {/* ============================================================== */}
       {selectedPost && (
         <div
@@ -259,16 +291,10 @@ export default function AnnouncementsPage() {
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}
-          className={`fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto transition-opacity duration-300 ease-out ${
-            isModalOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
         >
           <div
-            className={`relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[90vh] flex flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${
-              isModalOpen
-                ? "opacity-100 scale-100 translate-y-0"
-                : "opacity-0 scale-95 translate-y-4"
-            }`}
+            className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[90vh] flex flex-col"
           >
             {/* Close Button Top Right */}
             <button
@@ -281,16 +307,88 @@ export default function AnnouncementsPage() {
 
             {/* Scrollable Modal Content */}
             <div className="overflow-y-auto flex-1">
-              {/* Full Image */}
-              {selectedPost.picture && (
-                <div className="relative w-full h-64 sm:h-80 bg-slate-100">
-                  <Image
-                    src={selectedPost.picture}
-                    alt="WMA Facebook Update Detail"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+              {/* Image Gallery */}
+              {activeImage && (
+                <div className="bg-slate-950 flex flex-col shrink-0">
+                  <div className="relative w-full h-64 sm:h-80 md:h-96 flex items-center justify-center overflow-hidden">
+                    <Image
+                      src={activeImage}
+                      alt={`WMA Facebook Update Detail ${activeImageIndex + 1}`}
+                      fill
+                      className="object-contain"
+                      priority
+                    />
+
+                    {/* Multi-image counter */}
+                    {currentImages.length > 1 && (
+                      <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
+                        <Images className="w-3.5 h-3.5" />
+                        <span>
+                          {activeImageIndex + 1} / {currentImages.length}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Previous button */}
+                    {currentImages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveImageIndex((prev) =>
+                            prev > 0 ? prev - 1 : currentImages.length - 1
+                          );
+                        }}
+                        aria-label="รูปก่อนหน้า"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md transition-colors shadow-md active:scale-95"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                    )}
+
+                    {/* Next button */}
+                    {currentImages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveImageIndex((prev) =>
+                            prev < currentImages.length - 1 ? prev + 1 : 0
+                          );
+                        }}
+                        aria-label="รูปถัดไป"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md transition-colors shadow-md active:scale-95"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Thumbnails row if multiple images */}
+                  {currentImages.length > 1 && (
+                    <div className="p-2.5 bg-slate-900 border-t border-slate-800 flex items-center gap-2 overflow-x-auto">
+                      {currentImages.map((img, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setActiveImageIndex(idx)}
+                          aria-label={`เลือกรูปที่ ${idx + 1}`}
+                          className={`relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
+                            activeImageIndex === idx
+                              ? "border-primary-400 ring-2 ring-primary-400/40 opacity-100"
+                              : "border-transparent opacity-60 hover:opacity-100"
+                          }`}
+                        >
+                          <Image
+                            src={img}
+                            alt={`Thumbnail ${idx + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -97,6 +97,7 @@ model FacebookPost {
   id           String   @unique
   message      String?
   picture      String?
+  images       String   @default("[]")
   permalinkUrl String?
   createdTime  String?
   syncedAt     DateTime @default(now())

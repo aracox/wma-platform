@@ -5,6 +5,7 @@ export interface NormalizedFacebookPost {
   id: string;
   message?: string;
   picture?: string;
+  images?: string[];
   permalinkUrl?: string;
   createdTime?: string;
 }
@@ -46,6 +47,71 @@ export function extractPostData(item: any): NormalizedFacebookPost | null {
     item.attachments?.data?.[0]?.media?.image?.src ||
     "";
 
+  // Extract multiple images if provided in various formats
+  const collectedImages: string[] = [];
+
+  const addImageCandidate = (urlCandidate: any) => {
+    if (typeof urlCandidate !== "string") return;
+    const trimmed = urlCandidate.trim();
+    if (
+      (trimmed.startsWith("https://") || trimmed.startsWith("http://")) &&
+      !collectedImages.includes(trimmed)
+    ) {
+      collectedImages.push(trimmed);
+    }
+  };
+
+  // 1. Direct array or string in item.images
+  if (Array.isArray(item.images)) {
+    for (const img of item.images) {
+      if (typeof img === "string") addImageCandidate(img);
+      else if (img?.src) addImageCandidate(img.src);
+      else if (img?.url) addImageCandidate(img.url);
+    }
+  } else if (typeof item.images === "string" && item.images.trim()) {
+    try {
+      const parsed = JSON.parse(item.images);
+      if (Array.isArray(parsed)) {
+        for (const img of parsed) addImageCandidate(img);
+      } else {
+        addImageCandidate(item.images);
+      }
+    } catch {
+      // Comma-separated or newline-separated
+      const splits = item.images.split(/[\r\n,]+/);
+      for (const s of splits) addImageCandidate(s);
+    }
+  }
+
+  // 2. Facebook Graph API attachments & subattachments structure
+  if (Array.isArray(item.attachments?.data)) {
+    for (const att of item.attachments.data) {
+      if (att?.media?.image?.src) {
+        addImageCandidate(att.media.image.src);
+      }
+      if (Array.isArray(att?.subattachments?.data)) {
+        for (const sub of att.subattachments.data) {
+          if (sub?.media?.image?.src) {
+            addImageCandidate(sub.media.image.src);
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Extract from item.photos or item.album
+  const otherLists = [item.photos, item.album, item.media];
+  for (const list of otherLists) {
+    if (Array.isArray(list)) {
+      for (const p of list) {
+        if (typeof p === "string") addImageCandidate(p);
+        else if (p?.src) addImageCandidate(p.src);
+        else if (p?.url) addImageCandidate(p.url);
+        else if (p?.picture) addImageCandidate(p.picture);
+      }
+    }
+  }
+
   // Extract permalink
   let permalinkUrl =
     item.permalink_url ||
@@ -83,11 +149,11 @@ export function extractPostData(item: any): NormalizedFacebookPost | null {
       }
       // 2. Picture / Image URL: e.g. "https://scontent...fbcdn.net/..."
       else if (
-        !picture &&
         (val.startsWith("https://") || val.startsWith("http://")) &&
         (val.includes("fbcdn.net") || /\.(jpg|jpeg|png|webp|gif)/i.test(val))
       ) {
-        picture = val;
+        if (!picture) picture = val;
+        addImageCandidate(val);
       }
       // 3. Facebook Permalink URL: e.g. "https://www.facebook.com/.../posts/..."
       else if (
@@ -127,14 +193,20 @@ export function extractPostData(item: any): NormalizedFacebookPost | null {
       ? createdTime.trim()
       : new Date().toISOString();
 
-  if (!id && !cleanMessage && !cleanPicture) {
+  // Ensure cover picture is first in collectedImages if not present
+  if (cleanPicture && !collectedImages.includes(cleanPicture)) {
+    collectedImages.unshift(cleanPicture);
+  }
+
+  if (!id && !cleanMessage && !cleanPicture && collectedImages.length === 0) {
     return null;
   }
 
   return {
     id: id || `fb_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     message: cleanMessage,
-    picture: cleanPicture,
+    picture: cleanPicture || collectedImages[0] || "",
+    images: collectedImages.length > 0 ? collectedImages : cleanPicture ? [cleanPicture] : [],
     permalinkUrl: cleanPermalink,
     createdTime: cleanCreatedTime,
   };
@@ -207,11 +279,20 @@ export async function handleFacebookWebhook(req: NextRequest) {
       const post = extractPostData(raw);
       if (!post || (!post.message && !post.picture)) continue;
 
+      const imagesJson = JSON.stringify(
+        post.images && post.images.length > 0
+          ? post.images
+          : post.picture
+          ? [post.picture]
+          : []
+      );
+
       const saved = await prisma.facebookPost.upsert({
         where: { id: post.id },
         update: {
           message: post.message,
           picture: post.picture,
+          images: imagesJson,
           permalinkUrl: post.permalinkUrl,
           createdTime: post.createdTime,
           syncedAt: new Date(),
@@ -220,6 +301,7 @@ export async function handleFacebookWebhook(req: NextRequest) {
           id: post.id,
           message: post.message,
           picture: post.picture,
+          images: imagesJson,
           permalinkUrl: post.permalinkUrl,
           createdTime: post.createdTime,
         },
