@@ -156,11 +156,6 @@ export default function AnnouncementsPage() {
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600/90 backdrop-blur-md text-white shadow-xs flex items-center gap-1">
-                        f Facebook Post
-                      </span>
-                    </div>
                   </div>
                 )}
 
