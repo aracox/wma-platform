@@ -91,3 +91,13 @@ model Cooperation {
   reportedBy             String?
   attachments            String  @default("[]")
 }
+
+model FacebookPost {
+  seq          Int      @id @default(autoincrement())
+  id           String   @unique
+  message      String?
+  picture      String?
+  permalinkUrl String?
+  createdTime  String?
+  syncedAt     DateTime @default(now())
+}
