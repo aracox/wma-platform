@@ -8,8 +8,8 @@ import {
   ThumbsUp,
   RefreshCw,
   Calendar,
-  Share2,
-  Sparkles,
+  X,
+  ChevronRight,
 } from "lucide-react";
 import { formatDateBE } from "@/lib/utils";
 
@@ -28,6 +28,7 @@ interface SyncedPost {
 export default function AnnouncementsPage() {
   const [posts, setPosts] = useState<SyncedPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<SyncedPost | null>(null);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -48,6 +49,29 @@ export default function AnnouncementsPage() {
 
   useEffect(() => {
     fetchPosts();
+  }, []);
+
+  // Lock body scroll when popup is open
+  useEffect(() => {
+    if (selectedPost) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedPost]);
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedPost(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return (
@@ -145,7 +169,8 @@ export default function AnnouncementsPage() {
             {posts.map((post) => (
               <article
                 key={post.id}
-                className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:border-primary-200 transition-all flex flex-col group"
+                onClick={() => setSelectedPost(post)}
+                className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:border-primary-200 transition-all flex flex-col group cursor-pointer"
               >
                 {/* Post Image */}
                 {post.picture && (
@@ -177,17 +202,12 @@ export default function AnnouncementsPage() {
                   </div>
 
                   {/* Bottom Action Link */}
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] text-slate-400">องค์การจัดการน้ำเสีย</span>
-                    <a
-                      href={post.permalinkUrl || FACEBOOK_PAGE_URL}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 hover:text-primary-700 group-hover:translate-x-0.5 transition-transform"
-                    >
-                      อ่านบน Facebook
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-primary-600 group-hover:text-primary-700">
+                    <span className="inline-flex items-center gap-1">
+                      อ่านรายละเอียด
+                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-normal">องค์การจัดการน้ำเสีย</span>
                   </div>
                 </div>
               </article>
@@ -210,6 +230,88 @@ export default function AnnouncementsPage() {
           </div>
         )}
       </div>
+
+      {/* ============================================================== */}
+      {/* OVERLAY POPUP MODAL (FULL CONTENT DISPLAY)                     */}
+      {/* ============================================================== */}
+      {selectedPost && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedPost(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in"
+        >
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+            {/* Close Button Top Right */}
+            <button
+              onClick={() => setSelectedPost(null)}
+              aria-label="ปิดหน้าต่าง"
+              className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-95"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Scrollable Modal Content */}
+            <div className="overflow-y-auto flex-1">
+              {/* Full Image */}
+              {selectedPost.picture && (
+                <div className="relative w-full h-64 sm:h-80 bg-slate-100">
+                  <Image
+                    src={selectedPost.picture}
+                    alt="WMA Facebook Update Detail"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              )}
+
+              {/* Text & Details Content */}
+              <div className="p-6 sm:p-8 space-y-4">
+                {/* Metadata Row */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100 text-xs">
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-lg">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {selectedPost.createdTime
+                      ? formatDateBE(selectedPost.createdTime, "th")
+                      : "เมื่อเร็วๆ นี้"}
+                  </span>
+                  <span className="text-slate-400 font-medium">
+                    องค์การจัดการน้ำเสีย (@WMA38)
+                  </span>
+                </div>
+
+                {/* Full Unclamped Message */}
+                <div className="text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-line">
+                  {selectedPost.message || "ไม่มีข้อความเพิ่มเติมสำหรับโพสต์นี้"}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+              <button
+                onClick={() => setSelectedPost(null)}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold transition-colors"
+              >
+                ปิดหน้าต่าง
+              </button>
+
+              <a
+                href={selectedPost.permalinkUrl || FACEBOOK_PAGE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold transition-colors"
+              >
+                ดูต้นฉบับบน Facebook
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
