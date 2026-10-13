@@ -12,19 +12,18 @@ export interface NormalizedFacebookPost {
 export function extractPostData(item: any): NormalizedFacebookPost | null {
   if (!item || typeof item !== "object") return null;
 
-  // Extract ID
-  const id =
-    String(
-      item.id ||
-      item.postId ||
-      item.post_id ||
-      item.entry?.[0]?.id ||
-      item.data?.[0]?.id ||
-      ""
-    ).trim() ||
-    `fb_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  // Extract ID (must have a real identifier from Facebook)
+  const rawId =
+    item.id ||
+    item.postId ||
+    item.post_id ||
+    item.entry?.[0]?.id ||
+    item.data?.[0]?.id ||
+    item.ID;
 
-  // Extract message / text
+  const id = rawId ? String(rawId).trim() : "";
+
+  // Extract message / text / story
   const message =
     item.message ||
     item.text ||
@@ -32,6 +31,8 @@ export function extractPostData(item: any): NormalizedFacebookPost | null {
     item.post ||
     item.caption ||
     item.story ||
+    item.description ||
+    item.name ||
     "";
 
   // Extract picture / image URL
@@ -51,7 +52,7 @@ export function extractPostData(item: any): NormalizedFacebookPost | null {
     item.permalink ||
     item.url ||
     item.link ||
-    (id && !id.startsWith("fb_") ? `https://www.facebook.com/${id}` : "https://www.facebook.com/WMA38");
+    (id ? `https://www.facebook.com/${id}` : "https://www.facebook.com/WMA38");
 
   // Extract timestamp
   const createdTime =
@@ -62,11 +63,19 @@ export function extractPostData(item: any): NormalizedFacebookPost | null {
     item.timestamp ||
     new Date().toISOString();
 
+  // If there is no ID and neither message nor picture, it's an empty payload
+  const cleanMessage = typeof message === "string" ? message.trim() : JSON.stringify(message);
+  const cleanPicture = typeof picture === "string" ? picture.trim() : "";
+
+  if (!id && !cleanMessage && !cleanPicture) {
+    return null;
+  }
+
   return {
-    id,
-    message: typeof message === "string" ? message : JSON.stringify(message),
-    picture: typeof picture === "string" ? picture : "",
-    permalinkUrl: typeof permalinkUrl === "string" ? permalinkUrl : "",
+    id: id || `fb_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    message: cleanMessage,
+    picture: cleanPicture,
+    permalinkUrl: typeof permalinkUrl === "string" ? permalinkUrl.trim() : "",
     createdTime: typeof createdTime === "string" ? createdTime : new Date().toISOString(),
   };
 }
@@ -136,7 +145,7 @@ export async function handleFacebookWebhook(req: NextRequest) {
 
     for (const raw of incomingItems) {
       const post = extractPostData(raw);
-      if (!post || !post.id) continue;
+      if (!post || (!post.message && !post.picture)) continue;
 
       const saved = await prisma.facebookPost.upsert({
         where: { id: post.id },
@@ -157,6 +166,18 @@ export async function handleFacebookWebhook(req: NextRequest) {
       });
 
       savedPosts.push(saved);
+    }
+
+    if (savedPosts.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No valid post content found in request. Please check field mappings in Make.com.",
+          receivedKeys: Object.keys(body || {}),
+          receivedBody: body,
+        },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json(

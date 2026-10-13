@@ -105,13 +105,13 @@ export default function AnnouncementsPage() {
     try {
       const res = await fetch("/api/facebook/posts");
       const data = await res.json();
-      if (data?.posts && data.posts.length > 0) {
+      if (data?.posts && Array.isArray(data.posts)) {
         setSyncedPosts(data.posts);
       } else {
-        setSyncedPosts(FALLBACK_POSTS);
+        setSyncedPosts([]);
       }
     } catch {
-      setSyncedPosts(FALLBACK_POSTS);
+      setSyncedPosts([]);
     } finally {
       setLoadingPosts(false);
     }
@@ -362,61 +362,90 @@ export default function AnnouncementsPage() {
             </div>
 
             {/* Native 3-Column Responsive Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {syncedPosts.map((post) => (
-                <article
-                  key={post.id}
-                  className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:border-primary-200 transition-all flex flex-col group"
-                >
-                  {/* Post Image */}
-                  <div className="h-48 relative bg-slate-100 overflow-hidden">
-                    <Image
-                      src={post.picture || "/images/hero-slide-1.jpg"}
-                      alt="WMA Facebook Update"
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600/90 backdrop-blur-md text-white shadow-xs flex items-center gap-1">
-                        f Facebook Post
-                      </span>
-                    </div>
-                  </div>
+            {syncedPosts.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm space-y-4">
+                <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto text-2xl font-black shadow-xs">
+                  f
+                </div>
+                <div className="space-y-1.5 max-w-md mx-auto">
+                  <h3 className="text-lg font-bold text-slate-900">
+                    ยังไม่มีโพสต์ที่ซิงค์จากเพจ Facebook @WMA38
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    เมื่อ Scenario ใน Make.com ทำงานตรวจพบโพสต์ ข้อมูลจริงจากเพจจะถูกส่งเข้า Webhook และแสดงผลที่นี่โดยอัตโนมัติ
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <a
+                    href={FACEBOOK_PAGE_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    เปิดดูโพสต์บนเพจทางการ @WMA38
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {syncedPosts.map((post) => (
+                  <article
+                    key={post.id}
+                    className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:border-primary-200 transition-all flex flex-col group"
+                  >
+                    {/* Post Image */}
+                    {post.picture && (
+                      <div className="h-48 relative bg-slate-100 overflow-hidden">
+                        <Image
+                          src={post.picture}
+                          alt="WMA Facebook Update"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600/90 backdrop-blur-md text-white shadow-xs flex items-center gap-1">
+                            f Facebook Post
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
-                  {/* Post Content */}
-                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                    <div className="space-y-2.5">
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-primary-600" />
-                          {post.createdTime ? formatDateBE(post.createdTime, "th") : "เมื่อเร็วๆ นี้"}
-                        </span>
-                        <span>•</span>
-                        <span className="text-slate-400">@WMA38</span>
+                    {/* Post Content */}
+                    <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2.5">
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                          <span className="inline-flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5 text-primary-600" />
+                            {post.createdTime ? formatDateBE(post.createdTime, "th") : "เมื่อเร็วๆ นี้"}
+                          </span>
+                          <span>•</span>
+                          <span className="text-slate-400">@WMA38</span>
+                        </div>
+
+                        <p className="text-xs md:text-sm text-slate-700 leading-relaxed font-normal line-clamp-4">
+                          {post.message || "ดูรายละเอียดกิจกรรมและข้อมูลเพิ่มเติมบนเพจทางการขององค์การจัดการน้ำเสีย"}
+                        </p>
                       </div>
 
-                      <p className="text-xs md:text-sm text-slate-700 leading-relaxed font-normal line-clamp-4">
-                        {post.message || "ดูรายละเอียดกิจกรรมและข้อมูลเพิ่มเติมบนเพจทางการขององค์การจัดการน้ำเสีย"}
-                      </p>
+                      {/* Bottom Action Link */}
+                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400">องค์การจัดการน้ำเสีย</span>
+                        <a
+                          href={post.permalinkUrl || FACEBOOK_PAGE_URL}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 hover:text-primary-700 group-hover:translate-x-0.5 transition-transform"
+                        >
+                          อ่านบน Facebook
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
                     </div>
-
-                    {/* Bottom Action Link */}
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-[11px] text-slate-400">องค์การจัดการน้ำเสีย</span>
-                      <a
-                        href={post.permalinkUrl || FACEBOOK_PAGE_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 hover:text-primary-700 group-hover:translate-x-0.5 transition-transform"
-                      >
-                        อ่านบน Facebook
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
