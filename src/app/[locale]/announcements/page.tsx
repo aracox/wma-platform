@@ -29,6 +29,7 @@ export default function AnnouncementsPage() {
   const [posts, setPosts] = useState<SyncedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<SyncedPost | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -51,6 +52,23 @@ export default function AnnouncementsPage() {
     fetchPosts();
   }, []);
 
+  const openModal = (post: SyncedPost) => {
+    setSelectedPost(post);
+    // Double rAF ensures the initial state is painted before animating
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsModalOpen(true);
+      });
+    });
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setSelectedPost(null);
+    }, 280);
+  };
+
   // Lock body scroll when popup is open
   useEffect(() => {
     if (selectedPost) {
@@ -67,7 +85,7 @@ export default function AnnouncementsPage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setSelectedPost(null);
+        closeModal();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -169,7 +187,7 @@ export default function AnnouncementsPage() {
             {posts.map((post) => (
               <article
                 key={post.id}
-                onClick={() => setSelectedPost(post)}
+                onClick={() => openModal(post)}
                 className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:border-primary-200 transition-all flex flex-col group cursor-pointer"
               >
                 {/* Post Image */}
@@ -232,21 +250,29 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* ============================================================== */}
-      {/* OVERLAY POPUP MODAL (FULL CONTENT DISPLAY)                     */}
+      {/* OVERLAY POPUP MODAL (SMOOTH SPRING MOTION & FADE TRANSITION)   */}
       {/* ============================================================== */}
       {selectedPost && (
         <div
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedPost(null);
+            if (e.target === e.currentTarget) closeModal();
           }}
-          className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in"
+          className={`fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto transition-opacity duration-300 ease-out ${
+            isModalOpen ? "opacity-100" : "opacity-0"
+          }`}
         >
-          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+          <div
+            className={`relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[90vh] flex flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${
+              isModalOpen
+                ? "opacity-100 scale-100 translate-y-0"
+                : "opacity-0 scale-95 translate-y-4"
+            }`}
+          >
             {/* Close Button Top Right */}
             <button
-              onClick={() => setSelectedPost(null)}
+              onClick={closeModal}
               aria-label="ปิดหน้าต่าง"
               className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-95"
             >
@@ -293,7 +319,7 @@ export default function AnnouncementsPage() {
             {/* Modal Bottom Actions */}
             <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
               <button
-                onClick={() => setSelectedPost(null)}
+                onClick={closeModal}
                 className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold transition-colors"
               >
                 ปิดหน้าต่าง
